@@ -28,7 +28,6 @@ vite.config.ts.timestamp-*
 # Playwright
 playwright-report/
 test-results/
-apps/harmonie-web/tests/.last-run.json
 
 # IDE
 .vscode/
@@ -43,11 +42,16 @@ apps/harmonie-web/tests/.last-run.json
 .temp/
 tmp/
 
+# Turborepo
+.turbo/
+
 # App specific
-apps/harmonie-web/node_modules/
-apps/harmonie-web/dist/
-apps/harmonie-web/playwright-report/
-apps/harmonie-web/test-results/
+apps/harmonie/node_modules/
+apps/harmonie/dist/
+
+# Design system
+packages/ui/dist/
+packages/ui/node_modules/
 
 # Agents
 .claude

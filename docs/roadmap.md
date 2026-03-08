@@ -6,15 +6,15 @@
 
 ---
 
-## Phase 2 — Monorepo setup
+## Phase 2 — Monorepo setup ✅
 Mettre en place la structure du monorepo sans aucun code applicatif.
 
-- [ ] `package.json` root (scripts Turborepo : `dev`, `build`, `storybook`)
-- [ ] `pnpm-workspace.yaml`
-- [ ] `turbo.json` (pipeline : `build → ^build`, `dev` et `storybook` persistants)
-- [ ] `.npmrc` (`auto-install-peers=true`)
-- [ ] Mettre à jour `.gitignore` (`apps/harmonie/` en remplacement de `apps/harmonie-web/`, `packages/ui/dist/`)
-- [ ] `pnpm install` — vérifie que les workspaces se lient correctement
+- [x] `package.json` root (scripts Turborepo : `dev`, `build`, `storybook`)
+- [x] `pnpm-workspace.yaml`
+- [x] `turbo.json` (pipeline : `build → ^build`, `dev` et `storybook` persistants)
+- [x] `.npmrc` (`auto-install-peers=true`)
+- [x] Mettre à jour `.gitignore` (`apps/harmonie/` en remplacement de `apps/harmonie-web/`, `packages/ui/dist/`)
+- [x] `pnpm install` — vérifie que les workspaces se lient correctement
 
 ---
 
