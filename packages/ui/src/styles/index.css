@@ -48,8 +48,8 @@
   --color-status-offline: #C8BFB8;
 
   /* ── Typography ── */
-  --font-family-display: 'Lora', Georgia, serif;
-  --font-family-body: 'DM Sans', system-ui, sans-serif;
+  --font-display: 'Lora', Georgia, serif;
+  --font-body: 'DM Sans', system-ui, sans-serif;
 
   /* ── Border radius ── */
   --radius-sm: 8px;
