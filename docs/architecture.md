@@ -1,60 +1,60 @@
-# Harmonie — Architecture du projet
+# Harmonie — Project Architecture
 
-## Vue d'ensemble
+## Overview
 
-Harmonie est un monorepo contenant deux workspaces :
+Harmonie is a monorepo containing two workspaces:
 
-| Workspace | Nom npm | Rôle |
+| Workspace | npm name | Role |
 |---|---|---|
-| `apps/harmonie` | `@harmonie/app` | Application React principale |
-| `packages/ui` | `@harmonie/ui` | Design system : composants UI + Storybook |
+| `apps/harmonie` | `@harmonie/app` | Main React application |
+| `packages/ui` | `@harmonie/ui` | Design system: UI components + Storybook |
 
 ---
 
-## Stack technique
+## Tech stack
 
-| Outil | Usage |
+| Tool | Usage |
 |---|---|
-| **pnpm** | Gestionnaire de paquets + workspaces |
-| **Turborepo** | Orchestration des tâches du monorepo (build, dev, lint) |
-| **Vite** | Bundler (app en mode SPA, UI en mode librairie) |
-| **React 18** | Framework UI |
-| **TypeScript 5** | Typage statique |
-| **Tailwind CSS v4** | Styling — utilisé dans `packages/ui` et `apps/harmonie` |
-| **Storybook 8** | Développement et documentation des composants en isolation |
-| **React Router v6** | Routage côté client de l'application |
+| **pnpm** | Package manager + workspaces |
+| **Turborepo** | Monorepo task orchestration (build, dev, lint) |
+| **Vite** | Bundler (SPA mode for app, library mode for UI) |
+| **React 18** | UI framework |
+| **TypeScript 5** | Static typing |
+| **Tailwind CSS v4** | Styling — used in `packages/ui` and `apps/harmonie` |
+| **Storybook 8** | Component development and documentation in isolation |
+| **React Router v6** | Client-side routing |
 
 ---
 
-## Structure des dossiers
+## Folder structure
 
 ```
 harmonie-client/
-├── package.json              # Workspace root — scripts Turborepo
-├── pnpm-workspace.yaml       # Déclaration des workspaces pnpm
-├── turbo.json                # Pipeline Turborepo
-├── .npmrc                    # Configuration pnpm
+├── package.json              # Workspace root — Turborepo scripts
+├── pnpm-workspace.yaml       # pnpm workspaces declaration
+├── turbo.json                # Turborepo pipeline
+├── .npmrc                    # pnpm configuration
 ├── docs/
-│   └── architecture.md       # Ce fichier
+│   └── architecture.md       # This file
 ├── apps/
-│   └── harmonie/             # Application principale
+│   └── harmonie/             # Main application
 │       ├── package.json
 │       ├── vite.config.ts
 │       ├── tsconfig.json
 │       ├── index.html
 │       └── src/
-│           ├── main.tsx          # Point d'entrée
-│           ├── App.tsx
+│           ├── main.tsx          # Entry point
 │           ├── routes/
-│           │   ├── index.tsx     # createBrowserRouter
-│           │   ├── AuthPage.tsx
-│           │   ├── GuildSelectorPage.tsx
-│           │   ├── ChatPage.tsx
-│           │   └── VoicePage.tsx
+│           │   └── index.tsx     # createBrowserRouter
 │           ├── layouts/
-│           │   └── AppLayout.tsx # Grille 3 colonnes + <Outlet />
+│           │   └── AppLayout.tsx # 3-column layout + <Outlet />
 │           └── features/
 │               ├── auth/
+│               │   ├── useAuth.ts        # Auth state hook (stub)
+│               │   ├── RequireAuth.tsx   # Redirects to /auth/connect if not authenticated
+│               │   ├── GuestRoute.tsx    # Redirects to / if authenticated
+│               │   ├── ConnectPage.tsx   # Login page
+│               │   └── RegisterPage.tsx  # Registration page
 │               ├── chat/
 │               ├── sidebar/
 │               ├── voice/
@@ -62,18 +62,18 @@ harmonie-client/
 └── packages/
     └── ui/                   # Design system
         ├── package.json
-        ├── vite.config.ts    # Mode librairie — externalise React
+        ├── vite.config.ts    # Library mode — externalizes React
         ├── tsconfig.json
         ├── .storybook/
         │   ├── main.ts
         │   ├── preview.ts
-        │   └── preview-head.html  # Injection Google Fonts
+        │   └── preview-head.html  # Google Fonts injection
         └── src/
-            ├── index.ts      # Barrel export de tous les composants
+            ├── index.ts      # Barrel export of all components
             └── components/
-                └── [NomComposant]/
-                    ├── NomComposant.tsx
-                    ├── NomComposant.stories.tsx
+                └── [ComponentName]/
+                    ├── ComponentName.tsx
+                    ├── ComponentName.stories.tsx
                     └── index.ts
 ```
 
@@ -81,54 +81,53 @@ harmonie-client/
 
 ## Tailwind CSS
 
-Tailwind v4 est utilisé dans les deux workspaces. La configuration est partagée via un preset défini dans `packages/ui` et étendu par l'app.
+Tailwind v4 is used in both workspaces with a CSS-first approach — no `tailwind.config.ts`.
 
-### Setup dans `packages/ui`
+### Setup in `packages/ui`
 
-- `tailwind.config.ts` — définit le preset (couleurs, typographie, spacing, etc.)
-- Tailwind est configuré via `@import "tailwindcss"` dans le CSS d'entrée du package
+- `src/styles/index.css` — `@import "tailwindcss"` + `@theme {}` with all Harmonie design tokens
 
-### Setup dans `apps/harmonie`
+### Setup in `apps/harmonie`
 
-- `tailwind.config.ts` — étend le preset de `@harmonie/ui`
-- Tailwind est configuré via `@vite-plugin-tailwindcss` ou l'intégration Vite native de Tailwind v4
+- `src/styles/index.css` — imports the UI package styles to inherit all tokens
 
-### Convention de style des composants
+### Component styling convention
 
-Les composants du design system utilisent des classes Tailwind directement dans le JSX. Pour les variantes complexes, `clsx` (ou `cva` — class-variance-authority) est utilisé pour composer les classes conditionnellement.
+Design system components use Tailwind classes directly in JSX. For complex variants, `clsx` or `cva` (class-variance-authority) is used:
 
 ```tsx
-// Exemple Button
+// Button example
 <button className={clsx(
   'inline-flex items-center font-medium rounded-lg transition-opacity',
-  variant === 'primary' && 'bg-sage-dark text-white',
-  variant === 'ghost' && 'border border-border text-text-mid',
+  variant === 'primary' && 'bg-primary text-primary-fg',
+  variant === 'ghost' && 'border border-border-2 text-text-1',
 )}>
 ```
 
 ---
 
-## Composants UI (`packages/ui`)
+## UI components (`packages/ui`)
 
-### Convention par dossier
+### Folder convention
 
-Chaque composant vit dans son propre dossier :
+Each component lives in its own folder:
 
 ```
 src/components/Button/
-├── Button.tsx          # Composant React + types exportés
-├── Button.stories.tsx  # Stories Storybook
-└── index.ts            # Re-export public : export { Button } from './Button'
+├── Button.tsx          # React component + exported types
+├── Button.stories.tsx  # Storybook stories
+└── index.ts            # Public re-export: export { Button } from './Button'
 ```
+
+All dumb/presentational components live in `packages/ui`. The app never defines its own UI primitives.
 
 ### Exports
 
-Le fichier `src/index.ts` exporte tous les composants et leurs types :
+`src/index.ts` exports all components and their types:
 
 ```ts
 export { Button } from './components/Button'
 export type { ButtonProps } from './components/Button'
-// ...
 ```
 
 ---
@@ -138,16 +137,35 @@ export type { ButtonProps } from './components/Button'
 ### Routing (React Router v6)
 
 ```
-/auth                                    → AuthPage
-/                                        → AppLayout
-  /                                      → GuildSelectorPage
-  /:serverId/:guildId/channel/:channelId → ChatPage
-  /:serverId/:guildId/voice/:channelId   → VoicePage
+/auth                → GuestRoute (redirects to / if authenticated)
+  /auth              → redirect to /auth/connect
+  /auth/connect      → ConnectPage  (login)
+  /auth/register     → RegisterPage (registration)
+
+/                    → RequireAuth (redirects to /auth/connect if not authenticated)
+  /                  → AppLayout
+    /                → GuildSelectorPage  (index)
+    /:serverId/:guildId/channel/:channelId → ChatPage
+    /:serverId/:guildId/voice/:channelId   → VoicePage
+
+*                    → redirect to /
 ```
 
-### Layout principal
+### Feature folders
 
-`AppLayout` est une grille CSS 3 colonnes :
+Each feature folder is self-contained and owns its pages, hooks, and components:
+
+```
+features/auth/       → auth pages, route guards, useAuth hook
+features/chat/       → chat feature (Phase 7+)
+features/guild/      → guild/server feature (Phase 7+)
+features/sidebar/    → sidebar feature (Phase 7+)
+features/voice/      → voice feature (Phase 7+)
+```
+
+### Main layout
+
+`AppLayout` is a 3-column flex layout:
 
 ```
 ┌──────┬────────────────┬─────────────────────────────┐
@@ -159,49 +177,54 @@ export type { ButtonProps } from './components/Button'
 └──────┴────────────────┴─────────────────────────────┘
 ```
 
-### Consommation du design system
+### Consuming the design system
 
 ```ts
-// src/features/auth/AuthForm.tsx
 import { Button, Input } from '@harmonie/ui'
 ```
 
 ---
 
-## Commandes de développement
+## Dev commands
 
 ```bash
-# Installer les dépendances (lie les workspaces)
+# Install dependencies (links workspaces)
 pnpm install
 
-# Lancer tous les serveurs en parallèle
+# Start all servers in parallel
 turbo run dev
 
-# Lancer uniquement Storybook
+# Start Storybook only
 pnpm --filter @harmonie/ui storybook
 
-# Lancer uniquement l'application
+# Start the app only
 pnpm --filter @harmonie/app dev
 
-# Builder tous les packages
+# Build all packages
 turbo run build
 
-# Builder uniquement le design system
+# Build the design system only
 pnpm --filter @harmonie/ui build
+
+# Build the app only
+pnpm --filter @harmonie/app build
 ```
 
 ---
 
-## Décisions architecturales
+## Architectural decisions
 
-### Pourquoi Turborepo + pnpm ?
-Turborepo gère l'ordre des builds (le design system doit builder avant l'app) et met en cache les résultats. pnpm workspaces offre un `node_modules` strict et le protocole `workspace:*` pour les dépendances locales.
+### Why Turborepo + pnpm?
+Turborepo manages build order (the design system must build before the app) and caches results. pnpm workspaces provides a strict `node_modules` layout and the `workspace:*` protocol for local dependencies.
 
-### Pourquoi Tailwind v4 ?
-Tailwind v4 est la version courante. Son approche CSS-first s'intègre naturellement avec Vite. Le preset partagé entre `packages/ui` et `apps/harmonie` garantit la cohérence des tokens visuels dans tout le projet.
+### Why Tailwind v4?
+Tailwind v4 is the current version. Its CSS-first approach integrates naturally with Vite. The shared token definition in `packages/ui/src/styles/index.css` guarantees visual consistency across the entire project.
 
-### Pourquoi Storybook séparé de l'app ?
-Storybook vit exclusivement dans `packages/ui`, ce qui force à développer les composants indépendamment de l'app. Cela garantit que le design system est réutilisable et non couplé à la logique métier.
+### Why Storybook separate from the app?
+Storybook lives exclusively in `packages/ui`, which forces components to be developed independently from the app. This ensures the design system is reusable and not coupled to business logic.
 
-### Pourquoi Vite en mode librairie pour `packages/ui` ?
-Vite en mode librairie produit un bundle ES optimisé sans dupliquer React (externalisé). `vite-plugin-dts` génère les déclarations TypeScript.
+### Why Vite in library mode for `packages/ui`?
+Vite in library mode produces an optimized ES bundle without duplicating React (externalized). `vite-plugin-dts` generates TypeScript declarations.
+
+### Why feature folders?
+Each feature (auth, chat, guild…) owns its pages, hooks, and components. This avoids a generic `components/` or `pages/` folder that becomes a dumping ground. All dumb UI primitives go to `packages/ui`; everything domain-specific lives in its feature folder.

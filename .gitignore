@@ -21,6 +21,7 @@ node_modules/
 dist/
 build/
 coverage/
+*.tsbuildinfo
 
 # Vite
 vite.config.ts.timestamp-*
