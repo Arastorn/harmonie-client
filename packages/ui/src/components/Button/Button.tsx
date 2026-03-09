@@ -12,7 +12,7 @@ const variantClasses: Record<ButtonVariant, string> = {
   secondary:
     'bg-secondary border border-secondary-fg text-secondary-fg hover:opacity-80',
   tertiary:
-    'bg-transparent border border-tertiary-fg text-tertiary-fg hover:bg-surface-hover',
+    'bg-transparent border border-tertiary-fg text-tertiary-fg hover:bg-surface-3',
 }
 
 export const Button = ({
