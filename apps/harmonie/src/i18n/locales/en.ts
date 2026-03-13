@@ -34,6 +34,17 @@ export const en = {
     channels: {
       text: 'Text channels',
       voice: 'Voice channels',
+      create: {
+        title: 'Create a channel',
+        typeLabel: 'Channel type',
+        typeText: 'Text',
+        typeVoice: 'Voice',
+        nameLabel: 'Channel name',
+        namePlaceholder: 'e.g. general',
+        submit: 'Create channel',
+        cancel: 'Cancel',
+        error: 'Unable to create channel. Please try again.',
+      },
     },
   },
   settings: {

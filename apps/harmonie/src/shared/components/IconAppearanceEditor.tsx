@@ -47,7 +47,6 @@ export const IconAppearanceEditor = ({
               variant="filled"
               selected={selectedIcon === iconName}
               onClick={() => onSelectIcon(iconName)}
-              title={iconName}
               type="button"
               disabled={disabled}
             >

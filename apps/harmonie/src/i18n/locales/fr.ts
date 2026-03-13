@@ -34,6 +34,17 @@ export const fr = {
     channels: {
       text: 'Salons textuels',
       voice: 'Salons vocaux',
+      create: {
+        title: 'Créer un salon',
+        typeLabel: 'Type de salon',
+        typeText: 'Textuel',
+        typeVoice: 'Vocal',
+        nameLabel: 'Nom du salon',
+        namePlaceholder: 'ex : général',
+        submit: 'Créer le salon',
+        cancel: 'Annuler',
+        error: 'Impossible de créer le salon. Réessaie.',
+      },
     },
   },
   settings: {
