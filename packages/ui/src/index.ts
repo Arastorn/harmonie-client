@@ -37,3 +37,6 @@ export type { TabsProps, Tab } from './components/Tabs/Tabs';
 
 export { NavList } from './components/NavList/NavList';
 export type { NavListProps, NavListItemProps } from './components/NavList/NavList';
+
+export { ChannelItem } from './components/ChannelItem/ChannelItem';
+export type { ChannelItemProps, ChannelType } from './components/ChannelItem/ChannelItem';

@@ -45,11 +45,24 @@ export interface CreateGuildResponse {
   icon: GuildIcon | null;
 }
 
+export interface CreateChannelInput {
+  name: string;
+  type: 'Text' | 'Voice';
+  position: number;
+}
+
 export const listGuilds = (): Promise<{ guilds: Guild[] }> =>
   apiFetch(`${API_BASE}/guilds`).then((r) => parseOrThrow<{ guilds: Guild[] }>(r));
 
 export const listChannels = (guildId: string): Promise<ChannelList> =>
   apiFetch(`${API_BASE}/guilds/${guildId}/channels`).then((r) => parseOrThrow<ChannelList>(r));
+
+export const createChannel = (guildId: string, input: CreateChannelInput): Promise<Channel> =>
+  apiFetch(`${API_BASE}/guilds/${guildId}/channels`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  }).then((r) => parseOrThrow<Channel>(r));
 
 export const createGuild = (input: {
   name: string;

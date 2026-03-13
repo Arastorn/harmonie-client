@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Globe, LogOut, Palette, UserRound, X } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { NavList, Separator } from '@harmonie/ui';
+import { IconButton, NavList, Separator } from '@harmonie/ui';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useUser } from './UserContext';
 import { AvatarSection } from './settings/AvatarSection';
@@ -69,13 +69,9 @@ export const SettingsPanel = ({ onClose }: SettingsPanelProps) => {
             <h2 className="font-display text-lg font-semibold text-text-1">
               {t(`settings.${section}.title`)}
             </h2>
-            <button
-              onClick={onClose}
-              aria-label={t('settings.close')}
-              className="text-text-3 hover:text-text-1 hover:bg-surface-3 transition-colors rounded-sm p-1 cursor-pointer"
-            >
-              <X size={18} />
-            </button>
+            <IconButton size="small" aria-label={t('settings.close')} onClick={() => onClose()}>
+              <X size={16} />
+            </IconButton>
           </div>
 
           <div className="flex-1 overflow-y-auto px-8 py-6">
