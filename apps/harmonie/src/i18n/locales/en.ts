@@ -70,6 +70,16 @@ export const en = {
       edit: 'Edit guild',
       delete: 'Delete guild',
     },
+    members: {
+      title: 'Members',
+      toggle: 'Members',
+      loading: 'Loading…',
+      online: 'Online — {{count}}',
+      offline: 'Offline — {{count}}',
+      popover: {
+        bioLabel: 'About',
+      },
+    },
     edit: {
       nav: {
         identity: 'General',
@@ -96,9 +106,19 @@ export const en = {
     title: 'Settings',
     close: 'Close settings',
     nav: {
+      bio: 'Bio',
       language: 'Language',
       avatar: 'Avatar',
       theme: 'Theme',
+    },
+    bio: {
+      title: 'Bio',
+      label: 'About you',
+      placeholder: 'Tell something about yourself…',
+      hint: '500 characters maximum.',
+      save: 'Save',
+      cancel: 'Cancel',
+      error: 'Unable to save bio. Please try again.',
     },
     language: {
       title: 'Language',

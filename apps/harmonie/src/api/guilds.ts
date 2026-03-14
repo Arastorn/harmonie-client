@@ -1,4 +1,5 @@
 import { apiFetch, parseOrThrow } from './client';
+import { AvatarAppearance } from '@/api/users.ts';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
@@ -57,6 +58,23 @@ export interface UpdateGuildInput {
   icon?: CreateGuildIconInput;
 }
 
+export interface GuildMember {
+  userId: string;
+  username: string;
+  displayName: string | null;
+  avatarFileId?: string | null;
+  avatar?: AvatarAppearance;
+  bio?: string;
+  isActive: boolean;
+  role: string;
+  joinedAtUtc: string;
+}
+
+export interface GuildMemberList {
+  guildId: string;
+  members: GuildMember[];
+}
+
 export const listGuilds = (): Promise<{ guilds: Guild[] }> =>
   apiFetch(`${API_BASE}/guilds`).then((r) => parseOrThrow<{ guilds: Guild[] }>(r));
 
@@ -87,6 +105,9 @@ export const updateGuild = (guildId: string, input: UpdateGuildInput): Promise<G
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(input),
   }).then((r) => parseOrThrow<Guild>(r));
+
+export const listGuildMembers = (guildId: string): Promise<GuildMemberList> =>
+  apiFetch(`${API_BASE}/guilds/${guildId}/members`).then((r) => parseOrThrow<GuildMemberList>(r));
 
 export const deleteGuild = (guildId: string): Promise<void> =>
   apiFetch(`${API_BASE}/guilds/${guildId}`, {
