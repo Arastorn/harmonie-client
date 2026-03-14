@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
 import { listGuilds } from '@/api/guilds';
-import type { Guild } from '@/api/guilds';
+import type { Guild } from '@/types/guild';
 
 interface GuildContextValue {
   guilds: Guild[];

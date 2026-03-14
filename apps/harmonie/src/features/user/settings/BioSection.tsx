@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, EmojiTextarea } from '@harmonie/ui';
-import type { UserProfile } from '@/api/users';
+import type { UserProfile } from '@/types/user';
 import { patchMe } from '@/api/users';
 
 const BIO_MAX_LENGTH = 500;

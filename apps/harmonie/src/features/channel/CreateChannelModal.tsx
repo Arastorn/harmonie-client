@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, EmojiInput, Modal, RadioCard } from '@harmonie/ui';
 import { createChannel } from '@/api/guilds';
-import type { Channel } from '@/api/guilds';
+import type { Channel } from '@/types/guild';
 
 type ChannelType = 'Text' | 'Voice';
 

@@ -1,11 +1,8 @@
+import type { TokensPayload } from '@/types/auth';
+
 const REFRESH_TOKEN_KEY = 'refreshToken';
 
 let _accessToken: string | null = null;
-
-export interface TokensPayload {
-  accessToken: string;
-  refreshToken: string;
-}
 
 export const storeTokens = (response: TokensPayload) => {
   _accessToken = response.accessToken;

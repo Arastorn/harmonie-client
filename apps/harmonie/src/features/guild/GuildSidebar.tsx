@@ -6,7 +6,7 @@ import { ContextMenu, GuildAvatar } from '@harmonie/ui';
 import { useFileBlobUrl } from '@/shared/hooks/useFileBlobUrl';
 import { useGuilds } from './GuildContext';
 import { GuildCreateOrJoinModal } from './GuildCreateOrJoinModal';
-import type { Guild } from '@/api/guilds';
+import type { Guild } from '@/types/guild';
 import { EditGuildModal } from './EditGuildModal';
 
 const GuildSidebarItem = ({

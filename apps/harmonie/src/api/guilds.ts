@@ -1,79 +1,17 @@
 import { apiFetch, parseOrThrow } from './client';
-import { AvatarAppearance } from '@/api/users.ts';
+import type {
+  Channel,
+  ChannelList,
+  CreateChannelInput,
+  CreateGuildIconInput,
+  CreateGuildResponse,
+  Guild,
+  GuildMember,
+  GuildMemberList,
+  UpdateGuildInput,
+} from '@/types/guild';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
-
-export interface Guild {
-  guildId: string;
-  name: string;
-  ownerUserId: string;
-  role: string;
-  joinedAtUtc: string;
-  iconFileId: string | null;
-  icon: GuildIcon | null;
-}
-
-export interface GuildIcon {
-  name: string;
-  color: string;
-  bg: string;
-}
-
-export interface CreateGuildIconInput {
-  name: string | null;
-  color: string | null;
-  bg: string | null;
-}
-
-export interface Channel {
-  channelId: string;
-  name: string;
-  type: 'Text' | 'Voice';
-  isDefault: boolean;
-  position: number;
-}
-
-export interface ChannelList {
-  guildId: string;
-  channels: Channel[];
-}
-
-export interface CreateGuildResponse {
-  guildId: string;
-  name: string;
-  ownerUserId: string;
-  iconFileId: string | null;
-  icon: GuildIcon | null;
-}
-
-export interface CreateChannelInput {
-  name: string;
-  type: 'Text' | 'Voice';
-  position: number;
-}
-
-export interface UpdateGuildInput {
-  name?: string;
-  iconFileId?: string | null;
-  icon?: CreateGuildIconInput;
-}
-
-export interface GuildMember {
-  userId: string;
-  username: string;
-  displayName: string | null;
-  avatarFileId?: string | null;
-  avatar?: AvatarAppearance;
-  bio?: string;
-  isActive: boolean;
-  role: string;
-  joinedAtUtc: string;
-}
-
-export interface GuildMemberList {
-  guildId: string;
-  members: GuildMember[];
-}
 
 export const listGuilds = (): Promise<{ guilds: Guild[] }> =>
   apiFetch(`${API_BASE}/guilds`).then((r) => parseOrThrow<{ guilds: Guild[] }>(r));
@@ -115,3 +53,15 @@ export const deleteGuild = (guildId: string): Promise<void> =>
   }).then(async (r) => {
     if (!r.ok) throw await r.json();
   });
+
+export type {
+  Channel,
+  ChannelList,
+  CreateChannelInput,
+  CreateGuildIconInput,
+  CreateGuildResponse,
+  Guild,
+  GuildMember,
+  GuildMemberList,
+  UpdateGuildInput,
+};

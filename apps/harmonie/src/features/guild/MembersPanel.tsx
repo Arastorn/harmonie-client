@@ -3,7 +3,8 @@ import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { X } from 'lucide-react';
 import { IconButton } from '@harmonie/ui';
-import { listGuildMembers, type GuildMember } from '@/api/guilds';
+import { listGuildMembers } from '@/api/guilds';
+import type { GuildMember } from '@/types/guild';
 import { MemberItem } from '@/shared/components/MemberItem';
 import { MemberPopover } from '@/shared/components/MemberPopover';
 

@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { getMe } from '@/api/users';
-import type { UserProfile } from '@/api/users';
+import type { UserProfile } from '@/types/user';
 import { useAuth } from '@/features/auth/AuthContext';
 import i18n from '@/i18n';
 

@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ChannelItem, ContextMenu, IconButton } from '@harmonie/ui';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
-import type { Channel } from '@/api/guilds';
+import type { Channel } from '@/types/guild';
 import { useGuilds } from '@/features/guild/GuildContext';
 import { UserPanel } from '@/features/user/UserPanel';
 import { useChannels } from './ChannelContext';

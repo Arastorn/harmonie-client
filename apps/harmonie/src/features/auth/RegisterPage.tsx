@@ -6,7 +6,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import { isValidEmail, isValidPassword } from '@/shared/utils/user';
 import { register } from '@/api/auth';
 import { storeTokens } from '@/api/authStorage';
-import type { ApiError } from '@/api/errors';
+import type { ApiError } from '@/types/error';
 import { AuthCard } from './AuthCard';
 import { useAuth } from './AuthContext';
 

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Upload } from 'lucide-react';
 import { Avatar, Button } from '@harmonie/ui';
-import type { UserProfile } from '@/api/users';
+import type { UserProfile } from '@/types/user';
 import { patchMe, removeAvatarImage, uploadAvatarImage } from '@/api/users';
 import { useFileBlobUrl } from '@/shared/hooks/useFileBlobUrl';
 import { IconAppearanceEditor } from '@/shared/components/IconAppearanceEditor';

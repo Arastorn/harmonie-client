@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useRef, useState, type ReactNode 
 import { logout as logoutApi, refreshTokens } from '@/api/auth';
 import { clearTokens, getRefreshToken, storeTokens } from '@/api/authStorage';
 import { setLogoutHandler } from '@/api/client';
-import type { ApiError } from '@/api/errors';
+import type { ApiError } from '@/types/error';
 
 interface AuthContextValue {
   isAuthenticated: boolean;

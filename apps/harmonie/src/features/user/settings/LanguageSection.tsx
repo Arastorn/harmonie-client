@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import i18n from '@/i18n';
 import { LANGUAGES } from '@/i18n/languages';
-import type { UserProfile } from '@/api/users';
+import type { UserProfile } from '@/types/user';
 import { patchMe } from '@/api/users';
 import { RadioCard } from '@harmonie/ui';
 
