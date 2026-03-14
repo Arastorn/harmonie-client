@@ -70,6 +70,16 @@ export const fr = {
       edit: 'Modifier la guilde',
       delete: 'Supprimer la guilde',
     },
+    members: {
+      title: 'Membres',
+      toggle: 'Membres',
+      loading: 'Chargement…',
+      online: 'En ligne — {{count}}',
+      offline: 'Hors ligne — {{count}}',
+      popover: {
+        bioLabel: 'À propos',
+      },
+    },
     edit: {
       nav: {
         identity: 'Général',
@@ -96,9 +106,19 @@ export const fr = {
     title: 'Paramètres',
     close: 'Fermer les paramètres',
     nav: {
+      bio: 'Bio',
       language: 'Langue',
       avatar: 'Avatar',
       theme: 'Thème',
+    },
+    bio: {
+      title: 'Bio',
+      label: 'À propos de toi',
+      placeholder: 'Dis quelque chose sur toi…',
+      hint: '500 caractères maximum.',
+      save: 'Sauvegarder',
+      cancel: 'Annuler',
+      error: 'Impossible de sauvegarder la bio. Réessaie.',
     },
     language: {
       title: 'Langue',

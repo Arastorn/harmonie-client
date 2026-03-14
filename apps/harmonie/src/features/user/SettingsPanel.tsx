@@ -1,21 +1,23 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Globe, LogOut, Palette, UserRound } from 'lucide-react';
+import { FileText, Globe, LogOut, Palette, UserRound } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { ModalPanel, NavList, Separator } from '@harmonie/ui';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useUser } from './UserContext';
 import { AvatarSection } from './settings/AvatarSection';
+import { BioSection } from './settings/BioSection';
 import { LanguageSection } from './settings/LanguageSection';
 import { ThemeSection } from './settings/ThemeSection';
 
-type Section = 'language' | 'avatar' | 'theme';
+type Section = 'bio' | 'language' | 'avatar' | 'theme';
 
 interface SettingsPanelProps {
   onClose: () => void;
 }
 
 const NAV_ITEMS: { id: Section; icon: LucideIcon }[] = [
+  { id: 'bio', icon: FileText },
   { id: 'language', icon: Globe },
   { id: 'avatar', icon: UserRound },
   { id: 'theme', icon: Palette },
@@ -25,7 +27,7 @@ export const SettingsPanel = ({ onClose }: SettingsPanelProps) => {
   const { t } = useTranslation();
   const { user, updateUser } = useUser();
   const { logout } = useAuth();
-  const [section, setSection] = useState<Section>('language');
+  const [section, setSection] = useState<Section>('bio');
 
   const sidebar = (
     <>
@@ -60,6 +62,7 @@ export const SettingsPanel = ({ onClose }: SettingsPanelProps) => {
       closeLabel={t('settings.close')}
       sidebar={sidebar}
     >
+      {section === 'bio' && <BioSection user={user} updateUser={updateUser} />}
       {section === 'language' && <LanguageSection updateUser={updateUser} />}
       {section === 'avatar' && <AvatarSection user={user} updateUser={updateUser} />}
       {section === 'theme' && <ThemeSection />}

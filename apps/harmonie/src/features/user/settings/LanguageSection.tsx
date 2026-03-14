@@ -17,13 +17,13 @@ export const LanguageSection = ({ updateUser }: LanguageSectionProps) => {
 
   const handleChange = async (code: string) => {
     const previousLanguage = i18n.language;
-    i18n.changeLanguage(code);
+    await i18n.changeLanguage(code);
     setSaving(true);
     try {
       const updated = await patchMe({ language: code });
       updateUser(updated);
     } catch {
-      i18n.changeLanguage(previousLanguage);
+      await i18n.changeLanguage(previousLanguage);
     } finally {
       setSaving(false);
     }

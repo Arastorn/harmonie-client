@@ -10,8 +10,12 @@ export type {
 
 export { Input } from './components/Input/Input';
 export type { InputProps } from './components/Input/Input';
+export { Textarea } from './components/Textarea/Textarea';
+export type { TextareaProps } from './components/Textarea/Textarea';
 export { EmojiInput } from './components/EmojiInput/EmojiInput';
 export type { EmojiInputProps } from './components/EmojiInput/EmojiInput';
+export { EmojiTextarea } from './components/EmojiTextarea/EmojiTextarea';
+export type { EmojiTextareaProps } from './components/EmojiTextarea/EmojiTextarea';
 
 export { Separator } from './components/Separator/Separator';
 export type { SeparatorProps } from './components/Separator/Separator';
