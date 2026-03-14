@@ -1,32 +1,7 @@
 import { apiFetch } from './client';
+import type { AvatarAppearance, PatchMyProfileInput, UserProfile } from '@/types/user';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
-
-export interface AvatarAppearance {
-  color?: string;
-  icon?: string;
-  bg?: string;
-}
-
-export interface UserProfile {
-  userId: string;
-  username: string;
-  displayName?: string;
-  bio?: string;
-  avatarFileId?: string;
-  avatar?: AvatarAppearance;
-  theme: string;
-  language: string | null;
-}
-
-export interface PatchMyProfileInput {
-  displayName?: string | null;
-  bio?: string | null;
-  avatarFileId?: string | null;
-  avatar?: AvatarAppearance | null;
-  theme?: string | null;
-  language?: string | null;
-}
 
 export const getMe = (): Promise<UserProfile> =>
   apiFetch(`${API_BASE}/users/me`).then(async (res) => {
@@ -58,3 +33,5 @@ export const uploadAvatarImage = (file: File): Promise<{ avatarFileId: string }>
 
 export const removeAvatarImage = (): Promise<void> =>
   patchMe({ avatarFileId: null }).then(() => undefined);
+
+export type { AvatarAppearance, PatchMyProfileInput, UserProfile };

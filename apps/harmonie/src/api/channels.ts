@@ -1,28 +1,11 @@
 import { apiFetch, parseOrThrow } from '@/api/client.ts';
-import { Channel } from '@/api/guilds.ts';
+import type { Channel } from '@/types/guild';
+import type { MessageList, UpdateChannelInput } from '@/types/channel';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
-export interface Message {
-  messageId: string;
-  authorUserId: string;
-  content: string;
-  createdAtUtc: string;
-  updatedAtUtc: string | null;
-}
-
-export interface MessageList {
-  conversationId: string;
-  items: Message[];
-  nextCursor: string | null;
-}
-
 export const getChannelMessages = (channelId: string): Promise<MessageList> =>
   apiFetch(`${API_BASE}/channels/${channelId}/messages`).then((r) => parseOrThrow<MessageList>(r));
-
-export interface UpdateChannelInput {
-  name: string;
-}
 
 export const updateChannel = (channelId: string, input: UpdateChannelInput): Promise<Channel> =>
   apiFetch(`${API_BASE}/channels/${channelId}`, {

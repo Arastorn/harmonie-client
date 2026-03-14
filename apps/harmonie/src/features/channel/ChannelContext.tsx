@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
 import { useParams } from 'react-router-dom';
 import { listChannels } from '@/api/guilds';
-import type { Channel } from '@/api/guilds';
+import type { Channel } from '@/types/guild';
 
 // Internal state: channels are always tagged with the guildId they belong to.
 // This prevents stale data from a previous guild leaking to a new one during

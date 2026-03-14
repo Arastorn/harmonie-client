@@ -1,5 +1,5 @@
 import { Avatar } from '@harmonie/ui';
-import type { GuildMember } from '@/api/guilds.ts';
+import type { GuildMember } from '@/types/guild';
 import { useFileBlobUrl } from '@/shared/hooks/useFileBlobUrl.ts';
 
 interface MemberItemProps {

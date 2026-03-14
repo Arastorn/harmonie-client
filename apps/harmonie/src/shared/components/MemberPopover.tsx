@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { Avatar } from '@harmonie/ui';
 import { useFileBlobUrl } from '@/shared/hooks/useFileBlobUrl';
-import type { GuildMember } from '@/api/guilds';
+import type { GuildMember } from '@/types/guild';
 
 const POPOVER_WIDTH = 224;
 const POPOVER_OFFSET = 8;

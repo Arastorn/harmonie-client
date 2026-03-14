@@ -1,13 +1,7 @@
 import { apiFetch } from './client';
+import type { UploadedFile } from '@/types/file';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
-
-export interface UploadedFile {
-  fileId: string;
-  filename: string;
-  contentType: string;
-  sizeBytes: number;
-}
 
 export const downloadFileBlob = async (fileId: string): Promise<Blob> => {
   const response = await apiFetch(`${API_BASE}/files/${encodeURIComponent(fileId)}`);
