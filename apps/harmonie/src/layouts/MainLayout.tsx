@@ -6,7 +6,7 @@ import { GuildProvider, useGuilds } from '@/features/guild/GuildContext';
 import { GuildSidebar } from '@/features/guild/GuildSidebar';
 import { ChannelSidebar } from '@/features/channel/ChannelSidebar';
 import { ChannelProvider } from '@/features/channel/ChannelContext';
-import { MembersPanel } from '@/features/guild/MembersPanel';
+import { MembersPanel } from '@/features/members/MembersPanel';
 
 const AppShell = () => {
   const { guilds } = useGuilds();

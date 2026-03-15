@@ -3,10 +3,10 @@ import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { X } from 'lucide-react';
 import { IconButton } from '@harmonie/ui';
-import { listGuildMembers } from '@/api/guilds';
 import type { GuildMember } from '@/types/guild';
-import { MemberItem } from '@/shared/components/MemberItem';
+import { MemberItem } from '@/features/members/MemberItem';
 import { MemberPopover } from '@/shared/components/MemberPopover';
+import { useGuildMembers } from '../guild/GuildContext';
 
 interface SelectedMember {
   member: GuildMember;
@@ -20,18 +20,11 @@ interface MembersPanelProps {
 export const MembersPanel = ({ onClose }: MembersPanelProps) => {
   const { t } = useTranslation();
   const { guildId } = useParams<{ guildId: string }>();
-  const [members, setMembers] = useState<GuildMember[]>([]);
-  const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState<SelectedMember | null>(null);
 
-  useEffect(() => {
-    if (!guildId) return;
-    setLoading(true);
-    listGuildMembers(guildId)
-      .then((data) => setMembers(data.members))
-      .catch(() => setMembers([]))
-      .finally(() => setLoading(false));
-  }, [guildId]);
+  const membersOrNull = useGuildMembers(guildId);
+  const loading = membersOrNull === null;
+  const members = membersOrNull ?? [];
 
   useEffect(() => {
     setSelected(null);
