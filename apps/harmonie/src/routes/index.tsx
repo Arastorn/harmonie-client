@@ -6,7 +6,7 @@ import { ConnectPage } from '../features/auth/ConnectPage';
 import { RegisterPage } from '../features/auth/RegisterPage';
 import { GuildIndexPage } from '../features/guild/GuildIndexPage';
 import { GuildRedirect } from '../features/guild/GuildRedirect';
-import { TextChannelView } from '../features/channel/TextChannelView';
+import { TextChannelView } from '../features/channel/text/TextChannelView';
 
 export const router = createBrowserRouter([
   {

@@ -12,9 +12,15 @@ interface MemberPopoverProps {
   member: GuildMember;
   anchorRect: DOMRect;
   onClose: () => void;
+  side?: 'left' | 'right';
 }
 
-export const MemberPopover = ({ member, anchorRect, onClose }: MemberPopoverProps) => {
+export const MemberPopover = ({
+  member,
+  anchorRect,
+  onClose,
+  side = 'left',
+}: MemberPopoverProps) => {
   const { t } = useTranslation();
   const avatarUrl = useFileBlobUrl(member.avatarFileId);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -24,7 +30,13 @@ export const MemberPopover = ({ member, anchorRect, onClose }: MemberPopoverProp
     anchorRect.top,
     window.innerHeight - (cardRef.current?.offsetHeight ?? 200) - POPOVER_OFFSET
   );
-  const left = anchorRect.left - POPOVER_WIDTH - POPOVER_OFFSET;
+  const left =
+    side === 'right'
+      ? Math.min(
+          anchorRect.right + POPOVER_OFFSET,
+          window.innerWidth - POPOVER_WIDTH - POPOVER_OFFSET
+        )
+      : anchorRect.left - POPOVER_WIDTH - POPOVER_OFFSET;
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
