@@ -15,3 +15,19 @@ export interface MessageList {
 export interface UpdateChannelInput {
   name: string;
 }
+
+export interface MessageAttachment {
+  fileId: string;
+  fileName: string;
+  contentType: string;
+  sizeBytes: number;
+}
+
+export interface MessageCreatedEvent {
+  messageId: string;
+  channelId: string;
+  authorUserId: string;
+  content: string;
+  attachments: MessageAttachment[];
+  createdAtUtc: string;
+}

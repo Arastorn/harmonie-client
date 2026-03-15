@@ -101,6 +101,12 @@ export const fr = {
       empty: 'Aucun message pour le moment.',
       error: 'Impossible de charger les messages. Réessaie.',
     },
+    input: {
+      placeholder: 'Écrire un message…',
+      send: 'Envoyer',
+      error: "Impossible d'envoyer le message. Réessaie.",
+      tooLong: 'Message trop long ({{count}}/{{max}} caractères).',
+    },
   },
   settings: {
     title: 'Paramètres',
