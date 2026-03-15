@@ -1,13 +1,18 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useOutletContext, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Separator } from '@harmonie/ui';
+import { Users } from 'lucide-react';
+import { IconButton, Separator } from '@harmonie/ui';
 import { getChannelMessages } from '@/api/channels';
-import type { Message } from '@/types/channel';
+import type { Message, MessageCreatedEvent } from '@/types/channel';
 import type { GuildMember } from '@/types/guild';
 import { useGuildMembers } from '@/features/guild/GuildContext';
+import { useChannels } from '@/features/channel/ChannelContext';
+import { useRealtime } from '@/features/realtime/RealtimeContext';
 import { MemberPopover } from '@/shared/components/MemberPopover';
+import type { MainLayoutOutletContext } from '@/layouts/MainLayout';
 import { MessageItem } from './MessageItem';
+import { MessageInput } from './MessageInput';
 
 interface SelectedMember {
   member: GuildMember;
@@ -17,23 +22,108 @@ interface SelectedMember {
 export const TextChannelView = () => {
   const { t } = useTranslation();
   const { channelId, guildId } = useParams<{ channelId: string; guildId: string }>();
+  const { onToggleMembers } = useOutletContext<MainLayoutOutletContext>();
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [selected, setSelected] = useState<SelectedMember | null>(null);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const scrollAnchorRef = useRef<{ scrollTop: number; scrollHeight: number } | null>(null);
+  const loadingMoreRef = useRef(false);
 
   const members = useGuildMembers(guildId);
   const membersMap = useMemo(() => new Map((members ?? []).map((m) => [m.userId, m])), [members]);
+  const { channels } = useChannels();
+  const currentChannel = channels?.find((c) => c.channelId === channelId);
+  const { connection } = useRealtime();
 
   useEffect(() => {
     if (!channelId) return;
     setLoading(true);
     setError(false);
+    setNextCursor(null);
     getChannelMessages(channelId)
-      .then((data) => setMessages(data.items))
+      .then((data) => {
+        setMessages(data.items);
+        setNextCursor(data.nextCursor);
+      })
       .catch(() => setError(true))
       .finally(() => setLoading(false));
   }, [channelId]);
+
+  useEffect(() => {
+    if (!connection || !channelId) return;
+
+    connection
+      .invoke('JoinChannel', channelId)
+      .catch((err) => console.error('[SignalR] JoinChannel failed:', err));
+
+    const handleMessageCreated = (event: MessageCreatedEvent) => {
+      if (event.channelId !== channelId) return;
+      setMessages((prev) => [
+        ...prev,
+        {
+          messageId: event.messageId,
+          authorUserId: event.authorUserId,
+          content: event.content,
+          createdAtUtc: event.createdAtUtc,
+          updatedAtUtc: null,
+        },
+      ]);
+    };
+
+    connection.on('MessageCreated', handleMessageCreated);
+
+    return () => {
+      connection.off('MessageCreated', handleMessageCreated);
+      connection.invoke('LeaveChannel', channelId).catch(() => {});
+    };
+  }, [connection, channelId]);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    if (scrollAnchorRef.current !== null) {
+      // Restore scroll position: offset by the height added by prepended messages
+      const { scrollTop, scrollHeight } = scrollAnchorRef.current;
+      el.scrollTop = scrollTop + (el.scrollHeight - scrollHeight);
+      scrollAnchorRef.current = null;
+    } else {
+      el.scrollTop = el.scrollHeight;
+    }
+  }, [messages]);
+
+  const loadMore = useCallback(() => {
+    if (!channelId || !nextCursor || loadingMoreRef.current) return;
+    loadingMoreRef.current = true;
+    setLoadingMore(true);
+    getChannelMessages(channelId, nextCursor)
+      .then((data) => {
+        // Capture scroll position just before prepending so the indicator height is excluded
+        const el = scrollRef.current;
+        if (el)
+          scrollAnchorRef.current = { scrollTop: el.scrollTop, scrollHeight: el.scrollHeight };
+        setMessages((prev) => [...data.items, ...prev]);
+        setNextCursor(data.nextCursor);
+      })
+      .catch(() => {})
+      .finally(() => {
+        loadingMoreRef.current = false;
+        setLoadingMore(false);
+      });
+  }, [channelId, nextCursor]);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const handleScroll = () => {
+      if (el.scrollTop < 100) loadMore();
+    };
+    el.addEventListener('scroll', handleScroll);
+    return () => el.removeEventListener('scroll', handleScroll);
+  }, [loadMore]);
 
   if (loading) {
     return (
@@ -51,31 +141,50 @@ export const TextChannelView = () => {
     );
   }
 
-  if (messages.length === 0) {
-    return (
-      <div className="flex h-full items-center justify-center text-text-3 text-sm bg-surface-1 border border-border-2 rounded-sm">
-        {t('channel.messages.empty')}
-      </div>
-    );
-  }
-
   const handleAvatarClick = (member: GuildMember, rect: DOMRect) => {
     setSelected((prev) => (prev?.member.userId === member.userId ? null : { member, rect }));
   };
 
   return (
     <>
-      <div className="flex flex-col h-full overflow-y-auto px-4 py-4 gap-0 bg-surface-1 border border-border-2 rounded-sm">
-        {messages.map((message, index) => (
-          <div key={message.messageId}>
-            <MessageItem
-              message={message}
-              member={membersMap.get(message.authorUserId)}
-              onAvatarClick={handleAvatarClick}
-            />
-            {index < messages.length - 1 && <Separator />}
+      <div className="flex flex-col h-full bg-surface-1 border border-border-2 rounded-sm">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-border-2 shrink-0">
+          <span className="text-sm font-semibold text-text-1">
+            {currentChannel ? `# ${currentChannel.name}` : ''}
+          </span>
+          <IconButton size="small" onClick={onToggleMembers}>
+            <Users size={16} />
+          </IconButton>
+        </div>
+        {loadingMore && (
+          <div className="flex justify-center py-1 text-text-3 text-xs shrink-0">
+            {t('channel.messages.loading')}
           </div>
-        ))}
+        )}
+        <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 gap-0">
+          {messages.length === 0 ? (
+            <div className="flex h-full items-center justify-center text-text-3 text-sm">
+              {t('channel.messages.empty')}
+            </div>
+          ) : (
+            messages.map((message, index) => {
+              const prev = messages[index - 1];
+              const grouped = !!prev && prev.authorUserId === message.authorUserId;
+              return (
+                <div key={message.messageId}>
+                  {!grouped && index > 0 && <Separator />}
+                  <MessageItem
+                    message={message}
+                    member={membersMap.get(message.authorUserId)}
+                    grouped={grouped}
+                    onAvatarClick={handleAvatarClick}
+                  />
+                </div>
+              );
+            })
+          )}
+        </div>
+        <div className="px-4 pb-4">{channelId && <MessageInput channelId={channelId} />}</div>
       </div>
       {selected && (
         <MemberPopover

@@ -101,6 +101,12 @@ export const en = {
       empty: 'No messages yet.',
       error: 'Unable to load messages. Please try again.',
     },
+    input: {
+      placeholder: 'Type a message…',
+      send: 'Send',
+      error: 'Failed to send message. Please try again.',
+      tooLong: 'Message too long ({{count}}/{{max}} characters).',
+    },
   },
   settings: {
     title: 'Settings',
