@@ -2,7 +2,7 @@ import { Trans, useTranslation } from 'react-i18next';
 import { LanguageSelector } from '@harmonie/ui';
 import { useUser } from '@/features/user/UserContext';
 import { LANGUAGES } from '@/i18n/languages.ts';
-import { GuildForm } from './GuildForm';
+import { GuildForm } from '@/features/guild/create-edit-join/GuildForm';
 
 export const NoGuildPage = () => {
   const { t, i18n } = useTranslation();

@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { Pencil, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button, ModalPanel, NavList, Separator } from '@harmonie/ui';
-import { deleteGuild } from '@/api/guilds';
-import type { Guild } from '@/types/guild';
-import { GuildForm } from './GuildForm';
+import { deleteGuild } from '@/api/guilds.ts';
+import type { Guild } from '@/types/guild.ts';
+import { GuildForm } from '@/features/guild/create-edit-join/GuildForm';
 
 interface EditGuildModalProps {
   guild: Guild;

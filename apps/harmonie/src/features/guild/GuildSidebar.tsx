@@ -5,9 +5,9 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { ContextMenu, GuildAvatar } from '@harmonie/ui';
 import { useFileBlobUrl } from '@/shared/hooks/useFileBlobUrl';
 import { useGuilds } from './GuildContext';
-import { GuildCreateOrJoinModal } from './GuildCreateOrJoinModal';
+import { GuildCreateOrJoinModal } from '@/features/guild/create-edit-join/GuildCreateOrJoinModal';
 import type { Guild } from '@/types/guild';
-import { EditGuildModal } from './EditGuildModal';
+import { EditGuildModal } from '@/features/guild/create-edit-join/EditGuildModal';
 
 const GuildSidebarItem = ({
   guild,

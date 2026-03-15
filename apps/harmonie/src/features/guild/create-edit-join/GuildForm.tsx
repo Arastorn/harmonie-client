@@ -10,7 +10,7 @@ import { IconAppearanceEditor } from '@/shared/components/IconAppearanceEditor';
 import { useIconAppearancePalette } from '@/shared/hooks/useIconAppearancePalette';
 import { useFileBlobUrl } from '@/shared/hooks/useFileBlobUrl';
 import { useImageFileDraft } from '@/shared/hooks/useImageFileDraft';
-import { useGuilds } from './GuildContext';
+import { useGuilds } from '@/features/guild/GuildContext';
 
 interface GuildFormProps {
   mode?: 'create' | 'edit';
