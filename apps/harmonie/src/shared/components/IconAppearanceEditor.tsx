@@ -1,8 +1,8 @@
 import type { LucideIcon } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { ColorSwatches, IconButton } from '@harmonie/ui';
-import { AVATAR_ICONS } from '@/features/user/settings/constants';
-import { useIconAppearancePalette } from '@/shared/hooks/useIconAppearancePalette.ts';
+import { AVATAR_ICONS } from '@/shared/consts/constants';
+import { useIconAppearancePalette } from '@/shared/hooks/useIconAppearancePalette';
 
 interface IconAppearanceEditorProps {
   selectedIcon: string;

@@ -3,9 +3,9 @@ import { useGuilds } from '@/features/guild/GuildContext';
 import { NoGuildPage } from '@/features/guild/NoGuildPage';
 
 export const GuildIndexPage = () => {
-  const { guilds, isLoading } = useGuilds();
+  const { guilds, guildsLoading } = useGuilds();
 
-  if (isLoading) return null;
+  if (guildsLoading) return null;
 
   if (guilds.length === 0) return <NoGuildPage />;
 

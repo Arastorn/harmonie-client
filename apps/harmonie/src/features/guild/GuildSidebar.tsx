@@ -48,7 +48,7 @@ export const GuildSidebar = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { guildId: activeGuildId } = useParams<{ guildId: string }>();
-  const { guilds, refresh } = useGuilds();
+  const { guilds, fetchGuilds } = useGuilds();
   const [isCreateOrJoinOpen, setIsCreateOrJoinOpen] = useState(false);
   const [contextMenu, setContextMenu] = useState<{
     guild: Guild;
@@ -127,11 +127,11 @@ export const GuildSidebar = () => {
           onClose={() => setEditGuild(null)}
           onUpdated={() => {
             setEditGuild(null);
-            refresh();
+            fetchGuilds();
           }}
           onDeleted={() => {
             setEditGuild(null);
-            refresh();
+            fetchGuilds();
             navigate('/');
           }}
         />
