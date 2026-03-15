@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { BG_COLORS, ICON_COLORS } from '@/features/user/settings/constants';
+import { BG_COLORS, ICON_COLORS } from '@/shared/consts/constants';
 import { resolveColor } from '@/shared/utils/colors';
 
 export const useIconAppearancePalette = () => {

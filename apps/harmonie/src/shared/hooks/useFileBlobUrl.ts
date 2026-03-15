@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { downloadFileBlob } from '@/api/files.ts';
+import { downloadFileBlob } from '@/api/files';
 
 export const useFileBlobUrl = (fileId?: string | null): string | undefined => {
   const [blobUrl, setBlobUrl] = useState<string>();
