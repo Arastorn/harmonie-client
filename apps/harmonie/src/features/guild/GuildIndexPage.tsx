@@ -1,6 +1,6 @@
 import { Navigate } from 'react-router-dom';
-import { useGuilds } from './GuildContext';
-import { NoGuildPage } from './NoGuildPage';
+import { useGuilds } from '@/features/guild/GuildContext';
+import { NoGuildPage } from '@/features/guild/NoGuildPage';
 
 export const GuildIndexPage = () => {
   const { guilds, isLoading } = useGuilds();

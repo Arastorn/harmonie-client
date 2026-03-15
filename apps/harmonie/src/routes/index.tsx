@@ -1,12 +1,12 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
-import { MainLayout } from '../layouts/MainLayout';
-import { AuthGuard } from './AuthGuard';
-import { GuestGuard } from './GuestGuard';
-import { ConnectPage } from '../features/auth/ConnectPage';
-import { RegisterPage } from '../features/auth/RegisterPage';
-import { GuildIndexPage } from '../features/guild/GuildIndexPage';
-import { GuildRedirect } from '../features/guild/GuildRedirect';
-import { TextChannelView } from '../features/channel/text/TextChannelView';
+import { MainLayout } from '@/layouts/MainLayout';
+import { AuthGuard } from '@/routes/AuthGuard';
+import { GuestGuard } from '@/routes/GuestGuard';
+import { ConnectPage } from '@/features/auth/ConnectPage';
+import { RegisterPage } from '@/features/auth/RegisterPage';
+import { GuildIndexPage } from '@/features/guild/GuildIndexPage';
+import { ChannelIndexPage } from '@/features/channel/ChannelIndexPage';
+import { TextChannelView } from '@/features/channel/text/TextChannelView';
 
 export const router = createBrowserRouter([
   {
@@ -43,7 +43,7 @@ export const router = createBrowserRouter([
             children: [
               {
                 index: true,
-                element: <GuildRedirect />,
+                element: <ChannelIndexPage />,
               },
               {
                 path: 'channels/:channelId',

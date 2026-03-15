@@ -6,7 +6,7 @@ import { IconButton } from '@harmonie/ui';
 import type { GuildMember } from '@/types/guild';
 import { MemberItem } from '@/features/members/MemberItem';
 import { MemberPopover } from '@/shared/components/MemberPopover';
-import { useGuildMembers } from '../guild/GuildContext';
+import { useGuildMembers } from '@/features/guild/GuildContext';
 
 interface SelectedMember {
   member: GuildMember;

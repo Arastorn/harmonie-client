@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, Input, Modal, Tabs } from '@harmonie/ui';
-import { GuildForm } from './GuildForm';
+import { GuildForm } from '@/features/guild/create-edit-join/GuildForm';
 
 type GuildAccessMode = 'create' | 'join';
 

@@ -7,8 +7,8 @@ import type { Channel } from '@/types/guild';
 import { useGuilds } from '@/features/guild/GuildContext';
 import { UserPanel } from '@/features/user/UserPanel';
 import { useChannels } from './ChannelContext';
-import { CreateChannelModal } from './CreateChannelModal';
-import { EditChannelModal, type EditChannelSection } from './EditChannelModal';
+import { CreateChannelModal } from './create-edit/CreateChannelModal';
+import { EditChannelModal, type EditChannelSection } from './create-edit/EditChannelModal';
 
 type CreateModalState = { type: 'Text' | 'Voice' } | null;
 type ContextMenuState = {
