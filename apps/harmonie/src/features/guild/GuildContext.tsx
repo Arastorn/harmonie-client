@@ -22,7 +22,7 @@ interface GuildContextValue {
   guildsLoading: boolean;
   fetchGuilds: () => void;
   membersByGuild: Record<string, MembersCacheEntry>;
-  fetchGuildMembers: (guildId: string) => void;
+  fetchGuildMembers: (guildId: string, force?: boolean) => void;
 }
 
 const GuildContext = createContext<GuildContextValue>({
@@ -52,10 +52,10 @@ export const GuildProvider = ({ children }: { children: ReactNode }) => {
       .finally(() => setGuildsLoading(false));
   }, []);
 
-  const fetchGuildMembers = useCallback((guildId: string) => {
+  const fetchGuildMembers = useCallback((guildId: string, force = false) => {
     const entry = membersByGuildRef.current[guildId];
     const isStale = !entry || Date.now() - entry.fetchedAt > MEMBERS_TTL_MS;
-    if (!isStale || fetchingRef.current.has(guildId)) return;
+    if ((!isStale && !force) || fetchingRef.current.has(guildId)) return;
     fetchingRef.current.add(guildId);
     listGuildMembers(guildId)
       .then((data) => {

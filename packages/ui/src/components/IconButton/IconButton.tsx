@@ -1,7 +1,7 @@
 import { ButtonHTMLAttributes, ReactNode } from 'react';
 
 export type IconButtonSize = 'normal' | 'small' | 'medium';
-export type IconButtonVariant = 'ghost' | 'filled';
+export type IconButtonVariant = 'ghost' | 'filled' | 'overlay';
 
 export interface IconButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   size?: IconButtonSize;
@@ -19,6 +19,7 @@ const sizeClasses: Record<IconButtonSize, string> = {
 const variantClasses: Record<IconButtonVariant, string> = {
   ghost: 'bg-transparent text-tertiary-fg hover:bg-surface-3',
   filled: 'bg-surface-3 text-text-2 hover:bg-surface-2',
+  overlay: 'bg-transparent text-primary-fg hover:bg-primary-fg/12',
 };
 
 const selectedClasses = 'bg-primary text-primary-fg hover:bg-primary';

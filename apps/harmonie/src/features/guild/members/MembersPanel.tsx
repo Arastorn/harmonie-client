@@ -4,7 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { X } from 'lucide-react';
 import { IconButton } from '@harmonie/ui';
 import type { GuildMember } from '@/types/guild';
-import { MemberItem } from '@/features/members/MemberItem';
+import { MemberItem } from '@/features/guild/members/MemberItem';
+import { useMemberBanActions } from '@/features/guild/hooks/useMemberBanActions';
 import { MemberPopover } from '@/shared/components/MemberPopover';
 import { useGuildMembers } from '@/features/guild/GuildContext';
 
@@ -21,6 +22,10 @@ export const MembersPanel = ({ onClose }: MembersPanelProps) => {
   const { t } = useTranslation();
   const { guildId } = useParams<{ guildId: string }>();
   const [selected, setSelected] = useState<SelectedMember | null>(null);
+
+  const { banModal, canBanMember, openBanModal } = useMemberBanActions(guildId, () => {
+    setSelected(null);
+  });
 
   const membersOrNull = useGuildMembers(guildId);
   const loading = membersOrNull === null;
@@ -58,7 +63,12 @@ export const MembersPanel = ({ onClose }: MembersPanelProps) => {
                     {t('guild.members.online', { count: onlineMembers.length })}
                   </p>
                   {onlineMembers.map((m) => (
-                    <MemberItem key={m.userId} member={m} onSelect={handleSelect} />
+                    <MemberItem
+                      key={m.userId}
+                      member={m}
+                      onSelect={handleSelect}
+                      onBan={canBanMember(m) ? openBanModal : undefined}
+                    />
                   ))}
                 </div>
               )}
@@ -68,7 +78,12 @@ export const MembersPanel = ({ onClose }: MembersPanelProps) => {
                     {t('guild.members.offline', { count: offlineMembers.length })}
                   </p>
                   {offlineMembers.map((m) => (
-                    <MemberItem key={m.userId} member={m} onSelect={handleSelect} />
+                    <MemberItem
+                      key={m.userId}
+                      member={m}
+                      onSelect={handleSelect}
+                      onBan={canBanMember(m) ? openBanModal : undefined}
+                    />
                   ))}
                 </div>
               )}
@@ -82,8 +97,10 @@ export const MembersPanel = ({ onClose }: MembersPanelProps) => {
           member={selected.member}
           anchorRect={selected.rect}
           onClose={() => setSelected(null)}
+          onBan={canBanMember(selected.member) ? () => openBanModal(selected.member) : undefined}
         />
       )}
+      {banModal}
     </>
   );
 };

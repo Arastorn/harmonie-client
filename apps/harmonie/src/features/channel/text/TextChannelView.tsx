@@ -6,6 +6,7 @@ import { IconButton, Separator } from '@harmonie/ui';
 import { getChannelMessages } from '@/api/channels';
 import type { Message, MessageCreatedEvent } from '@/types/channel';
 import type { GuildMember } from '@/types/guild';
+import { useMemberBanActions } from '@/features/guild/hooks/useMemberBanActions';
 import { useGuildMembers, useGuilds } from '@/features/guild/GuildContext';
 import { useChannels } from '@/features/channel/ChannelContext';
 import { useRealtime } from '@/features/realtime/RealtimeContext';
@@ -37,6 +38,9 @@ export const TextChannelView = () => {
   const membersMap = useMemo(() => new Map((members ?? []).map((m) => [m.userId, m])), [members]);
   const { channels } = useChannels();
   const { guilds, guildsLoading } = useGuilds();
+  const { banModal, canBanMember, openBanModal } = useMemberBanActions(guildId, () => {
+    setSelected(null);
+  });
   const currentChannel = channels?.find((c) => c.channelId === channelId);
   const { connection } = useRealtime();
 
@@ -207,8 +211,10 @@ export const TextChannelView = () => {
           anchorRect={selected.rect}
           onClose={() => setSelected(null)}
           side="right"
+          onBan={canBanMember(selected.member) ? () => openBanModal(selected.member) : undefined}
         />
       )}
+      {banModal}
     </>
   );
 };
