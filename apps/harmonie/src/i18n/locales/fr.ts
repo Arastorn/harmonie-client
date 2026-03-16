@@ -2,6 +2,13 @@ export const fr = {
   app: {
     name: 'Harmonie',
   },
+  notifications: {
+    browser: {
+      title: 'Nouveau message',
+      attachmentOnly: 'Nouveau message avec piece jointe.',
+      fallbackBody: 'Harmonie - Nouveau message.',
+    },
+  },
   guild: {
     createTitle: 'Créer une guilde',
     createJoin: {

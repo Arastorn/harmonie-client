@@ -17,6 +17,7 @@ import { useChannels } from './ChannelContext';
 interface SortableChannelItemProps {
   channel: Channel;
   active: boolean;
+  unread: boolean;
   canReorder: boolean;
   onNavigate: () => void;
   onContextMenu?: (e: React.MouseEvent) => void;
@@ -27,6 +28,7 @@ interface SortableChannelItemProps {
 const SortableChannelItem = ({
   channel,
   active,
+  unread,
   canReorder,
   onNavigate,
   onContextMenu,
@@ -55,6 +57,7 @@ const SortableChannelItem = ({
         type={channel.type === 'Text' ? 'text' : 'voice'}
         label={channel.name}
         active={active}
+        unread={unread}
         onClick={onNavigate}
         onContextMenu={onContextMenu}
         onMenuClick={onMenuClick}
@@ -68,6 +71,7 @@ interface ChannelSectionProps {
   sectionChannels: Channel[];
   type: 'Text' | 'Voice';
   canReorder: boolean;
+  hasUnread?: (channelId: string) => boolean;
   onContextMenu?: (e: React.MouseEvent, channel: Channel) => void;
   onMenuClick?: (e: React.MouseEvent<HTMLButtonElement>, channel: Channel) => void;
   menuLabel?: string;
@@ -77,6 +81,7 @@ export const ChannelSection = ({
   sectionChannels,
   type,
   canReorder,
+  hasUnread,
   onContextMenu,
   onMenuClick,
   menuLabel,
@@ -128,6 +133,7 @@ export const ChannelSection = ({
               key={channel.channelId}
               channel={channel}
               active={channel.channelId === activeChannelId}
+              unread={channel.type === 'Text' ? !!hasUnread?.(channel.channelId) : false}
               canReorder={canReorder}
               onNavigate={() =>
                 navigate(

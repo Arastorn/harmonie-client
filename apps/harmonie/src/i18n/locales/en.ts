@@ -2,6 +2,13 @@ export const en = {
   app: {
     name: 'Harmonie',
   },
+  notifications: {
+    browser: {
+      title: 'New message',
+      attachmentOnly: 'New message with attachment.',
+      fallbackBody: 'Harmonie - New message.',
+    },
+  },
   guild: {
     createTitle: 'Create a guild',
     createJoin: {

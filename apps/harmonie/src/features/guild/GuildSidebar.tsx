@@ -3,6 +3,7 @@ import { DoorOpen, Mailbox, Pencil, Plus, ShieldBan, Trash2 } from 'lucide-react
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ContextMenu, GuildAvatar } from '@harmonie/ui';
+import { useMessageActivity } from '@/features/realtime/MessageActivityContext';
 import { useFileBlobUrl } from '@/shared/hooks/useFileBlobUrl';
 import { useGuilds } from './GuildContext';
 import { GuildCreateOrJoinModal } from '@/features/guild/GuildCreateOrJoinModal';
@@ -16,34 +17,41 @@ const GuildSidebarItem = ({
   isActive,
   onClick,
   onOpenContextMenu,
+  hasUnread,
 }: {
   guild: Guild;
   isActive: boolean;
   onClick: () => void;
   onOpenContextMenu: (e: React.MouseEvent, guild: Guild) => void;
+  hasUnread: boolean;
 }) => {
   const iconUrl = useFileBlobUrl(guild.iconFileId);
   const { canOpenGuildContextMenu } = useGuildPermissions(guild);
 
   return (
-    <button
-      onClick={onClick}
-      onContextMenu={canOpenGuildContextMenu ? (e) => onOpenContextMenu(e, guild) : undefined}
-      title={guild.name}
-      className={[
-        'w-10 h-10 rounded-sm flex items-center justify-center shrink-0 bg-transparent cursor-pointer first:mt-1 last:mb-1 transform-gpu transition-transform duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] hover:scale-[1.14] hover:-translate-y-0.5 active:scale-[1.02] active:translate-y-0',
-        isActive ? 'ring ring-primary' : 'hover:bg-surface-2',
-      ].join(' ')}
-    >
-      <GuildAvatar
-        iconUrl={iconUrl}
-        alt={guild.name}
-        icon={guild.icon?.name ?? undefined}
-        color={guild.icon?.color ?? undefined}
-        bg={guild.icon?.bg ?? undefined}
-        size={32}
-      />
-    </button>
+    <div className="relative">
+      <button
+        onClick={onClick}
+        onContextMenu={canOpenGuildContextMenu ? (e) => onOpenContextMenu(e, guild) : undefined}
+        title={guild.name}
+        className={[
+          'w-10 h-10 rounded-sm flex items-center justify-center shrink-0 bg-transparent cursor-pointer first:mt-1 last:mb-1 transform-gpu transition-transform duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] hover:scale-[1.14] hover:-translate-y-0.5 active:scale-[1.02] active:translate-y-0',
+          isActive ? 'ring ring-primary' : 'hover:bg-surface-2',
+        ].join(' ')}
+      >
+        <GuildAvatar
+          iconUrl={iconUrl}
+          alt={guild.name}
+          icon={guild.icon?.name ?? undefined}
+          color={guild.icon?.color ?? undefined}
+          bg={guild.icon?.bg ?? undefined}
+          size={32}
+        />
+      </button>
+      {hasUnread && (
+        <span className="absolute top-1 right-0 h-3 w-3 rounded-full bg-primary ring-2 ring-surface-1" />
+      )}
+    </div>
   );
 };
 
@@ -54,6 +62,7 @@ export const GuildSidebar = () => {
   const { guilds, fetchGuilds } = useGuilds();
   const [addMenu, setAddMenu] = useState<{ x: number; y: number } | null>(null);
   const [createOrJoinMode, setCreateOrJoinMode] = useState<'create' | 'join' | null>(null);
+  const { hasUnreadGuild } = useMessageActivity();
   const [contextMenu, setContextMenu] = useState<{
     guild: Guild;
     position: { x: number; y: number };
@@ -129,6 +138,7 @@ export const GuildSidebar = () => {
                 key={guild.guildId}
                 guild={guild}
                 isActive={guild.guildId === activeGuildId}
+                hasUnread={hasUnreadGuild(guild.guildId)}
                 onClick={() => navigate(`/guilds/${guild.guildId}`)}
                 onOpenContextMenu={handleGuildContextMenu}
               />

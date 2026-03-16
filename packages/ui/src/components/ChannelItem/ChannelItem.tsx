@@ -7,6 +7,7 @@ export interface ChannelItemProps {
   type: ChannelType;
   label: string;
   active?: boolean;
+  unread?: boolean;
   onClick: () => void;
   onContextMenu?: (e: React.MouseEvent) => void;
   onMenuClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
@@ -17,6 +18,7 @@ export const ChannelItem = ({
   type,
   label,
   active = false,
+  unread = false,
   onClick,
   onContextMenu,
   onMenuClick,
@@ -28,7 +30,13 @@ export const ChannelItem = ({
     : 'text-text-2 hover:bg-surface-2 hover:text-text-1 hover:bg-opacity-70';
 
   return (
-    <div className={['group flex items-center gap-1 rounded-sm', baseStateClasses].join(' ')}>
+    <div
+      className={[
+        'group flex items-center gap-1 rounded-sm',
+        baseStateClasses,
+        unread && 'font-extrabold',
+      ].join(' ')}
+    >
       <button
         onClick={onClick}
         onContextMenu={onContextMenu}
@@ -36,6 +44,7 @@ export const ChannelItem = ({
       >
         <Icon size={16} className="shrink-0 text-text-3" />
         <span className="truncate">{label}</span>
+        {unread && <span className="ml-auto h-2 w-2 rounded-full bg-primary shrink-0" />}
       </button>
 
       {onMenuClick && (
