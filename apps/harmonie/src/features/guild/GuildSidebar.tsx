@@ -1,13 +1,13 @@
 import { useState } from 'react';
-import { Pencil, Plus, Trash2 } from 'lucide-react';
+import { Mailbox, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ContextMenu, GuildAvatar } from '@harmonie/ui';
 import { useFileBlobUrl } from '@/shared/hooks/useFileBlobUrl';
 import { useGuilds } from './GuildContext';
-import { GuildCreateOrJoinModal } from '@/features/guild/create-edit-join/GuildCreateOrJoinModal';
+import { GuildCreateOrJoinModal } from '@/features/guild/GuildCreateOrJoinModal';
 import type { Guild } from '@/types/guild';
-import { EditGuildModal } from '@/features/guild/create-edit-join/EditGuildModal';
+import { GuildAdminModal } from '@/features/guild/GuildAdminModal';
 
 const GuildSidebarItem = ({
   guild,
@@ -49,12 +49,13 @@ export const GuildSidebar = () => {
   const navigate = useNavigate();
   const { guildId: activeGuildId } = useParams<{ guildId: string }>();
   const { guilds, fetchGuilds } = useGuilds();
-  const [isCreateOrJoinOpen, setIsCreateOrJoinOpen] = useState(false);
+  const [addMenu, setAddMenu] = useState<{ x: number; y: number } | null>(null);
+  const [createOrJoinMode, setCreateOrJoinMode] = useState<'create' | 'join' | null>(null);
   const [contextMenu, setContextMenu] = useState<{
     guild: Guild;
     position: { x: number; y: number };
   } | null>(null);
-  const [editSection, setEditSection] = useState<'identity' | 'danger'>('identity');
+  const [editSection, setEditSection] = useState<'identity' | 'danger' | 'invites'>('identity');
   const [editGuild, setEditGuild] = useState<Guild | null>(null);
 
   const handleGuildContextMenu = (e: React.MouseEvent, guild: Guild) => {
@@ -79,20 +80,51 @@ export const GuildSidebar = () => {
               />
             );
           })}
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              setAddMenu({ x: e.clientX, y: e.clientY });
+            }}
+            onContextMenu={(e) => {
+              e.preventDefault();
+              setAddMenu({ x: e.clientX, y: e.clientY });
+            }}
+            title={t('guild.createJoin.title')}
+            className={[
+              'w-10 h-10 rounded-sm flex items-center justify-center shrink-0 cursor-pointer bg-surface-2 text-text-1 border border-dashed border-border-2 hover:bg-surface-hover transform-gpu transition-transform duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] hover:scale-[1.06] hover:-translate-y-px active:scale-[1.01] active:translate-y-0',
+              addMenu ? 'ring ring-primary' : '',
+            ].join(' ')}
+          >
+            <Plus size={18} />
+          </button>
         </div>
-        <button
-          onClick={() => setIsCreateOrJoinOpen(true)}
-          title={t('guild.createJoin.title')}
-          className={[
-            'w-10 h-10 rounded-sm flex items-center justify-center shrink-0 cursor-pointer bg-surface-2 text-text-1 border border-dashed border-border-2 hover:bg-surface-hover transform-gpu transition-transform duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] hover:scale-[1.06] hover:-translate-y-px active:scale-[1.01] active:translate-y-0',
-            isCreateOrJoinOpen ? 'ring ring-primary' : '',
-          ].join(' ')}
-        >
-          <Plus size={18} />
-        </button>
       </nav>
-      {isCreateOrJoinOpen && (
-        <GuildCreateOrJoinModal onClose={() => setIsCreateOrJoinOpen(false)} />
+      {addMenu && (
+        <ContextMenu
+          position={addMenu}
+          onClose={() => setAddMenu(null)}
+          items={[
+            {
+              label: t('guild.createJoin.createTitle'),
+              icon: <Plus size={14} />,
+              onClick: () => {
+                setCreateOrJoinMode('create');
+                setAddMenu(null);
+              },
+            },
+            {
+              label: t('guild.createJoin.joinTitle'),
+              icon: <Mailbox size={14} />,
+              onClick: () => {
+                setCreateOrJoinMode('join');
+                setAddMenu(null);
+              },
+            },
+          ]}
+        />
+      )}
+      {createOrJoinMode && (
+        <GuildCreateOrJoinModal mode={createOrJoinMode} onClose={() => setCreateOrJoinMode(null)} />
       )}
       {contextMenu && (
         <ContextMenu
@@ -104,6 +136,15 @@ export const GuildSidebar = () => {
               icon: <Pencil size={14} />,
               onClick: () => {
                 setEditSection('identity');
+                setEditGuild(contextMenu.guild);
+                setContextMenu(null);
+              },
+            },
+            {
+              label: t('guild.contextMenu.invite'),
+              icon: <Mailbox size={14} />,
+              onClick: () => {
+                setEditSection('invites');
                 setEditGuild(contextMenu.guild);
                 setContextMenu(null);
               },
@@ -121,7 +162,7 @@ export const GuildSidebar = () => {
         />
       )}
       {editGuild && (
-        <EditGuildModal
+        <GuildAdminModal
           guild={editGuild}
           initialSection={editSection}
           onClose={() => setEditGuild(null)}

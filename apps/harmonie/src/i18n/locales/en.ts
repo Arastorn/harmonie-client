@@ -7,6 +7,8 @@ export const en = {
     createJoin: {
       title: 'Create or join a guild',
       subtitle: 'Create a new space or join a guild with an invite code.',
+      createTitle: 'Create a guild',
+      joinTitle: 'Join a guild',
       close: 'Close',
       createTab: 'Create',
       joinTab: 'Join',
@@ -14,10 +16,15 @@ export const en = {
       joinCodePlaceholder: 'e.g. abc123xyz',
       joinButton: 'Join guild',
       joinError: 'Unable to join guild. Please check the code and try again.',
+      previewLoading: 'Looking up guild…',
+      previewMembers: '{{count}} member(s)',
+      previewNotFound: 'Invite code not found',
     },
     noGuild: {
       title: 'Hello {{name}}, welcome to <brand>Harmonie</brand>',
-      subtitle: 'Create your first guild to start chatting with your community.',
+      subtitle: 'Create your first guild or join one to start chatting with your community.',
+      tabCreate: 'Create',
+      tabJoin: 'Join',
       nameLabel: 'Guild name',
       namePlaceholder: 'e.g. The Gardener',
       logoLabel: 'Guild logo',
@@ -69,6 +76,7 @@ export const en = {
     contextMenu: {
       edit: 'Edit guild',
       delete: 'Delete guild',
+      invite: 'Invite in guild',
     },
     members: {
       title: 'Members',
@@ -80,9 +88,24 @@ export const en = {
         bioLabel: 'About',
       },
     },
+    invites: {
+      description: 'Create invite links to let people join your guild.',
+      create: 'Create invite',
+      createError: 'Unable to create invite. Please try again.',
+      loading: 'Loading…',
+      empty: 'No active invites.',
+      maxUsesLabel: 'Max uses',
+      maxUsesPlaceholder: 'Unlimited',
+      uses: '{{count}} use(s)',
+      usesOf: '{{count}} / {{max}} use(s)',
+      copy: 'Copy',
+      copied: 'Copied!',
+      revoke: 'Revoke',
+    },
     edit: {
       nav: {
         identity: 'General',
+        invites: 'Invites',
         danger: 'Danger zone',
       },
       deleteDescription: 'Deleting this guild is irreversible.',

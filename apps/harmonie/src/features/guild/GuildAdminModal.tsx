@@ -1,20 +1,21 @@
 import { useState } from 'react';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Mailbox, Pencil, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button, ModalPanel, NavList, Separator } from '@harmonie/ui';
-import { deleteGuild } from '@/api/guilds.ts';
-import type { Guild } from '@/types/guild.ts';
-import { GuildForm } from '@/features/guild/create-edit-join/GuildForm';
+import { deleteGuild } from '@/api/guilds';
+import type { Guild } from '@/types/guild';
+import { GuildForm } from '@/features/guild/guild-form/GuildForm';
+import { GuildInvites } from '@/features/guild/invite/GuildInvites';
 
 interface EditGuildModalProps {
   guild: Guild;
   onClose: () => void;
   onUpdated: (guild: Guild) => void;
   onDeleted: (guildId: string) => void;
-  initialSection?: 'identity' | 'danger';
+  initialSection?: 'identity' | 'invites' | 'danger';
 }
 
-export const EditGuildModal = ({
+export const GuildAdminModal = ({
   guild,
   onClose,
   onUpdated,
@@ -22,7 +23,7 @@ export const EditGuildModal = ({
   initialSection = 'identity',
 }: EditGuildModalProps) => {
   const { t } = useTranslation();
-  const [section, setSection] = useState<'identity' | 'danger'>(initialSection);
+  const [section, setSection] = useState<'identity' | 'invites' | 'danger'>(initialSection);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState(false);
@@ -53,6 +54,12 @@ export const EditGuildModal = ({
           onClick={() => setSection('identity')}
         />
         <NavList.Item
+          icon={<Mailbox size={15} />}
+          label={t('guild.edit.nav.invites')}
+          active={section === 'invites'}
+          onClick={() => setSection('invites')}
+        />
+        <NavList.Item
           icon={<Trash2 size={15} />}
           label={t('guild.edit.nav.danger')}
           active={section === 'danger'}
@@ -79,6 +86,8 @@ export const EditGuildModal = ({
           onSuccess={onClose}
         />
       )}
+
+      {section === 'invites' && <GuildInvites guildId={guild.guildId} />}
 
       {section === 'danger' && (
         <div className="flex flex-col gap-3">

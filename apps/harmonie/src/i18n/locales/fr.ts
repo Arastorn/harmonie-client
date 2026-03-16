@@ -6,7 +6,9 @@ export const fr = {
     createTitle: 'Créer une guilde',
     createJoin: {
       title: 'Créer ou rejoindre une guilde',
-      subtitle: 'Crée un nouvel espace ou rejoins une guilde avec un code d’invitation.',
+      subtitle: "Crée un nouvel espace ou rejoins une guilde avec un code d'invitation.",
+      createTitle: 'Créer une guilde',
+      joinTitle: 'Rejoindre une guilde',
       close: 'Fermer',
       createTab: 'Créer',
       joinTab: 'Rejoindre',
@@ -14,10 +16,16 @@ export const fr = {
       joinCodePlaceholder: 'ex : abc123xyz',
       joinButton: 'Rejoindre la guilde',
       joinError: 'Impossible de rejoindre la guilde. Vérifie le code et réessaie.',
+      previewLoading: 'Recherche de la guilde…',
+      previewMembers: '{{count}} membre(s)',
+      previewNotFound: 'Code introuvable',
     },
     noGuild: {
       title: 'Bonjour {{name}}, bienvenue sur <brand>Harmonie</brand>',
-      subtitle: 'Crée ta première guilde pour commencer à discuter avec ta communauté.',
+      subtitle:
+        'Crée ta première guilde ou rejoins-en une pour commencer à discuter avec ta communauté.',
+      tabCreate: 'Créer',
+      tabJoin: 'Rejoindre',
       nameLabel: 'Nom de la guilde',
       namePlaceholder: 'ex : Les Jardiniers',
       logoLabel: 'Logo de la guilde',
@@ -69,6 +77,7 @@ export const fr = {
     contextMenu: {
       edit: 'Modifier la guilde',
       delete: 'Supprimer la guilde',
+      invite: 'Inviter dans la guilde',
     },
     members: {
       title: 'Membres',
@@ -80,9 +89,25 @@ export const fr = {
         bioLabel: 'À propos',
       },
     },
+    invites: {
+      description:
+        "Crée des liens d'invitation pour permettre à des personnes de rejoindre ta guilde.",
+      create: 'Créer une invitation',
+      createError: "Impossible de créer l'invitation. Réessaie.",
+      loading: 'Chargement…',
+      empty: 'Aucune invitation active.',
+      maxUsesLabel: 'Utilisations max',
+      maxUsesPlaceholder: 'Illimitées',
+      uses: '{{count}} utilisation(s)',
+      usesOf: '{{count}} / {{max}} utilisation(s)',
+      copy: 'Copier',
+      copied: 'Copié !',
+      revoke: 'Révoquer',
+    },
     edit: {
       nav: {
         identity: 'Général',
+        invites: 'Invitations',
         danger: 'Zone de danger',
       },
       deleteDescription: 'La suppression de cette guilde est irréversible.',

@@ -55,3 +55,9 @@ export type { ModalProps } from './components/Modal/Modal';
 
 export { ModalPanel } from './components/ModalPanel/ModalPanel';
 export type { ModalPanelProps } from './components/ModalPanel/ModalPanel';
+
+export { SegmentedControl } from './components/SegmentedControl/SegmentedControl';
+export type {
+  SegmentedControlProps,
+  SegmentedControlOption,
+} from './components/SegmentedControl/SegmentedControl';

@@ -1,8 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { Button, EmojiInput } from '@harmonie/ui';
 import type { Guild } from '@/types/guild';
-import { useGuildForm } from './useGuildForm';
-import { GuildLogoPicker } from '@/features/guild/create-edit-join/GuildLogoPicker';
+import { useGuildForm } from '@/features/guild/guild-form/useGuildForm';
+import { GuildLogoPicker } from '@/features/guild/guild-form/GuildLogoPicker';
 
 interface GuildFormProps {
   mode?: 'create' | 'edit';
