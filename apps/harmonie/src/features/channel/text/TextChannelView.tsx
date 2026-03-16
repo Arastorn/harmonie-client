@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useOutletContext, useParams } from 'react-router-dom';
+import { Navigate, useOutletContext, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Users } from 'lucide-react';
 import { IconButton, Separator } from '@harmonie/ui';
 import { getChannelMessages } from '@/api/channels';
 import type { Message, MessageCreatedEvent } from '@/types/channel';
 import type { GuildMember } from '@/types/guild';
-import { useGuildMembers } from '@/features/guild/GuildContext';
+import { useGuildMembers, useGuilds } from '@/features/guild/GuildContext';
 import { useChannels } from '@/features/channel/ChannelContext';
 import { useRealtime } from '@/features/realtime/RealtimeContext';
 import { MemberPopover } from '@/shared/components/MemberPopover';
@@ -36,11 +36,12 @@ export const TextChannelView = () => {
   const members = useGuildMembers(guildId);
   const membersMap = useMemo(() => new Map((members ?? []).map((m) => [m.userId, m])), [members]);
   const { channels } = useChannels();
+  const { guilds, guildsLoading } = useGuilds();
   const currentChannel = channels?.find((c) => c.channelId === channelId);
   const { connection } = useRealtime();
 
   useEffect(() => {
-    if (!channelId) return;
+    if (!channelId || channels === null || !currentChannel) return;
     setLoading(true);
     setError(false);
     setNextCursor(null);
@@ -51,10 +52,10 @@ export const TextChannelView = () => {
       })
       .catch(() => setError(true))
       .finally(() => setLoading(false));
-  }, [channelId]);
+  }, [channelId, channels, currentChannel]);
 
   useEffect(() => {
-    if (!connection || !channelId) return;
+    if (!connection || !channelId || channels === null || !currentChannel) return;
 
     connection
       .invoke('JoinChannel', channelId)
@@ -80,7 +81,7 @@ export const TextChannelView = () => {
       connection.off('MessageCreated', handleMessageCreated);
       connection.invoke('LeaveChannel', channelId).catch(() => {});
     };
-  }, [connection, channelId]);
+  }, [connection, channelId, channels, currentChannel]);
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -124,6 +125,20 @@ export const TextChannelView = () => {
     el.addEventListener('scroll', handleScroll);
     return () => el.removeEventListener('scroll', handleScroll);
   }, [loadMore]);
+
+  if (!guildId || !channelId || guildsLoading || channels === null) {
+    return null;
+  }
+
+  const guildExists = guilds.some((guild) => guild.guildId === guildId);
+
+  if (!guildExists) {
+    return <Navigate to="/" replace />;
+  }
+
+  if (!currentChannel) {
+    return <Navigate to={`/guilds/${guildId}`} replace />;
+  }
 
   if (loading) {
     return (
