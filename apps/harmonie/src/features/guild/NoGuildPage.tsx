@@ -1,12 +1,15 @@
+import { useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
-import { LanguageSelector } from '@harmonie/ui';
+import { LanguageSelector, SegmentedControl } from '@harmonie/ui';
 import { useUser } from '@/features/user/UserContext';
-import { LANGUAGES } from '@/i18n/languages.ts';
-import { GuildForm } from '@/features/guild/create-edit-join/GuildForm';
+import { LANGUAGES } from '@/i18n/languages';
+import { GuildForm } from '@/features/guild/guild-form/GuildForm';
+import { GuildJoinForm } from '@/features/guild/guild-join/GuildJoinForm';
 
 export const NoGuildPage = () => {
   const { t, i18n } = useTranslation();
   const { user } = useUser();
+  const [tab, setTab] = useState<'create' | 'join'>('create');
 
   const displayName = user?.displayName ?? user?.username ?? '';
 
@@ -36,7 +39,18 @@ export const NoGuildPage = () => {
             </div>
           </div>
 
-          <GuildForm autoFocus />
+          <div className="mb-6">
+            <SegmentedControl
+              options={[
+                { value: 'create', label: t('guild.noGuild.tabCreate') },
+                { value: 'join', label: t('guild.noGuild.tabJoin') },
+              ]}
+              value={tab}
+              onChange={setTab}
+            />
+          </div>
+
+          {tab === 'create' ? <GuildForm autoFocus /> : <GuildJoinForm onSuccess={() => {}} />}
         </div>
       </div>
     </div>

@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { Pencil, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button, EmojiInput, ModalPanel, NavList, Separator } from '@harmonie/ui';
-import { updateChannel, deleteChannel } from '@/api/channels.ts';
-import type { Channel } from '@/types/guild.ts';
+import { updateChannel, deleteChannel } from '@/api/channels';
+import type { Channel } from '@/types/guild';
 
 export type EditChannelSection = 'rename' | 'danger';
 

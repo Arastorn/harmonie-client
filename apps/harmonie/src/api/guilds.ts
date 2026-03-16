@@ -4,10 +4,15 @@ import type {
   ChannelList,
   CreateChannelInput,
   CreateGuildIconInput,
+  CreateGuildInviteInput,
+  CreateGuildInviteResponse,
   CreateGuildResponse,
   Guild,
+  GuildInvite,
+  GuildInviteList,
   GuildMember,
   GuildMemberList,
+  InvitePreview,
   UpdateGuildInput,
 } from '@/types/guild';
 
@@ -54,14 +59,47 @@ export const deleteGuild = (guildId: string): Promise<void> =>
     if (!r.ok) throw await r.json();
   });
 
+export const getInvitePreview = (code: string): Promise<InvitePreview> =>
+  apiFetch(`${API_BASE}/invites/${code}`).then((r) => parseOrThrow<InvitePreview>(r));
+
+export const joinGuild = (code: string): Promise<Guild> =>
+  apiFetch(`${API_BASE}/invites/${code}/accept`, {
+    method: 'POST',
+  }).then((r) => parseOrThrow<Guild>(r));
+
+export const createGuildInvite = (
+  guildId: string,
+  input: CreateGuildInviteInput
+): Promise<CreateGuildInviteResponse> =>
+  apiFetch(`${API_BASE}/guilds/${guildId}/invites`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  }).then((r) => parseOrThrow<CreateGuildInviteResponse>(r));
+
+export const listGuildInvites = (guildId: string): Promise<GuildInviteList> =>
+  apiFetch(`${API_BASE}/guilds/${guildId}/invites`).then((r) => parseOrThrow<GuildInviteList>(r));
+
+export const revokeGuildInvite = (guildId: string, inviteCode: string): Promise<void> =>
+  apiFetch(`${API_BASE}/guilds/${guildId}/invites/${inviteCode}`, {
+    method: 'DELETE',
+  }).then(async (r) => {
+    if (!r.ok) throw await r.json();
+  });
+
 export type {
   Channel,
   ChannelList,
   CreateChannelInput,
   CreateGuildIconInput,
+  CreateGuildInviteInput,
+  CreateGuildInviteResponse,
   CreateGuildResponse,
   Guild,
+  GuildInvite,
+  GuildInviteList,
   GuildMember,
   GuildMemberList,
+  InvitePreview,
   UpdateGuildInput,
 };

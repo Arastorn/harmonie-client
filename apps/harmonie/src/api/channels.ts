@@ -1,4 +1,4 @@
-import { apiFetch, parseOrThrow } from '@/api/client.ts';
+import { apiFetch, parseOrThrow } from '@/api/client';
 import type { Channel } from '@/types/guild';
 import type { Message, MessageList, UpdateChannelInput } from '@/types/channel';
 

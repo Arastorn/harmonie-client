@@ -1,5 +1,5 @@
 import { useParams, Navigate } from 'react-router-dom';
-import { useChannels } from '@/features/channel/ChannelContext.tsx';
+import { useChannels } from '@/features/channel/ChannelContext';
 
 // Redirects to the default text channel of a guild when landing on /guilds/:guildId
 export const ChannelIndexPage = () => {

@@ -71,3 +71,45 @@ export interface GuildMemberList {
   guildId: string;
   members: GuildMember[];
 }
+
+export interface GuildInvite {
+  code: string;
+  creatorId: string;
+  usesCount: number;
+  maxUses: number | null;
+  expiresAtUtc: string | null;
+  createdAtUtc: string;
+  revokedAtUtc: string | null;
+  isExpired: boolean;
+}
+
+export interface GuildInviteList {
+  guildId: string;
+  invites: GuildInvite[];
+}
+
+export interface CreateGuildInviteInput {
+  maxUses: number | null;
+  expiresInHours: number | null;
+}
+
+export interface InvitePreview {
+  guildName: string;
+  guildIconFileId: string | null;
+  guildIcon: GuildIcon | null;
+  memberCount: number;
+  usesCount: number;
+  maxUses: number | null;
+  expiresAtUtc: string | null;
+}
+
+export interface CreateGuildInviteResponse {
+  inviteId: string;
+  code: string;
+  guildId: string;
+  creatorId: string;
+  maxUses: number | null;
+  usesCount: number;
+  expiresAtUtc: string | null;
+  createdAtUtc: string;
+}

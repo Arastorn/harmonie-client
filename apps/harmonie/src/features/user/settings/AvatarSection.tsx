@@ -6,7 +6,7 @@ import type { UserProfile } from '@/types/user';
 import { patchMe, removeAvatarImage, uploadAvatarImage } from '@/api/users';
 import { useFileBlobUrl } from '@/shared/hooks/useFileBlobUrl';
 import { IconAppearanceEditor } from '@/shared/components/IconAppearanceEditor';
-import { useIconAppearancePalette } from '@/shared/hooks/useIconAppearancePalette.ts';
+import { useIconAppearancePalette } from '@/shared/hooks/useIconAppearancePalette';
 import { useImageFileDraft } from '@/shared/hooks/useImageFileDraft';
 
 interface AvatarSectionProps {
