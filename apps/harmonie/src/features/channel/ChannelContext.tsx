@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
 import { useParams } from 'react-router-dom';
-import { listChannels } from '@/api/guilds';
+import { listChannels, reorderChannels } from '@/api/guilds';
 import type { Channel } from '@/types/guild';
 
 // Internal state: channels are always tagged with the guildId they belong to.
@@ -17,6 +17,7 @@ interface ChannelContextValue {
   addChannel: (channel: Channel) => void;
   updateChannel: (updated: Channel) => void;
   removeChannel: (channelId: string) => void;
+  applyReorder: (guildId: string, reordered: Channel[]) => Promise<void>;
 }
 
 const ChannelContext = createContext<ChannelContextValue>({
@@ -24,6 +25,7 @@ const ChannelContext = createContext<ChannelContextValue>({
   addChannel: () => {},
   updateChannel: () => {},
   removeChannel: () => {},
+  applyReorder: async () => {},
 });
 
 export const ChannelProvider = ({ children }: { children: ReactNode }) => {
@@ -63,15 +65,25 @@ export const ChannelProvider = ({ children }: { children: ReactNode }) => {
       prev ? { ...prev, channels: prev.channels.filter((c) => c.channelId !== channelId) } : null
     );
 
-  // Expose null if the loaded data doesn't match the current guildId yet.
-  // Because this comparison happens at render time (not in an effect), consumers
-  // immediately see null on the very first render after a guild switch, before
-  // the fetch effect has even fired — eliminating the stale-redirect race.
-  // guildId must be defined AND match the loaded state to avoid accessing state.channels when null
+  const applyReorder = async (gId: string, reordered: Channel[]) => {
+    const previous = state;
+    setState((prev) => (prev ? { ...prev, channels: reordered } : null));
+    try {
+      const result = await reorderChannels(gId, {
+        channels: reordered.map((c) => ({ channelId: c.channelId, position: c.position })),
+      });
+      setState((prev) => (prev ? { ...prev, channels: result.channels } : null));
+    } catch {
+      setState(previous);
+    }
+  };
+
   const channels = guildId && state?.guildId === guildId ? state.channels : null;
 
   return (
-    <ChannelContext.Provider value={{ channels, addChannel, updateChannel, removeChannel }}>
+    <ChannelContext.Provider
+      value={{ channels, addChannel, updateChannel, removeChannel, applyReorder }}
+    >
       {children}
     </ChannelContext.Provider>
   );

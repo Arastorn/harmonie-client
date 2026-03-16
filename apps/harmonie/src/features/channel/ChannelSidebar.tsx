@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ChannelItem, ContextMenu, IconButton } from '@harmonie/ui';
+import { ContextMenu, IconButton } from '@harmonie/ui';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 import type { Channel } from '@/types/guild';
 import { useGuilds } from '@/features/guild/GuildContext';
@@ -9,6 +9,7 @@ import { UserPanel } from '@/features/user/UserPanel';
 import { useChannels } from './ChannelContext';
 import { CreateChannelModal } from './create-edit/CreateChannelModal';
 import { EditChannelModal, type EditChannelSection } from './create-edit/EditChannelModal';
+import { ChannelSection } from './ChannelSection';
 
 type CreateModalState = { type: 'Text' | 'Voice' } | null;
 type ContextMenuState = {
@@ -30,6 +31,8 @@ export const ChannelSidebar = () => {
   const { guilds } = useGuilds();
   const guild = guilds.find((g) => g.guildId === guildId) ?? null;
   const isAdmin = guild?.role === 'Admin';
+  const isOwner = guild?.role === 'Owner';
+  const canReorder = isAdmin || isOwner;
   const { channels, addChannel, updateChannel, removeChannel } = useChannels();
   const [createModal, setCreateModal] = useState<CreateModalState>(null);
   const [contextMenu, setContextMenu] = useState<ContextMenuState>(null);
@@ -137,18 +140,12 @@ export const ChannelSidebar = () => {
                     </IconButton>
                   )}
                 </div>
-                <div className="flex flex-col gap-0.5">
-                  {textChannels.map((channel) => (
-                    <ChannelItem
-                      key={channel.channelId}
-                      type="text"
-                      label={channel.name}
-                      active={channel.channelId === activeChannelId}
-                      onClick={() => navigate(`/guilds/${guildId}/channels/${channel.channelId}`)}
-                      onContextMenu={isAdmin ? (e) => handleContextMenu(e, channel) : undefined}
-                    />
-                  ))}
-                </div>
+                <ChannelSection
+                  sectionChannels={textChannels}
+                  type="Text"
+                  canReorder={canReorder}
+                  onContextMenu={isAdmin ? handleContextMenu : undefined}
+                />
               </section>
 
               {/* Voice channels section */}
@@ -167,18 +164,12 @@ export const ChannelSidebar = () => {
                     </IconButton>
                   )}
                 </div>
-                <div className="flex flex-col gap-0.5">
-                  {voiceChannels.map((channel) => (
-                    <ChannelItem
-                      key={channel.channelId}
-                      type="voice"
-                      label={channel.name}
-                      active={channel.channelId === activeChannelId}
-                      onClick={() => navigate(`/guilds/${guildId}/voice/${channel.channelId}`)}
-                      onContextMenu={isAdmin ? (e) => handleContextMenu(e, channel) : undefined}
-                    />
-                  ))}
-                </div>
+                <ChannelSection
+                  sectionChannels={voiceChannels}
+                  type="Voice"
+                  canReorder={canReorder}
+                  onContextMenu={isAdmin ? handleContextMenu : undefined}
+                />
               </section>
             </>
           )}

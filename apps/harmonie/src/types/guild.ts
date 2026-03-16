@@ -103,6 +103,15 @@ export interface InvitePreview {
   expiresAtUtc: string | null;
 }
 
+export interface ReorderChannelEntry {
+  channelId: string;
+  position: number;
+}
+
+export interface ReorderChannelsInput {
+  channels: ReorderChannelEntry[];
+}
+
 export interface CreateGuildInviteResponse {
   inviteId: string;
   code: string;
