@@ -13,6 +13,7 @@ import type {
   GuildMember,
   GuildMemberList,
   InvitePreview,
+  ReorderChannelsInput,
   UpdateGuildInput,
 } from '@/types/guild';
 
@@ -23,6 +24,16 @@ export const listGuilds = (): Promise<{ guilds: Guild[] }> =>
 
 export const listChannels = (guildId: string): Promise<ChannelList> =>
   apiFetch(`${API_BASE}/guilds/${guildId}/channels`).then((r) => parseOrThrow<ChannelList>(r));
+
+export const reorderChannels = (
+  guildId: string,
+  input: ReorderChannelsInput
+): Promise<ChannelList> =>
+  apiFetch(`${API_BASE}/guilds/${guildId}/channels/reorder`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  }).then((r) => parseOrThrow<ChannelList>(r));
 
 export const createChannel = (guildId: string, input: CreateChannelInput): Promise<Channel> =>
   apiFetch(`${API_BASE}/guilds/${guildId}/channels`, {
@@ -101,5 +112,6 @@ export type {
   GuildMember,
   GuildMemberList,
   InvitePreview,
+  ReorderChannelsInput,
   UpdateGuildInput,
 };
