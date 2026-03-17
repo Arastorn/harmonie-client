@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Mailbox, Pencil, Plus, ShieldBan, Trash2 } from 'lucide-react';
+import { DoorOpen, Mailbox, Pencil, Plus, ShieldBan, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ContextMenu, GuildAvatar } from '@harmonie/ui';
@@ -72,31 +72,46 @@ export const GuildSidebar = () => {
     setContextMenu(null);
   };
 
-  const { canAccessDangerZone } = useGuildPermissions(contextMenu?.guild);
+  const { canAccessDangerZone, canLeaveGuild, canManageGuild } = useGuildPermissions(
+    contextMenu?.guild
+  );
 
   const guildContextMenuItems = contextMenu
     ? [
-        {
-          label: t('guild.contextMenu.edit'),
-          icon: <Pencil size={14} />,
-          onClick: () => handleContextMenuClick('identity', contextMenu.guild),
-        },
-        {
-          label: t('guild.contextMenu.invite'),
-          icon: <Mailbox size={14} />,
-          onClick: () => handleContextMenuClick('invites', contextMenu.guild),
-        },
-        {
-          label: t('guild.contextMenu.ban'),
-          icon: <ShieldBan size={14} />,
-          onClick: () => handleContextMenuClick('bans', contextMenu.guild),
-        },
+        ...(canManageGuild
+          ? [
+              {
+                label: t('guild.contextMenu.edit'),
+                icon: <Pencil size={14} />,
+                onClick: () => handleContextMenuClick('identity', contextMenu.guild),
+              },
+              {
+                label: t('guild.contextMenu.invite'),
+                icon: <Mailbox size={14} />,
+                onClick: () => handleContextMenuClick('invites', contextMenu.guild),
+              },
+              {
+                label: t('guild.contextMenu.ban'),
+                icon: <ShieldBan size={14} />,
+                onClick: () => handleContextMenuClick('bans', contextMenu.guild),
+              },
+            ]
+          : []),
         ...(canAccessDangerZone
           ? [
               {
                 label: t('guild.contextMenu.delete'),
                 icon: <Trash2 size={14} />,
                 onClick: () => handleContextMenuClick('danger', contextMenu.guild),
+              },
+            ]
+          : []),
+        ...(canLeaveGuild
+          ? [
+              {
+                label: t('guild.contextMenu.leave'),
+                icon: <DoorOpen size={14} />,
+                onClick: () => handleContextMenuClick('leave', contextMenu.guild),
               },
             ]
           : []),
@@ -186,6 +201,11 @@ export const GuildSidebar = () => {
             fetchGuilds();
           }}
           onDeleted={() => {
+            setEditGuild(null);
+            fetchGuilds();
+            navigate('/');
+          }}
+          onLeave={() => {
             setEditGuild(null);
             fetchGuilds();
             navigate('/');

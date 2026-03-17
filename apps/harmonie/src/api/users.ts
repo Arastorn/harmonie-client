@@ -1,5 +1,5 @@
 import { apiFetch } from './client';
-import type { AvatarAppearance, PatchMyProfileInput, UserProfile } from '@/types/user';
+import type { PatchMyProfileInput, UserProfile } from '@/types/user';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
@@ -33,5 +33,3 @@ export const uploadAvatarImage = (file: File): Promise<{ avatarFileId: string }>
 
 export const removeAvatarImage = (): Promise<void> =>
   patchMe({ avatarFileId: null }).then(() => undefined);
-
-export type { AvatarAppearance, PatchMyProfileInput, UserProfile };

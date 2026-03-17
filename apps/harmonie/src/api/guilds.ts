@@ -11,9 +11,7 @@ import type {
   Guild,
   GuildBan,
   GuildBanList,
-  GuildInvite,
   GuildInviteList,
-  GuildMember,
   GuildMemberList,
   InvitePreview,
   ReorderChannelsInput,
@@ -81,6 +79,13 @@ export const joinGuild = (code: string): Promise<Guild> =>
     method: 'POST',
   }).then((r) => parseOrThrow<Guild>(r));
 
+export const leaveGuild = (guildId: string): Promise<void> =>
+  apiFetch(`${API_BASE}/guilds/${guildId}/leave`, {
+    method: 'POST',
+  }).then(async (r) => {
+    if (!r.ok) throw await r.json();
+  });
+
 export const createGuildInvite = (
   guildId: string,
   input: CreateGuildInviteInput
@@ -117,24 +122,3 @@ export const unbanMember = (guildId: string, userId: string): Promise<void> =>
   }).then(async (r) => {
     if (!r.ok) throw await r.json();
   });
-
-export type {
-  BanMemberInput,
-  Channel,
-  ChannelList,
-  CreateChannelInput,
-  CreateGuildIconInput,
-  CreateGuildInviteInput,
-  CreateGuildInviteResponse,
-  CreateGuildResponse,
-  Guild,
-  GuildBan,
-  GuildBanList,
-  GuildInvite,
-  GuildInviteList,
-  GuildMember,
-  GuildMemberList,
-  InvitePreview,
-  ReorderChannelsInput,
-  UpdateGuildInput,
-};

@@ -1,1 +1,1 @@
-export type AdminSectionMenu = 'identity' | 'invites' | 'bans' | 'danger';
+export type AdminSectionMenu = 'identity' | 'invites' | 'bans' | 'danger' | 'leave';
