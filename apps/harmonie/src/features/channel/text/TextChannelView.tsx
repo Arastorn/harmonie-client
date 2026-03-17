@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Navigate, useOutletContext, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Users } from 'lucide-react';
+import { differenceInMinutes, format, isSameDay } from 'date-fns';
 import { IconButton, Separator } from '@harmonie/ui';
 import { getChannelMessages } from '@/api/channels';
 import type { Message, MessageCreatedEvent } from '@/types/channel';
@@ -19,6 +20,31 @@ interface SelectedMember {
   member: GuildMember;
   rect: DOMRect;
 }
+
+const MESSAGE_GROUPING_WINDOW_MINUTES = 10;
+
+const areMessagesGrouped = (previousMessage?: Message, currentMessage?: Message) => {
+  if (!previousMessage || !currentMessage) return false;
+  if (previousMessage.authorUserId !== currentMessage.authorUserId) return false;
+
+  return (
+    differenceInMinutes(
+      new Date(currentMessage.createdAtUtc),
+      new Date(previousMessage.createdAtUtc)
+    ) < MESSAGE_GROUPING_WINDOW_MINUTES
+  );
+};
+
+const getDaySeparatorLabel = (previousMessage?: Message, currentMessage?: Message) => {
+  if (!previousMessage || !currentMessage) return null;
+
+  const previousDate = new Date(previousMessage.createdAtUtc);
+  const currentDate = new Date(currentMessage.createdAtUtc);
+
+  if (isSameDay(previousDate, currentDate)) return null;
+
+  return format(currentDate, 'PPP');
+};
 
 export const TextChannelView = () => {
   const { t } = useTranslation();
@@ -188,10 +214,11 @@ export const TextChannelView = () => {
           ) : (
             messages.map((message, index) => {
               const prev = messages[index - 1];
-              const grouped = !!prev && prev.authorUserId === message.authorUserId;
+              const grouped = areMessagesGrouped(prev, message);
+              const daySeparatorLabel = getDaySeparatorLabel(prev, message);
               return (
                 <div key={message.messageId}>
-                  {!grouped && index > 0 && <Separator />}
+                  {daySeparatorLabel && <Separator label={daySeparatorLabel} />}
                   <MessageItem
                     message={message}
                     member={membersMap.get(message.authorUserId)}

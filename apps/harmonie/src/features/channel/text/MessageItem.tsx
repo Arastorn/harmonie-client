@@ -34,7 +34,7 @@ export const MessageItem = ({
   const avatarBg = member?.avatar?.bg ?? (member ? 'var(--color-cat-1)' : 'var(--color-surface-3)');
 
   return (
-    <div className={['flex items-start gap-3', grouped ? 'py-0.5' : 'pt-3 pb-1'].join(' ')}>
+    <div className={['flex items-start gap-3', grouped ? 'py-0.5' : 'pt-3 pb-2'].join(' ')}>
       {grouped ? (
         <div className="w-8 shrink-0" />
       ) : (
