@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
+import { Smile } from 'lucide-react';
 import { Textarea } from './Textarea';
 
 const meta: Meta<typeof Textarea> = {
-  title: 'Components/Textarea',
+  title: 'Forms/Fields/Textarea',
   component: Textarea,
   tags: ['autodocs'],
   args: {
@@ -28,6 +29,12 @@ export const Error: Story = {
 
 export const WithDefaultValue: Story = {
   args: { defaultValue: 'This is some pre-filled content.' },
+};
+
+export const WithBottomRightElement: Story = {
+  args: {
+    bottomRightElement: <Smile size={16} className="text-text-3" />,
+  },
 };
 
 // Interactive component extracted as a named component to satisfy rules-of-hooks
@@ -85,6 +92,17 @@ export const AllVariants: Story = {
         <span className="w-20 text-text-2 text-sm pt-8">Error</span>
         <div className="flex-1">
           <Textarea label="Label" defaultValue="Some text" rows={3} error="Error message" />
+        </div>
+      </div>
+      <div className="flex items-start gap-8">
+        <span className="w-20 text-text-2 text-sm pt-8">Action</span>
+        <div className="flex-1">
+          <Textarea
+            label="Label"
+            placeholder="Placeholder"
+            rows={3}
+            bottomRightElement={<Smile size={16} className="text-text-3" />}
+          />
         </div>
       </div>
     </div>

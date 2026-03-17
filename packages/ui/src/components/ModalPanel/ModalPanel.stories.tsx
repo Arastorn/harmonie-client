@@ -7,7 +7,7 @@ import { NavList } from '../NavList/NavList';
 import { Separator } from '../Separator/Separator';
 
 const meta: Meta<typeof ModalPanel> = {
-  title: 'Components/ModalPanel',
+  title: 'Overlays/ModalPanel',
   component: ModalPanel,
   tags: ['autodocs'],
   parameters: {

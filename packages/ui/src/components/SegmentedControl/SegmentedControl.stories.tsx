@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { SegmentedControl } from './SegmentedControl';
 
 const meta: Meta<typeof SegmentedControl> = {
-  title: 'Components/SegmentedControl',
+  title: 'Navigation/SegmentedControl',
   component: SegmentedControl,
   tags: ['autodocs'],
   parameters: {

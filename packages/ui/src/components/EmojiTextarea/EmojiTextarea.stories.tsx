@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { EmojiTextarea } from './EmojiTextarea';
 
 const meta: Meta<typeof EmojiTextarea> = {
-  title: 'Components/EmojiTextarea',
+  title: 'Forms/Fields/EmojiTextarea',
   component: EmojiTextarea,
   tags: ['autodocs'],
   parameters: {
@@ -63,6 +63,16 @@ export const WithError: Story = {
     rows: 5,
     value: '',
     error: 'Unable to save bio. Please try again.',
+  },
+};
+
+export const Disabled: Story = {
+  render: (args) => <InteractiveTemplate {...args} />,
+  args: {
+    label: 'Bio',
+    rows: 5,
+    value: 'Hey! I love gardening 🌿 and hiking 🏔️',
+    disabled: true,
   },
 };
 

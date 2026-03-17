@@ -8,7 +8,7 @@ const LANGUAGES = [
 ];
 
 const meta: Meta<typeof LanguageSelector> = {
-  title: 'Components/LanguageSelector',
+  title: 'Forms/Selection/LanguageSelector',
   component: LanguageSelector,
   tags: ['autodocs'],
   args: {

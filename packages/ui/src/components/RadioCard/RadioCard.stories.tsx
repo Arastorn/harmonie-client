@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { RadioCard } from './RadioCard';
 
 const meta: Meta<typeof RadioCard> = {
-  title: 'Components/RadioCard',
+  title: 'Forms/Selection/RadioCard',
   component: RadioCard,
   tags: ['autodocs'],
   args: {
@@ -26,6 +26,10 @@ export const Unchecked: Story = {
 
 export const Disabled: Story = {
   args: { checked: true, disabled: true },
+};
+
+export const DisabledUnchecked: Story = {
+  args: { checked: false, disabled: true },
 };
 
 const LANG_OPTIONS = [

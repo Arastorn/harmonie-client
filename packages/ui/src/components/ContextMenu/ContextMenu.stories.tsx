@@ -3,7 +3,7 @@ import { Pencil, Trash2 } from 'lucide-react';
 import { ContextMenu } from './ContextMenu';
 
 const meta: Meta<typeof ContextMenu> = {
-  title: 'Components/ContextMenu',
+  title: 'Overlays/ContextMenu',
   component: ContextMenu,
   tags: ['autodocs'],
   parameters: {
@@ -68,6 +68,25 @@ export const WithoutIcons: Story = {
     items: [
       { label: 'Edit channel', onClick: () => {} },
       { label: 'Copy link', onClick: () => {} },
+    ],
+  },
+  decorators: [
+    (Story) => (
+      <div className="relative h-32 w-64">
+        <Story />
+      </div>
+    ),
+  ],
+};
+
+export const RightAnchored: Story = {
+  args: {
+    position: { x: 240, y: 0 },
+    horizontalAnchor: 'right',
+    onClose: () => {},
+    items: [
+      { label: 'Rename guild', icon: <Pencil size={14} />, onClick: () => {} },
+      { label: 'Delete guild', icon: <Trash2 size={14} />, onClick: () => {} },
     ],
   },
   decorators: [

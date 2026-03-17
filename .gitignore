@@ -54,6 +54,7 @@ apps/harmonie/dist/
 # Design system
 packages/ui/dist/
 packages/ui/node_modules/
+packages/ui/storybook-static
 
 # Agents
 .claude

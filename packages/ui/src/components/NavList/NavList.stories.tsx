@@ -4,7 +4,7 @@ import { Globe, LogOut, Palette, UserRound } from 'lucide-react';
 import { NavList } from './NavList';
 
 const meta: Meta<typeof NavList> = {
-  title: 'Components/NavList',
+  title: 'Navigation/NavList',
   component: NavList,
   tags: ['autodocs'],
 };
