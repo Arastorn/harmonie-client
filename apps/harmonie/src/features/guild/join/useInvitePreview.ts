@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { getInvitePreview } from '@/api/guilds';
-import type { InvitePreview } from '@/api/guilds';
+import type { InvitePreview } from '@/types/guild';
 
 const MIN_CODE_LENGTH = 8;
 const DEBOUNCE_MS = 400;

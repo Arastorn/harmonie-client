@@ -235,6 +235,11 @@ export const ChannelSidebar = () => {
             fetchGuilds();
             navigate('/');
           }}
+          onLeave={() => {
+            setSettingsGuild(null);
+            fetchGuilds();
+            navigate('/');
+          }}
         />
       )}
     </>

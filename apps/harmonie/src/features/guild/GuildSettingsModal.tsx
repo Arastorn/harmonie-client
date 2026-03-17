@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Mailbox, Pencil, ShieldBan, Trash2 } from 'lucide-react';
+import { DoorOpen, Mailbox, Pencil, ShieldBan, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Button, ModalPanel, NavList, Separator } from '@harmonie/ui';
-import { deleteGuild } from '@/api/guilds';
+import { ModalPanel, NavList, Separator } from '@harmonie/ui';
 import type { Guild } from '@/types/guild';
+import { GuildDangerSection } from '@/features/guild/GuildDangerSection';
+import { GuildLeaveSection } from '@/features/guild/GuildLeaveSection';
 import { GuildForm } from '@/features/guild/form/GuildForm';
 import { GuildInvites } from '@/features/guild/invites/GuildInvites';
 import { GuildBans } from '@/features/guild/bans/GuildBans';
@@ -15,6 +16,7 @@ interface EditGuildModalProps {
   onClose: () => void;
   onUpdated: (guild: Guild) => void;
   onDeleted: (guildId: string) => void;
+  onLeave: (guildId: string) => void;
   initialSection?: AdminSectionMenu;
 }
 
@@ -23,28 +25,20 @@ export const GuildSettingsModal = ({
   onClose,
   onUpdated,
   onDeleted,
+  onLeave,
   initialSection = 'identity',
 }: EditGuildModalProps) => {
   const { t } = useTranslation();
-  const { canAccessDangerZone } = useGuildPermissions(guild);
+  const { canAccessDangerZone, canLeaveGuild, canManageGuild } = useGuildPermissions(guild);
   const [section, setSection] = useState<AdminSectionMenu>(
-    initialSection === 'danger' && !canAccessDangerZone ? 'identity' : initialSection
+    initialSection === 'danger' && !canAccessDangerZone
+      ? canLeaveGuild
+        ? 'leave'
+        : 'identity'
+      : initialSection === 'leave' && !canLeaveGuild
+        ? 'identity'
+        : initialSection
   );
-  const [confirmDelete, setConfirmDelete] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [deleteError, setDeleteError] = useState(false);
-
-  const handleDelete = async () => {
-    setIsDeleting(true);
-    setDeleteError(false);
-    try {
-      await deleteGuild(guild.guildId);
-      onDeleted(guild.guildId);
-    } catch {
-      setDeleteError(true);
-      setIsDeleting(false);
-    }
-  };
 
   const sidebar = (
     <div className="flex flex-col gap-1">
@@ -53,30 +47,44 @@ export const GuildSettingsModal = ({
       </p>
       <Separator />
       <NavList className="mt-2">
-        <NavList.Item
-          icon={<Pencil size={15} />}
-          label={t('guild.edit.nav.identity')}
-          active={section === 'identity'}
-          onClick={() => setSection('identity')}
-        />
-        <NavList.Item
-          icon={<Mailbox size={15} />}
-          label={t('guild.edit.nav.invites')}
-          active={section === 'invites'}
-          onClick={() => setSection('invites')}
-        />
-        <NavList.Item
-          icon={<ShieldBan size={15} />}
-          label={t('guild.edit.nav.bans')}
-          active={section === 'bans'}
-          onClick={() => setSection('bans')}
-        />
+        {canManageGuild && (
+          <NavList.Item
+            icon={<Pencil size={15} />}
+            label={t('guild.edit.nav.identity')}
+            active={section === 'identity'}
+            onClick={() => setSection('identity')}
+          />
+        )}
+        {canManageGuild && (
+          <NavList.Item
+            icon={<Mailbox size={15} />}
+            label={t('guild.edit.nav.invites')}
+            active={section === 'invites'}
+            onClick={() => setSection('invites')}
+          />
+        )}
+        {canManageGuild && (
+          <NavList.Item
+            icon={<ShieldBan size={15} />}
+            label={t('guild.edit.nav.bans')}
+            active={section === 'bans'}
+            onClick={() => setSection('bans')}
+          />
+        )}
         {canAccessDangerZone && (
           <NavList.Item
             icon={<Trash2 size={15} />}
             label={t('guild.edit.nav.danger')}
             active={section === 'danger'}
             onClick={() => setSection('danger')}
+          />
+        )}
+        {canLeaveGuild && (
+          <NavList.Item
+            icon={<DoorOpen size={15} />}
+            label={t('guild.edit.nav.leave')}
+            active={section === 'leave'}
+            onClick={() => setSection('leave')}
           />
         )}
       </NavList>
@@ -90,7 +98,7 @@ export const GuildSettingsModal = ({
       onClose={onClose}
       sidebar={sidebar}
     >
-      {section === 'identity' && (
+      {section === 'identity' && canManageGuild && (
         <GuildForm
           mode="edit"
           guild={guild}
@@ -101,38 +109,16 @@ export const GuildSettingsModal = ({
         />
       )}
 
-      {section === 'invites' && <GuildInvites guildId={guild.guildId} />}
+      {section === 'invites' && canManageGuild && <GuildInvites guildId={guild.guildId} />}
 
-      {section === 'bans' && <GuildBans guildId={guild.guildId} />}
+      {section === 'bans' && canManageGuild && <GuildBans guildId={guild.guildId} />}
 
       {section === 'danger' && canAccessDangerZone && (
-        <div className="flex flex-col gap-3">
-          <p className="text-sm text-text-2">{t('guild.edit.deleteDescription')}</p>
+        <GuildDangerSection guildId={guild.guildId} onDeleted={onDeleted} />
+      )}
 
-          {deleteError && <p className="text-sm text-error-fg">{t('guild.edit.deleteError')}</p>}
-
-          {confirmDelete ? (
-            <div className="flex gap-2">
-              <Button
-                variant="tertiary"
-                onClick={() => setConfirmDelete(false)}
-                disabled={isDeleting}
-              >
-                {t('guild.edit.deleteCancel')}
-              </Button>
-              <Button variant="danger" isLoading={isDeleting} onClick={handleDelete}>
-                {t('guild.edit.deleteConfirm')}
-              </Button>
-            </div>
-          ) : (
-            <div>
-              <Button variant="danger" onClick={() => setConfirmDelete(true)}>
-                <Trash2 size={14} />
-                {t('guild.edit.deleteButton')}
-              </Button>
-            </div>
-          )}
-        </div>
+      {section === 'leave' && canLeaveGuild && (
+        <GuildLeaveSection guildId={guild.guildId} onLeave={onLeave} />
       )}
     </ModalPanel>
   );
