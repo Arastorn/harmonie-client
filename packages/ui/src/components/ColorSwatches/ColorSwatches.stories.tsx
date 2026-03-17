@@ -5,7 +5,7 @@ import { ColorSwatches } from './ColorSwatches';
 const PRESET_COLORS = ['#8AAD90', '#9B8FB0', '#C4876A', '#C4B06A', '#C47A8A'];
 
 const meta: Meta<typeof ColorSwatches> = {
-  title: 'Components/ColorSwatches',
+  title: 'Forms/Selection/ColorSwatches',
   component: ColorSwatches,
   tags: ['autodocs'],
   args: {
@@ -26,6 +26,10 @@ export const NoneSelected: Story = {
 
 export const WithCustomPicker: Story = {
   args: { showCustomPicker: true },
+};
+
+export const CustomColorSelected: Story = {
+  args: { selected: '#5A8DFF', showCustomPicker: true },
 };
 
 const InteractiveExample = () => {

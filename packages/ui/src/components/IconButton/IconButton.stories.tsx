@@ -3,7 +3,7 @@ import { Settings } from 'lucide-react';
 import { IconButton } from './IconButton';
 
 const meta: Meta<typeof IconButton> = {
-  title: 'Components/IconButton',
+  title: 'Actions/IconButton',
   component: IconButton,
   tags: ['autodocs'],
   args: {
@@ -36,6 +36,10 @@ export const Medium: Story = {
 
 export const Filled: Story = {
   args: { size: 'medium', variant: 'filled' },
+};
+
+export const Overlay: Story = {
+  args: { size: 'medium', variant: 'overlay' },
 };
 
 export const FilledSelected: Story = {
@@ -78,6 +82,18 @@ export const AllStates: Story = {
           <Settings size={16} />
         </IconButton>
         <IconButton size="medium" variant="filled" disabled>
+          <Settings size={16} />
+        </IconButton>
+      </div>
+      <div className="flex items-center gap-8">
+        <span className="w-24 text-text-2 text-sm">Overlay</span>
+        <IconButton size="medium" variant="overlay">
+          <Settings size={16} />
+        </IconButton>
+        <IconButton size="medium" variant="overlay" selected>
+          <Settings size={16} />
+        </IconButton>
+        <IconButton size="medium" variant="overlay" disabled>
           <Settings size={16} />
         </IconButton>
       </div>

@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { ChannelItem } from './ChannelItem';
 
 const meta: Meta<typeof ChannelItem> = {
-  title: 'Components/ChannelItem',
+  title: 'Navigation/ChannelItem',
   component: ChannelItem,
   tags: ['autodocs'],
   args: {

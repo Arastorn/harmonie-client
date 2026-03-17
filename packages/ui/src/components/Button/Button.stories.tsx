@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { Button } from './Button';
 
 const meta: Meta<typeof Button> = {
-  title: 'Components/Button',
+  title: 'Actions/Button',
   component: Button,
   tags: ['autodocs'],
   args: {
@@ -23,6 +23,10 @@ export const Secondary: Story = {
 
 export const Tertiary: Story = {
   args: { variant: 'tertiary' },
+};
+
+export const Danger: Story = {
+  args: { variant: 'danger' },
 };
 
 export const Disabled: Story = {
@@ -63,6 +67,16 @@ export const AllVariants: Story = {
           Button
         </Button>
         <Button variant="tertiary" isLoading>
+          Button
+        </Button>
+      </div>
+      <div className="flex items-center gap-8">
+        <span className="w-24 text-text-2 text-sm">Danger</span>
+        <Button variant="danger">Button</Button>
+        <Button variant="danger" disabled>
+          Button
+        </Button>
+        <Button variant="danger" isLoading>
           Button
         </Button>
       </div>

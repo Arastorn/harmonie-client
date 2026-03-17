@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { EmojiInput } from './EmojiInput';
 
 const meta: Meta<typeof EmojiInput> = {
-  title: 'Components/EmojiInput',
+  title: 'Forms/Fields/EmojiInput',
   component: EmojiInput,
   tags: ['autodocs'],
   parameters: {
@@ -60,6 +60,15 @@ export const WithError: Story = {
     placeholder: 'e.g. general',
     value: '',
     error: 'Unable to save channel. Please try again.',
+  },
+};
+
+export const Disabled: Story = {
+  render: (args) => <InteractiveTemplate {...args} />,
+  args: {
+    label: 'Channel name',
+    value: '🌿 garden',
+    disabled: true,
   },
 };
 

@@ -1,8 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { Search } from 'lucide-react';
 import { Input } from './Input';
 
 const meta: Meta<typeof Input> = {
-  title: 'Components/Input',
+  title: 'Forms/Fields/Input',
   component: Input,
   tags: ['autodocs'],
   args: {
@@ -24,6 +25,13 @@ export const Error: Story = {
   args: { defaultValue: 'Value', error: 'Error' },
 };
 
+export const WithRightElement: Story = {
+  args: {
+    defaultValue: 'Search query',
+    rightElement: <Search size={16} />,
+  },
+};
+
 export const AllVariants: Story = {
   render: () => (
     <div className="flex flex-col gap-8 p-6 max-w-sm">
@@ -43,6 +51,12 @@ export const AllVariants: Story = {
         <span className="w-20 text-text-2 text-sm pt-8">Error</span>
         <div className="flex-1">
           <Input label="Label" defaultValue="Value" error="Error" />
+        </div>
+      </div>
+      <div className="flex items-start gap-8">
+        <span className="w-20 text-text-2 text-sm pt-8">Icon</span>
+        <div className="flex-1">
+          <Input label="Search" defaultValue="Search query" rightElement={<Search size={16} />} />
         </div>
       </div>
     </div>
