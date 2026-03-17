@@ -1,5 +1,6 @@
 import { apiFetch, parseOrThrow } from './client';
 import type {
+  BanMemberInput,
   Channel,
   ChannelList,
   CreateChannelInput,
@@ -8,6 +9,8 @@ import type {
   CreateGuildInviteResponse,
   CreateGuildResponse,
   Guild,
+  GuildBan,
+  GuildBanList,
   GuildInvite,
   GuildInviteList,
   GuildMember,
@@ -98,7 +101,25 @@ export const revokeGuildInvite = (guildId: string, inviteCode: string): Promise<
     if (!r.ok) throw await r.json();
   });
 
+export const banMember = (guildId: string, input: BanMemberInput): Promise<GuildBan> =>
+  apiFetch(`${API_BASE}/guilds/${guildId}/bans`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  }).then((r) => parseOrThrow<GuildBan>(r));
+
+export const listGuildBans = (guildId: string): Promise<GuildBanList> =>
+  apiFetch(`${API_BASE}/guilds/${guildId}/bans`).then((r) => parseOrThrow<GuildBanList>(r));
+
+export const unbanMember = (guildId: string, userId: string): Promise<void> =>
+  apiFetch(`${API_BASE}/guilds/${guildId}/bans/${userId}`, {
+    method: 'DELETE',
+  }).then(async (r) => {
+    if (!r.ok) throw await r.json();
+  });
+
 export type {
+  BanMemberInput,
   Channel,
   ChannelList,
   CreateChannelInput,
@@ -107,6 +128,8 @@ export type {
   CreateGuildInviteResponse,
   CreateGuildResponse,
   Guild,
+  GuildBan,
+  GuildBanList,
   GuildInvite,
   GuildInviteList,
   GuildMember,

@@ -122,3 +122,29 @@ export interface CreateGuildInviteResponse {
   expiresAtUtc: string | null;
   createdAtUtc: string;
 }
+
+export interface GuildBan {
+  userId: string;
+  username: string;
+  displayName: string | null;
+  avatarFileId: string | null;
+  avatar: {
+    color: string | null;
+    icon: string | null;
+    bg: string | null;
+  };
+  reason: string | null;
+  bannedBy: string;
+  createdAtUtc: string;
+}
+
+export interface GuildBanList {
+  guildId: string;
+  bans: GuildBan[];
+}
+
+export interface BanMemberInput {
+  userId: string;
+  reason: string | null;
+  purgeMessagesDays: number;
+}

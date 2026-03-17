@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
-import { Avatar } from '@harmonie/ui';
+import { ShieldBan } from 'lucide-react';
+import { Avatar, IconButton } from '@harmonie/ui';
 import { useFileBlobUrl } from '@/shared/hooks/useFileBlobUrl';
 import type { GuildMember } from '@/types/guild';
 
@@ -13,6 +14,7 @@ interface MemberPopoverProps {
   anchorRect: DOMRect;
   onClose: () => void;
   side?: 'left' | 'right';
+  onBan?: () => void;
 }
 
 export const MemberPopover = ({
@@ -20,6 +22,7 @@ export const MemberPopover = ({
   anchorRect,
   onClose,
   side = 'left',
+  onBan,
 }: MemberPopoverProps) => {
   const { t } = useTranslation();
   const avatarUrl = useFileBlobUrl(member.avatarFileId);
@@ -56,6 +59,22 @@ export const MemberPopover = ({
         style={{ top, left }}
       >
         <div className="relative h-9 bg-primary">
+          {onBan && (
+            <div className="absolute top-1.5 right-1.5">
+              <IconButton
+                size="small"
+                variant="overlay"
+                aria-label={t('guild.bans.banAction')}
+                title={t('guild.bans.banAction')}
+                onClick={() => {
+                  onClose();
+                  onBan();
+                }}
+              >
+                <ShieldBan size={13} />
+              </IconButton>
+            </div>
+          )}
           <div className="absolute left-4 bottom-0 translate-y-1/2">
             <Avatar
               alt={label}
@@ -70,9 +89,11 @@ export const MemberPopover = ({
 
         {/* Content */}
         <div className="px-4 pt-8 pb-4 flex flex-col gap-3">
-          <div>
-            <p className="text-sm font-semibold text-text-1">{label}</p>
-            {member.displayName && <p className="text-xs text-text-3">@{member.username}</p>}
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-text-1 truncate">{label}</p>
+            {member.displayName && (
+              <p className="text-xs text-text-3 truncate">@{member.username}</p>
+            )}
           </div>
           <span className="inline-flex items-center self-start px-2 py-0.5 rounded-sm bg-surface-2 text-xs font-medium text-text-2 capitalize border border-border-2">
             {member.role}

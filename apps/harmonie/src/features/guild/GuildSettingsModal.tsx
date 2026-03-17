@@ -1,21 +1,24 @@
 import { useState } from 'react';
-import { Mailbox, Pencil, Trash2 } from 'lucide-react';
+import { Mailbox, Pencil, ShieldBan, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button, ModalPanel, NavList, Separator } from '@harmonie/ui';
 import { deleteGuild } from '@/api/guilds';
 import type { Guild } from '@/types/guild';
-import { GuildForm } from '@/features/guild/guild-form/GuildForm';
-import { GuildInvites } from '@/features/guild/invite/GuildInvites';
+import { GuildForm } from '@/features/guild/form/GuildForm';
+import { GuildInvites } from '@/features/guild/invites/GuildInvites';
+import { GuildBans } from '@/features/guild/bans/GuildBans';
+import { useGuildPermissions } from '@/features/guild/hooks/useGuildPermissions';
+import { AdminSectionMenu } from '@/features/guild/types/adminSection';
 
 interface EditGuildModalProps {
   guild: Guild;
   onClose: () => void;
   onUpdated: (guild: Guild) => void;
   onDeleted: (guildId: string) => void;
-  initialSection?: 'identity' | 'invites' | 'danger';
+  initialSection?: AdminSectionMenu;
 }
 
-export const GuildAdminModal = ({
+export const GuildSettingsModal = ({
   guild,
   onClose,
   onUpdated,
@@ -23,7 +26,10 @@ export const GuildAdminModal = ({
   initialSection = 'identity',
 }: EditGuildModalProps) => {
   const { t } = useTranslation();
-  const [section, setSection] = useState<'identity' | 'invites' | 'danger'>(initialSection);
+  const { canAccessDangerZone } = useGuildPermissions(guild);
+  const [section, setSection] = useState<AdminSectionMenu>(
+    initialSection === 'danger' && !canAccessDangerZone ? 'identity' : initialSection
+  );
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState(false);
@@ -60,11 +66,19 @@ export const GuildAdminModal = ({
           onClick={() => setSection('invites')}
         />
         <NavList.Item
-          icon={<Trash2 size={15} />}
-          label={t('guild.edit.nav.danger')}
-          active={section === 'danger'}
-          onClick={() => setSection('danger')}
+          icon={<ShieldBan size={15} />}
+          label={t('guild.edit.nav.bans')}
+          active={section === 'bans'}
+          onClick={() => setSection('bans')}
         />
+        {canAccessDangerZone && (
+          <NavList.Item
+            icon={<Trash2 size={15} />}
+            label={t('guild.edit.nav.danger')}
+            active={section === 'danger'}
+            onClick={() => setSection('danger')}
+          />
+        )}
       </NavList>
     </div>
   );
@@ -89,7 +103,9 @@ export const GuildAdminModal = ({
 
       {section === 'invites' && <GuildInvites guildId={guild.guildId} />}
 
-      {section === 'danger' && (
+      {section === 'bans' && <GuildBans guildId={guild.guildId} />}
+
+      {section === 'danger' && canAccessDangerZone && (
         <div className="flex flex-col gap-3">
           <p className="text-sm text-text-2">{t('guild.edit.deleteDescription')}</p>
 

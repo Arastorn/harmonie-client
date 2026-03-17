@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 export interface ContextMenuItem {
   label: string;
@@ -10,10 +10,19 @@ export interface ContextMenuProps {
   items: ContextMenuItem[];
   position: { x: number; y: number };
   onClose: () => void;
+  horizontalAnchor?: 'left' | 'right';
 }
 
-export const ContextMenu = ({ items, position, onClose }: ContextMenuProps) => {
+const VIEWPORT_MARGIN = 8;
+
+export const ContextMenu = ({
+  items,
+  position,
+  onClose,
+  horizontalAnchor = 'left',
+}: ContextMenuProps) => {
   const ref = useRef<HTMLDivElement>(null);
+  const [menuStyle, setMenuStyle] = useState({ top: position.y, left: position.x });
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -32,12 +41,29 @@ export const ContextMenu = ({ items, position, onClose }: ContextMenuProps) => {
     };
   }, [onClose]);
 
+  useLayoutEffect(() => {
+    const menu = ref.current;
+    if (!menu) return;
+
+    const menuWidth = menu.offsetWidth;
+    const menuHeight = menu.offsetHeight;
+    const maxLeft = window.innerWidth - menuWidth - VIEWPORT_MARGIN;
+    const maxTop = window.innerHeight - menuHeight - VIEWPORT_MARGIN;
+
+    const requestedLeft = horizontalAnchor === 'right' ? position.x - menuWidth : position.x;
+
+    setMenuStyle({
+      left: Math.max(VIEWPORT_MARGIN, Math.min(requestedLeft, maxLeft)),
+      top: Math.max(VIEWPORT_MARGIN, Math.min(position.y, maxTop)),
+    });
+  }, [horizontalAnchor, items, position]);
+
   return (
     <div
       ref={ref}
       role="menu"
       className="fixed z-50 min-w-44 bg-surface-1 border border-border-2 rounded-sm shadow-lg py-1 px-1"
-      style={{ top: position.y, left: position.x }}
+      style={menuStyle}
     >
       {items.map((item, i) => (
         <button

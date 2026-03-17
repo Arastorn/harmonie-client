@@ -1,31 +1,34 @@
 import { useState } from 'react';
-import { Mailbox, Pencil, Plus, Trash2 } from 'lucide-react';
+import { Mailbox, Pencil, Plus, ShieldBan, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ContextMenu, GuildAvatar } from '@harmonie/ui';
 import { useFileBlobUrl } from '@/shared/hooks/useFileBlobUrl';
 import { useGuilds } from './GuildContext';
 import { GuildCreateOrJoinModal } from '@/features/guild/GuildCreateOrJoinModal';
+import { useGuildPermissions } from '@/features/guild/hooks/useGuildPermissions';
 import type { Guild } from '@/types/guild';
-import { GuildAdminModal } from '@/features/guild/GuildAdminModal';
+import { GuildSettingsModal } from '@/features/guild/GuildSettingsModal';
+import { AdminSectionMenu } from '@/features/guild/types/adminSection';
 
 const GuildSidebarItem = ({
   guild,
   isActive,
   onClick,
-  onContextMenu,
+  onOpenContextMenu,
 }: {
   guild: Guild;
   isActive: boolean;
   onClick: () => void;
-  onContextMenu?: (e: React.MouseEvent) => void;
+  onOpenContextMenu: (e: React.MouseEvent, guild: Guild) => void;
 }) => {
   const iconUrl = useFileBlobUrl(guild.iconFileId);
+  const { canOpenGuildContextMenu } = useGuildPermissions(guild);
 
   return (
     <button
       onClick={onClick}
-      onContextMenu={onContextMenu}
+      onContextMenu={canOpenGuildContextMenu ? (e) => onOpenContextMenu(e, guild) : undefined}
       title={guild.name}
       className={[
         'w-10 h-10 rounded-sm flex items-center justify-center shrink-0 bg-transparent cursor-pointer first:mt-1 last:mb-1 transform-gpu transition-transform duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] hover:scale-[1.14] hover:-translate-y-0.5 active:scale-[1.02] active:translate-y-0',
@@ -55,7 +58,7 @@ export const GuildSidebar = () => {
     guild: Guild;
     position: { x: number; y: number };
   } | null>(null);
-  const [editSection, setEditSection] = useState<'identity' | 'danger' | 'invites'>('identity');
+  const [editSection, setEditSection] = useState<AdminSectionMenu>('identity');
   const [editGuild, setEditGuild] = useState<Guild | null>(null);
 
   const handleGuildContextMenu = (e: React.MouseEvent, guild: Guild) => {
@@ -63,10 +66,48 @@ export const GuildSidebar = () => {
     setContextMenu({ guild, position: { x: e.clientX, y: e.clientY } });
   };
 
+  const handleContextMenuClick = (editSection: AdminSectionMenu, guild: Guild) => {
+    setEditSection(editSection);
+    setEditGuild(guild);
+    setContextMenu(null);
+  };
+
+  const { canAccessDangerZone } = useGuildPermissions(contextMenu?.guild);
+
+  const guildContextMenuItems = contextMenu
+    ? [
+        {
+          label: t('guild.contextMenu.edit'),
+          icon: <Pencil size={14} />,
+          onClick: () => handleContextMenuClick('identity', contextMenu.guild),
+        },
+        {
+          label: t('guild.contextMenu.invite'),
+          icon: <Mailbox size={14} />,
+          onClick: () => handleContextMenuClick('invites', contextMenu.guild),
+        },
+        {
+          label: t('guild.contextMenu.ban'),
+          icon: <ShieldBan size={14} />,
+          onClick: () => handleContextMenuClick('bans', contextMenu.guild),
+        },
+        ...(canAccessDangerZone
+          ? [
+              {
+                label: t('guild.contextMenu.delete'),
+                icon: <Trash2 size={14} />,
+                onClick: () => handleContextMenuClick('danger', contextMenu.guild),
+              },
+            ]
+          : []),
+      ]
+    : [];
+
   return (
     <>
       <nav className="flex flex-col items-center gap-2 w-16 py-2 bg-surface-1 border border-border-2 shrink-0 rounded-sm">
         <div className="flex flex-col items-center gap-2 flex-1 overflow-y-auto w-full px-2 py-1">
+          {/* List of guilds */}
           {guilds.map((guild) => {
             return (
               <GuildSidebarItem
@@ -74,12 +115,11 @@ export const GuildSidebar = () => {
                 guild={guild}
                 isActive={guild.guildId === activeGuildId}
                 onClick={() => navigate(`/guilds/${guild.guildId}`)}
-                onContextMenu={
-                  guild.role === 'Admin' ? (e) => handleGuildContextMenu(e, guild) : undefined
-                }
+                onOpenContextMenu={handleGuildContextMenu}
               />
             );
           })}
+          {/* Button to add or join a guild */}
           <button
             onClick={(e) => {
               e.preventDefault();
@@ -99,6 +139,7 @@ export const GuildSidebar = () => {
           </button>
         </div>
       </nav>
+      {/* Context menu for adding or joining a guild */}
       {addMenu && (
         <ContextMenu
           position={addMenu}
@@ -123,46 +164,20 @@ export const GuildSidebar = () => {
           ]}
         />
       )}
+      {/* Model to join or create a guild */}
       {createOrJoinMode && (
         <GuildCreateOrJoinModal mode={createOrJoinMode} onClose={() => setCreateOrJoinMode(null)} />
       )}
+      {/* Context menu for guild actions */}
       {contextMenu && (
         <ContextMenu
           position={contextMenu.position}
           onClose={() => setContextMenu(null)}
-          items={[
-            {
-              label: t('guild.contextMenu.edit'),
-              icon: <Pencil size={14} />,
-              onClick: () => {
-                setEditSection('identity');
-                setEditGuild(contextMenu.guild);
-                setContextMenu(null);
-              },
-            },
-            {
-              label: t('guild.contextMenu.invite'),
-              icon: <Mailbox size={14} />,
-              onClick: () => {
-                setEditSection('invites');
-                setEditGuild(contextMenu.guild);
-                setContextMenu(null);
-              },
-            },
-            {
-              label: t('guild.contextMenu.delete'),
-              icon: <Trash2 size={14} />,
-              onClick: () => {
-                setEditSection('danger');
-                setEditGuild(contextMenu.guild);
-                setContextMenu(null);
-              },
-            },
-          ]}
+          items={guildContextMenuItems}
         />
       )}
       {editGuild && (
-        <GuildAdminModal
+        <GuildSettingsModal
           guild={editGuild}
           initialSection={editSection}
           onClose={() => setEditGuild(null)}

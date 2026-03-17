@@ -4,7 +4,8 @@ import { Button, GuildAvatar, Input } from '@harmonie/ui';
 import { joinGuild } from '@/api/guilds';
 import { useGuilds } from '@/features/guild/GuildContext';
 import { useFileBlobUrl } from '@/shared/hooks/useFileBlobUrl';
-import { useInvitePreview } from '@/features/guild/guild-join/useInvitePreview';
+import { useInvitePreview } from '@/features/guild/join/useInvitePreview';
+import type { ApiError } from '@/types/error';
 
 interface GuildJoinFormProps {
   onSuccess: () => void;
@@ -14,7 +15,7 @@ export const GuildJoinForm = ({ onSuccess }: GuildJoinFormProps) => {
   const { t } = useTranslation();
   const { fetchGuilds } = useGuilds();
   const [inviteCode, setInviteCode] = useState('');
-  const [joinError, setJoinError] = useState(false);
+  const [joinErrorKey, setJoinErrorKey] = useState<string | undefined>();
   const [isJoining, setIsJoining] = useState(false);
   const { preview, isLoading, notFound } = useInvitePreview(inviteCode);
   const iconUrl = useFileBlobUrl(preview?.guildIconFileId);
@@ -24,13 +25,18 @@ export const GuildJoinForm = ({ onSuccess }: GuildJoinFormProps) => {
     const code = inviteCode.trim();
     if (!code) return;
     setIsJoining(true);
-    setJoinError(false);
+    setJoinErrorKey(undefined);
     try {
       await joinGuild(code);
       fetchGuilds();
       onSuccess();
-    } catch {
-      setJoinError(true);
+    } catch (err) {
+      const apiError = err as ApiError;
+      if (apiError.code === 'GUILD_USER_BANNED') {
+        setJoinErrorKey('guild.createJoin.joinErrorBanned');
+      } else {
+        setJoinErrorKey('guild.createJoin.joinError');
+      }
     } finally {
       setIsJoining(false);
     }
@@ -44,9 +50,9 @@ export const GuildJoinForm = ({ onSuccess }: GuildJoinFormProps) => {
         value={inviteCode}
         onChange={(e) => {
           setInviteCode(e.target.value);
-          setJoinError(false);
+          setJoinErrorKey(undefined);
         }}
-        error={joinError ? t('guild.createJoin.joinError') : undefined}
+        error={joinErrorKey ? t(joinErrorKey) : undefined}
         autoFocus
       />
 

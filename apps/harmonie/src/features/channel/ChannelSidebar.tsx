@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ContextMenu, IconButton } from '@harmonie/ui';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
-import type { Channel } from '@/types/guild';
+import { Plus, Pencil, Settings, Trash2 } from 'lucide-react';
+import { GuildSettingsModal } from '@/features/guild/GuildSettingsModal';
+import { useGuildPermissions } from '@/features/guild/hooks/useGuildPermissions';
+import type { Channel, Guild } from '@/types/guild';
 import { useGuilds } from '@/features/guild/GuildContext';
 import { UserPanel } from '@/features/user/UserPanel';
 import { useChannels } from './ChannelContext';
@@ -30,13 +32,14 @@ export const ChannelSidebar = () => {
   const navigate = useNavigate();
   const { guilds } = useGuilds();
   const guild = guilds.find((g) => g.guildId === guildId) ?? null;
-  const isAdmin = guild?.role === 'Admin';
-  const isOwner = guild?.role === 'Owner';
-  const canReorder = isAdmin || isOwner;
+  const { isAdmin, canManageChannels, canManageGuild } = useGuildPermissions(guild);
+  const canReorder = canManageChannels;
   const { channels, addChannel, updateChannel, removeChannel } = useChannels();
+  const { fetchGuilds } = useGuilds();
   const [createModal, setCreateModal] = useState<CreateModalState>(null);
   const [contextMenu, setContextMenu] = useState<ContextMenuState>(null);
   const [editModal, setEditModal] = useState<EditModalState>(null);
+  const [settingsGuild, setSettingsGuild] = useState<Guild | null>(null);
 
   const handleChannelCreated = (channel: Channel) => {
     setCreateModal(null);
@@ -102,8 +105,19 @@ export const ChannelSidebar = () => {
   return (
     <>
       <aside className="flex flex-col w-60 bg-surface-1 rounded-sm shrink-0 border border-border-2">
-        <header className="px-4 py-3 border-b border-border-2 bg-surface-2 rounded-t-sm">
+        <header className="px-4 py-3 border-b border-border-2 bg-surface-2 rounded-t-sm flex items-center justify-between gap-2">
           <h2 className="font-semibold text-text-1 truncate">{guild?.name ?? guildId}</h2>
+          {canManageGuild && guild && (
+            <IconButton
+              size="small"
+              variant="ghost"
+              onClick={() => setSettingsGuild(guild)}
+              aria-label={t('guild.contextMenu.edit')}
+              title={t('guild.contextMenu.edit')}
+            >
+              <Settings size={14} />
+            </IconButton>
+          )}
         </header>
 
         <div className="flex-1 overflow-y-auto px-2 py-2 flex flex-col gap-5">
@@ -205,6 +219,22 @@ export const ChannelSidebar = () => {
           onClose={() => setEditModal(null)}
           onUpdated={handleChannelUpdated}
           onDeleted={handleChannelDeleted}
+        />
+      )}
+
+      {settingsGuild && (
+        <GuildSettingsModal
+          guild={settingsGuild}
+          onClose={() => setSettingsGuild(null)}
+          onUpdated={() => {
+            setSettingsGuild(null);
+            fetchGuilds();
+          }}
+          onDeleted={() => {
+            setSettingsGuild(null);
+            fetchGuilds();
+            navigate('/');
+          }}
         />
       )}
     </>

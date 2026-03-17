@@ -3,8 +3,8 @@ import { Trans, useTranslation } from 'react-i18next';
 import { LanguageSelector, SegmentedControl } from '@harmonie/ui';
 import { useUser } from '@/features/user/UserContext';
 import { LANGUAGES } from '@/i18n/languages';
-import { GuildForm } from '@/features/guild/guild-form/GuildForm';
-import { GuildJoinForm } from '@/features/guild/guild-join/GuildJoinForm';
+import { GuildForm } from '@/features/guild/form/GuildForm';
+import { GuildJoinForm } from '@/features/guild/join/GuildJoinForm';
 
 export const NoGuildPage = () => {
   const { t, i18n } = useTranslation();
