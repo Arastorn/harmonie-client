@@ -20,6 +20,8 @@ interface SortableChannelItemProps {
   canReorder: boolean;
   onNavigate: () => void;
   onContextMenu?: (e: React.MouseEvent) => void;
+  onMenuClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
+  menuLabel?: string;
 }
 
 const SortableChannelItem = ({
@@ -28,6 +30,8 @@ const SortableChannelItem = ({
   canReorder,
   onNavigate,
   onContextMenu,
+  onMenuClick,
+  menuLabel,
 }: SortableChannelItemProps) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: channel.channelId,
@@ -53,6 +57,8 @@ const SortableChannelItem = ({
         active={active}
         onClick={onNavigate}
         onContextMenu={onContextMenu}
+        onMenuClick={onMenuClick}
+        menuLabel={menuLabel}
       />
     </div>
   );
@@ -63,6 +69,8 @@ interface ChannelSectionProps {
   type: 'Text' | 'Voice';
   canReorder: boolean;
   onContextMenu?: (e: React.MouseEvent, channel: Channel) => void;
+  onMenuClick?: (e: React.MouseEvent<HTMLButtonElement>, channel: Channel) => void;
+  menuLabel?: string;
 }
 
 export const ChannelSection = ({
@@ -70,6 +78,8 @@ export const ChannelSection = ({
   type,
   canReorder,
   onContextMenu,
+  onMenuClick,
+  menuLabel,
 }: ChannelSectionProps) => {
   const { guildId, channelId: activeChannelId } = useParams<{
     guildId: string;
@@ -127,6 +137,8 @@ export const ChannelSection = ({
                 )
               }
               onContextMenu={onContextMenu ? (e) => onContextMenu(e, channel) : undefined}
+              onMenuClick={onMenuClick ? (e) => onMenuClick(e, channel) : undefined}
+              menuLabel={menuLabel}
             />
           ))}
         </div>
