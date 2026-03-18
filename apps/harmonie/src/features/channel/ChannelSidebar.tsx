@@ -17,6 +17,7 @@ type CreateModalState = { type: 'Text' | 'Voice' } | null;
 type ContextMenuState = {
   channel: Channel;
   position: { x: number; y: number };
+  horizontalAnchor?: 'left' | 'right';
 } | null;
 type EditModalState = {
   channel: Channel;
@@ -32,7 +33,7 @@ export const ChannelSidebar = () => {
   const navigate = useNavigate();
   const { guilds } = useGuilds();
   const guild = guilds.find((g) => g.guildId === guildId) ?? null;
-  const { isAdmin, canManageChannels, canManageGuild } = useGuildPermissions(guild);
+  const { canManageChannels, canManageGuild } = useGuildPermissions(guild);
   const canReorder = canManageChannels;
   const { channels, addChannel, updateChannel, removeChannel } = useChannels();
   const { fetchGuilds } = useGuilds();
@@ -62,6 +63,10 @@ export const ChannelSidebar = () => {
   const handleContextMenu = (e: React.MouseEvent, channel: Channel) => {
     e.preventDefault();
     setContextMenu({ channel, position: { x: e.clientX, y: e.clientY } });
+  };
+
+  const handleMenuButtonClick = (_e: React.MouseEvent<HTMLButtonElement>, channel: Channel) => {
+    openEdit(channel, 'rename');
   };
 
   const openEdit = (channel: Channel, section: EditChannelSection) => {
@@ -105,7 +110,7 @@ export const ChannelSidebar = () => {
   return (
     <>
       <aside className="flex flex-col w-60 bg-surface-1 rounded-sm shrink-0 border border-border-2">
-        <header className="px-4 py-3 border-b border-border-2 bg-surface-2 rounded-t-sm flex items-center justify-between gap-2">
+        <header className="pl-4 pr-2 py-3 border-b border-border-2 bg-surface-2 rounded-t-sm flex items-center justify-between gap-2">
           <h2 className="font-semibold text-text-1 truncate">{guild?.name ?? guildId}</h2>
           {canManageGuild && guild && (
             <IconButton
@@ -144,7 +149,7 @@ export const ChannelSidebar = () => {
                   <p className="text-xs font-semibold uppercase tracking-wide px-2">
                     {t('guild.channels.text')}
                   </p>
-                  {isAdmin && (
+                  {canManageChannels && (
                     <IconButton
                       size="small"
                       variant="ghost"
@@ -158,7 +163,9 @@ export const ChannelSidebar = () => {
                   sectionChannels={textChannels}
                   type="Text"
                   canReorder={canReorder}
-                  onContextMenu={isAdmin ? handleContextMenu : undefined}
+                  onContextMenu={canManageChannels ? handleContextMenu : undefined}
+                  onMenuClick={canManageChannels ? handleMenuButtonClick : undefined}
+                  menuLabel={t('guild.channels.edit.title')}
                 />
               </section>
 
@@ -168,7 +175,7 @@ export const ChannelSidebar = () => {
                   <p className="text-xs font-semibold uppercase tracking-wide px-2">
                     {t('guild.channels.voice')}
                   </p>
-                  {isAdmin && (
+                  {canManageChannels && (
                     <IconButton
                       size="small"
                       variant="ghost"
@@ -182,7 +189,9 @@ export const ChannelSidebar = () => {
                   sectionChannels={voiceChannels}
                   type="Voice"
                   canReorder={canReorder}
-                  onContextMenu={isAdmin ? handleContextMenu : undefined}
+                  onContextMenu={canManageChannels ? handleContextMenu : undefined}
+                  onMenuClick={canManageChannels ? handleMenuButtonClick : undefined}
+                  menuLabel={t('guild.channels.edit.title')}
                 />
               </section>
             </>
@@ -199,6 +208,7 @@ export const ChannelSidebar = () => {
           position={contextMenu.position}
           onClose={() => setContextMenu(null)}
           items={buildContextMenuItems(contextMenu.channel)}
+          horizontalAnchor={contextMenu.horizontalAnchor}
         />
       )}
 
