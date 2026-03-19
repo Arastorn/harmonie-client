@@ -87,10 +87,6 @@ export const TextChannelView = () => {
   useEffect(() => {
     if (!connection || !channelId || channels === null || !currentChannel) return;
 
-    connection
-      .invoke('JoinChannel', channelId)
-      .catch((err) => console.error('[SignalR] JoinChannel failed:', err));
-
     const handleMessageCreated = (event: MessageCreatedEvent) => {
       if (event.channelId !== channelId) return;
       setMessages((prev) => [
@@ -109,7 +105,6 @@ export const TextChannelView = () => {
 
     return () => {
       connection.off('MessageCreated', handleMessageCreated);
-      connection.invoke('LeaveChannel', channelId).catch(() => {});
     };
   }, [connection, channelId, channels, currentChannel]);
 

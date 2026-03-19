@@ -26,6 +26,7 @@ export interface MessageAttachment {
 export interface MessageCreatedEvent {
   messageId: string;
   channelId: string;
+  guildId: string;
   authorUserId: string;
   content: string;
   attachments: MessageAttachment[];

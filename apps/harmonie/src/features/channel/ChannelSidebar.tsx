@@ -7,6 +7,7 @@ import { GuildSettingsModal } from '@/features/guild/GuildSettingsModal';
 import { useGuildPermissions } from '@/features/guild/hooks/useGuildPermissions';
 import type { Channel, Guild } from '@/types/guild';
 import { useGuilds } from '@/features/guild/GuildContext';
+import { useMessageActivity } from '@/features/realtime/MessageActivityContext';
 import { UserPanel } from '@/features/user/UserPanel';
 import { useChannels } from './ChannelContext';
 import { CreateChannelModal } from './create-edit/CreateChannelModal';
@@ -37,6 +38,7 @@ export const ChannelSidebar = () => {
   const canReorder = canManageChannels;
   const { channels, addChannel, updateChannel, removeChannel } = useChannels();
   const { fetchGuilds } = useGuilds();
+  const { hasUnreadChannel } = useMessageActivity();
   const [createModal, setCreateModal] = useState<CreateModalState>(null);
   const [contextMenu, setContextMenu] = useState<ContextMenuState>(null);
   const [editModal, setEditModal] = useState<EditModalState>(null);
@@ -163,6 +165,7 @@ export const ChannelSidebar = () => {
                   sectionChannels={textChannels}
                   type="Text"
                   canReorder={canReorder}
+                  hasUnread={hasUnreadChannel}
                   onContextMenu={canManageChannels ? handleContextMenu : undefined}
                   onMenuClick={canManageChannels ? handleMenuButtonClick : undefined}
                   menuLabel={t('guild.channels.edit.title')}
