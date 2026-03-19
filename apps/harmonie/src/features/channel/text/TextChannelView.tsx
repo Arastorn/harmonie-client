@@ -206,7 +206,7 @@ export const TextChannelView = () => {
   return (
     <>
       <div className="flex flex-col h-full bg-surface-1 border border-border-2 rounded-sm">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-border-2 shrink-0">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-border-2 shrink-0 bg-surface-2 rounded-t-sm">
           <span className="text-sm font-semibold text-text-1">
             {currentChannel ? `# ${currentChannel.name}` : ''}
           </span>
