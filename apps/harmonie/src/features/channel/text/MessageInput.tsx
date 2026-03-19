@@ -80,16 +80,6 @@ export const MessageInput = ({ channelId }: MessageInputProps) => {
         />
       </div>
       <div className="flex flex-col items-end gap-1">
-        {content.length > MAX_LENGTH * 0.8 && (
-          <span
-            className={[
-              'font-body text-[11px] tabular-nums',
-              isOverLimit ? 'text-error-fg' : 'text-text-3',
-            ].join(' ')}
-          >
-            {content.length}/{MAX_LENGTH}
-          </span>
-        )}
         <IconButton
           variant="filled"
           size="medium"

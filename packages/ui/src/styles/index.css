@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @import './emoji-picker.css';
+@import './scroll-bar.css';
 @source '../components';
 
 @theme static {

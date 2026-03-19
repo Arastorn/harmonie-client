@@ -49,7 +49,9 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
             {...props}
           />
           {bottomRightElement && (
-            <div className="absolute bottom-2.5 right-3 z-10">{bottomRightElement}</div>
+            <div className="absolute inset-y-0 right-3 z-10 flex items-start pt-2.5">
+              {bottomRightElement}
+            </div>
           )}
         </div>
         {error && <span className="font-body text-[11px] font-normal text-error-fg">{error}</span>}

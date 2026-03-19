@@ -44,8 +44,8 @@ export const MembersPanel = ({ onClose }: MembersPanelProps) => {
 
   return (
     <>
-      <div className="w-52 flex flex-col flex-shrink-0 bg-surface-1 border border-border-2 rounded-sm overflow-hidden">
-        <div className="flex items-center justify-between px-3 py-2 border-b border-border-2">
+      <div className="w-52 flex flex-col shrink-0 bg-surface-1 border border-border-2 rounded-sm overflow-hidden">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-border-2 shrink-0 bg-surface-2 rounded-t-sm">
           <span className="text-sm font-semibold text-text-1">{t('guild.members.title')}</span>
           <IconButton size="small" onClick={onClose}>
             <X size={14} />
