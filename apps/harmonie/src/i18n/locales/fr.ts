@@ -157,6 +157,8 @@ export const fr = {
       empty: 'Aucun message pour le moment.',
       error: 'Impossible de charger les messages. Réessaie.',
       memberNotFound: 'Membre non trouvé',
+      delete: 'Supprimer le message',
+      deleteError: 'Impossible de supprimer le message. Réessaie.',
     },
     input: {
       placeholder: 'Écrire un message…',

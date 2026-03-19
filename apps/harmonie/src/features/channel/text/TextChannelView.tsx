@@ -4,13 +4,14 @@ import { useTranslation } from 'react-i18next';
 import { Users } from 'lucide-react';
 import { differenceInMinutes, format, isSameDay } from 'date-fns';
 import { IconButton, Separator } from '@harmonie/ui';
-import { getChannelMessages } from '@/api/channels';
-import type { Message, MessageCreatedEvent } from '@/types/channel';
+import { deleteMessage, getChannelMessages } from '@/api/channels';
+import type { Message, MessageCreatedEvent, MessageDeletedEvent } from '@/types/channel';
 import type { GuildMember } from '@/types/guild';
 import { useMemberBanActions } from '@/features/guild/hooks/useMemberBanActions';
 import { useGuildMembers, useGuilds } from '@/features/guild/GuildContext';
 import { useChannels } from '@/features/channel/ChannelContext';
 import { useRealtime } from '@/features/realtime/RealtimeContext';
+import { useUser } from '@/features/user/UserContext';
 import { MemberPopover } from '@/shared/components/MemberPopover';
 import type { MainLayoutOutletContext } from '@/layouts/MainLayout';
 import { MessageItem } from './MessageItem';
@@ -64,6 +65,7 @@ export const TextChannelView = () => {
   const membersMap = useMemo(() => new Map((members ?? []).map((m) => [m.userId, m])), [members]);
   const { channels } = useChannels();
   const { guilds, guildsLoading } = useGuilds();
+  const { user } = useUser();
   const { banModal, canBanMember, openBanModal } = useMemberBanActions(guildId, () => {
     setSelected(null);
   });
@@ -101,10 +103,17 @@ export const TextChannelView = () => {
       ]);
     };
 
+    const handleMessageDeleted = (event: MessageDeletedEvent) => {
+      if (event.channelId !== channelId) return;
+      setMessages((prev) => prev.filter((m) => m.messageId !== event.messageId));
+    };
+
     connection.on('MessageCreated', handleMessageCreated);
+    connection.on('MessageDeleted', handleMessageDeleted);
 
     return () => {
       connection.off('MessageCreated', handleMessageCreated);
+      connection.off('MessageDeleted', handleMessageDeleted);
     };
   }, [connection, channelId, channels, currentChannel]);
 
@@ -150,6 +159,15 @@ export const TextChannelView = () => {
     el.addEventListener('scroll', handleScroll);
     return () => el.removeEventListener('scroll', handleScroll);
   }, [loadMore]);
+
+  const handleDeleteMessage = useCallback(
+    (messageId: string) => {
+      if (!channelId) return;
+      setMessages((prev) => prev.filter((m) => m.messageId !== messageId));
+      deleteMessage(channelId, messageId).catch(() => {});
+    },
+    [channelId]
+  );
 
   if (!guildId || !channelId || guildsLoading || channels === null) {
     return null;
@@ -218,7 +236,9 @@ export const TextChannelView = () => {
                     message={message}
                     member={membersMap.get(message.authorUserId)}
                     grouped={grouped}
+                    isOwn={message.authorUserId === user?.userId}
                     onAvatarClick={handleAvatarClick}
+                    onDelete={handleDeleteMessage}
                   />
                 </div>
               );

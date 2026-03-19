@@ -32,3 +32,9 @@ export interface MessageCreatedEvent {
   attachments: MessageAttachment[];
   createdAtUtc: string;
 }
+
+export interface MessageDeletedEvent {
+  messageId: string;
+  channelId: string;
+  guildId: string;
+}
