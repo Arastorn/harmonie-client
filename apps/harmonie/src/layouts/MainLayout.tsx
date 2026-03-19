@@ -26,7 +26,7 @@ const AppShell = () => {
     <ChannelProvider>
       <MessageActivityProvider>
         <LayoutSync />
-        <div className="flex h-screen bg-background p-2 gap-2 overflow-hidden">
+        <div className="flex h-screen bg-background p-3 gap-2 overflow-hidden">
           {hasGuilds && <GuildSidebar />}
           {hasGuilds && <ChannelSidebar />}
           <div className="flex flex-1 gap-2 overflow-hidden min-w-0">

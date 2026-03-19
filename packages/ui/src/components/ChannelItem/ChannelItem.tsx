@@ -26,13 +26,13 @@ export const ChannelItem = ({
 }: ChannelItemProps) => {
   const Icon = type === 'text' ? Hash : Volume2;
   const baseStateClasses = active
-    ? 'bg-surface-2 text-text-1 font-medium'
-    : 'text-text-2 hover:bg-surface-2 hover:text-text-1 hover:bg-opacity-70';
+    ? 'bg-secondary text-secondary-fg font-medium'
+    : 'text-text-2 hover:bg-surface-3 hover:text-text-1';
 
   return (
     <div
       className={[
-        'group flex items-center gap-1 rounded-sm',
+        'group flex items-center gap-1 rounded-sm px-1.5 h-9',
         baseStateClasses,
         unread && 'font-extrabold',
       ].join(' ')}
@@ -40,7 +40,7 @@ export const ChannelItem = ({
       <button
         onClick={onClick}
         onContextMenu={onContextMenu}
-        className="flex min-w-0 flex-1 items-center gap-2 px-2 py-1 text-sm font-body transition-colors text-left cursor-pointer"
+        className="flex min-w-0 flex-1 items-center gap-2 text-sm font-body transition-colors text-left cursor-pointer h-9"
       >
         <Icon size={16} className="shrink-0 text-text-3" />
         <span className="truncate">{label}</span>
@@ -61,9 +61,7 @@ export const ChannelItem = ({
           className={[
             'shrink-0 basis-7 min-w-7 min-h-7 transition-all',
             'opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto focus:opacity-100 focus:pointer-events-auto',
-            active
-              ? 'text-text-2 hover:bg-surface-3'
-              : 'text-text-3 hover:bg-surface-2 hover:text-text-1',
+            active ? 'text-secondary-fg hover:bg-secondary' : 'text-text-2',
           ].join(' ')}
         >
           <Settings size={14} className="shrink-0" />

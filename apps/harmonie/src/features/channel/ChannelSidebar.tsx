@@ -111,8 +111,8 @@ export const ChannelSidebar = () => {
 
   return (
     <>
-      <aside className="flex flex-col w-60 bg-surface-1 rounded-sm shrink-0 border border-border-2">
-        <header className="pl-4 pr-2 py-3 border-b border-border-2 bg-surface-2 rounded-t-sm flex items-center justify-between gap-2">
+      <aside className="flex flex-col w-60 bg-surface-1 rounded-md shrink-0 overflow-hidden">
+        <header className="pl-4 pr-2 py-3 bg-surface-2 rounded-t-md flex items-center justify-between gap-2">
           <h2 className="font-semibold text-text-1 truncate">{guild?.name ?? guildId}</h2>
           {canManageGuild && guild && (
             <IconButton
@@ -147,7 +147,7 @@ export const ChannelSidebar = () => {
             <>
               {/* Text channels section */}
               <section>
-                <div className="flex justify-between text-text-3 mb-1 items-center">
+                <div className="flex justify-between text-text-3 mb-1 items-center h-7">
                   <p className="text-xs font-semibold uppercase tracking-wide px-2">
                     {t('guild.channels.text')}
                   </p>
@@ -201,7 +201,7 @@ export const ChannelSidebar = () => {
           )}
         </div>
 
-        <div className="border-t border-border-2 bg-surface-2 rounded-b-sm">
+        <div className="bg-surface-2 rounded-b-md">
           <UserPanel />
         </div>
       </aside>

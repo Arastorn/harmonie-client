@@ -185,7 +185,7 @@ export const TextChannelView = () => {
 
   if (loading) {
     return (
-      <div className="flex h-full items-center justify-center text-text-3 text-sm bg-surface-1 border border-border-2 rounded-sm">
+      <div className="flex h-full items-center justify-center text-text-3 text-sm bg-surface-1 rounded-md">
         {t('channel.messages.loading')}
       </div>
     );
@@ -193,7 +193,7 @@ export const TextChannelView = () => {
 
   if (error) {
     return (
-      <div className="flex h-full items-center justify-center text-error-fg text-sm bg-surface-1 border border-border-2 rounded-sm">
+      <div className="flex h-full items-center justify-center text-error-fg text-sm bg-surface-1 rounded-md">
         {t('channel.messages.error')}
       </div>
     );
@@ -205,8 +205,8 @@ export const TextChannelView = () => {
 
   return (
     <>
-      <div className="flex flex-col h-full bg-surface-1 border border-border-2 rounded-sm">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-border-2 shrink-0 bg-surface-2 rounded-t-sm">
+      <div className="flex flex-col h-full bg-surface-1 rounded-md overflow-hidden">
+        <div className="flex items-center justify-between px-4 py-3 shrink-0 bg-surface-2 rounded-t-md">
           <span className="text-sm font-semibold text-text-1">
             {currentChannel ? `# ${currentChannel.name}` : ''}
           </span>
