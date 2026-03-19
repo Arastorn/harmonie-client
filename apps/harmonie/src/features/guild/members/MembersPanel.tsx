@@ -7,7 +7,7 @@ import type { GuildMember } from '@/types/guild';
 import { MemberItem } from '@/features/guild/members/MemberItem';
 import { useMemberBanActions } from '@/features/guild/hooks/useMemberBanActions';
 import { MemberPopover } from '@/shared/components/MemberPopover';
-import { useGuildMembers } from '@/features/guild/GuildContext';
+import { useGuildMembers, useGuilds } from '@/features/guild/GuildContext';
 
 interface SelectedMember {
   member: GuildMember;
@@ -27,6 +27,7 @@ export const MembersPanel = ({ onClose }: MembersPanelProps) => {
     setSelected(null);
   });
 
+  const { guilds } = useGuilds();
   const membersOrNull = useGuildMembers(guildId);
   const loading = membersOrNull === null;
   const members = membersOrNull ?? [];
@@ -98,6 +99,9 @@ export const MembersPanel = ({ onClose }: MembersPanelProps) => {
           anchorRect={selected.rect}
           onClose={() => setSelected(null)}
           onBan={canBanMember(selected.member) ? () => openBanModal(selected.member) : undefined}
+          isOwner={
+            guilds.find((g) => g.guildId === guildId)?.ownerUserId === selected.member.userId
+          }
         />
       )}
       {banModal}

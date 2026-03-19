@@ -254,6 +254,9 @@ export const TextChannelView = () => {
           onClose={() => setSelected(null)}
           side="right"
           onBan={canBanMember(selected.member) ? () => openBanModal(selected.member) : undefined}
+          isOwner={
+            guilds.find((g) => g.guildId === guildId)?.ownerUserId === selected.member.userId
+          }
         />
       )}
       {banModal}

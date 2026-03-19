@@ -96,6 +96,7 @@ export const en = {
       offline: 'Offline — {{count}}',
       popover: {
         bioLabel: 'About',
+        ownerLabel: 'Owner',
       },
     },
     invites: {

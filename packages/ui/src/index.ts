@@ -61,3 +61,6 @@ export type {
   SegmentedControlProps,
   SegmentedControlOption,
 } from './components/SegmentedControl/SegmentedControl';
+
+export { Badge } from './components/Badge/Badge';
+export type { BadgeProps, BadgeVariant } from './components/Badge/Badge';

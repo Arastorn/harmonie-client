@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { ShieldBan } from 'lucide-react';
-import { Avatar, IconButton } from '@harmonie/ui';
+import { Avatar, Badge, IconButton } from '@harmonie/ui';
 import { useFileBlobUrl } from '@/shared/hooks/useFileBlobUrl';
 import type { GuildMember } from '@/types/guild';
 
@@ -15,6 +15,7 @@ interface MemberPopoverProps {
   onClose: () => void;
   side?: 'left' | 'right';
   onBan?: () => void;
+  isOwner?: boolean;
 }
 
 export const MemberPopover = ({
@@ -23,6 +24,7 @@ export const MemberPopover = ({
   onClose,
   side = 'left',
   onBan,
+  isOwner = false,
 }: MemberPopoverProps) => {
   const { t } = useTranslation();
   const avatarUrl = useFileBlobUrl(member.avatarFileId);
@@ -95,9 +97,10 @@ export const MemberPopover = ({
               <p className="text-xs text-text-3 truncate">@{member.username}</p>
             )}
           </div>
-          <span className="inline-flex items-center self-start px-2 py-0.5 rounded-sm bg-surface-2 text-xs font-medium text-text-2 capitalize border border-border-2">
-            {member.role}
-          </span>
+          <div className="flex flex-wrap gap-1.5">
+            <Badge>{member.role}</Badge>
+            {isOwner && <Badge variant="owner">{t('guild.members.popover.ownerLabel')}</Badge>}
+          </div>
 
           {member.bio && (
             <div>
