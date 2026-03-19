@@ -30,3 +30,10 @@ export const deleteChannel = (channelId: string): Promise<void> =>
   }).then((r) => {
     if (!r.ok) throw new Error('Failed to delete channel');
   });
+
+export const deleteMessage = (channelId: string, messageId: string): Promise<void> =>
+  apiFetch(`${API_BASE}/channels/${channelId}/messages/${messageId}`, {
+    method: 'DELETE',
+  }).then((r) => {
+    if (!r.ok) throw new Error('Failed to delete message');
+  });

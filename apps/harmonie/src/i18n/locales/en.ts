@@ -155,6 +155,8 @@ export const en = {
       empty: 'No messages yet.',
       error: 'Unable to load messages. Please try again.',
       memberNotFound: 'Member not found',
+      delete: 'Delete message',
+      deleteError: 'Unable to delete message. Please try again.',
     },
     input: {
       placeholder: 'Type a message…',
