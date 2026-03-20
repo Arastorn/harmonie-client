@@ -13,6 +13,7 @@ import { useChannels } from '@/features/channel/ChannelContext';
 import { useRealtime } from '@/features/realtime/RealtimeContext';
 import { useUser } from '@/features/user/UserContext';
 import { MemberPopover } from '@/shared/components/MemberPopover';
+import { sortMessagesAsc } from '@/shared/utils/message';
 import type { MainLayoutOutletContext } from '@/layouts/MainLayout';
 import { MessageItem } from './MessageItem';
 import { MessageInput } from './MessageInput';
@@ -79,7 +80,7 @@ export const TextChannelView = () => {
     setNextCursor(null);
     getChannelMessages(channelId)
       .then((data) => {
-        setMessages(data.items);
+        setMessages(sortMessagesAsc(data.items));
         setNextCursor(data.nextCursor);
       })
       .catch(() => setError(true))
@@ -140,7 +141,11 @@ export const TextChannelView = () => {
         const el = scrollRef.current;
         if (el)
           scrollAnchorRef.current = { scrollTop: el.scrollTop, scrollHeight: el.scrollHeight };
-        setMessages((prev) => [...data.items, ...prev]);
+        setMessages((prev) => {
+          const existingIds = new Set(prev.map((m) => m.messageId));
+          const newItems = sortMessagesAsc(data.items).filter((m) => !existingIds.has(m.messageId));
+          return [...newItems, ...prev];
+        });
         setNextCursor(data.nextCursor);
       })
       .catch(() => {})
@@ -227,8 +232,9 @@ export const TextChannelView = () => {
           ) : (
             messages.map((message, index) => {
               const prev = messages[index - 1];
-              const grouped = areMessagesGrouped(prev, message);
               const daySeparatorLabel = getDaySeparatorLabel(prev, message);
+              // A day separator always forces a new group so the author header is shown
+              const grouped = daySeparatorLabel ? false : areMessagesGrouped(prev, message);
               return (
                 <div key={message.messageId}>
                   {daySeparatorLabel && <Separator label={daySeparatorLabel} />}
