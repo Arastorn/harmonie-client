@@ -19,7 +19,7 @@ const sizeClasses: Record<IconButtonSize, string> = {
 const variantClasses: Record<IconButtonVariant, string> = {
   ghost: 'bg-transparent text-tertiary-fg hover:bg-surface-3',
   filled: 'bg-surface-3 text-text-2 hover:bg-surface-2',
-  overlay: 'bg-transparent text-primary-fg hover:bg-primary-fg/12',
+  overlay: 'bg-transparent text-primary-fg hover:bg-transparent',
 };
 
 const selectedClasses = 'bg-primary text-primary-fg hover:bg-primary';

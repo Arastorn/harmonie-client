@@ -29,7 +29,7 @@ export const GuildAvatar = ({
         style={{
           width: dimension,
           height: dimension,
-          borderRadius: 'var(--radius-sm)',
+          borderRadius: 'var(--radius-xl)',
           objectFit: 'cover',
           flexShrink: 0,
         }}
@@ -46,7 +46,7 @@ export const GuildAvatar = ({
       style={{
         width: dimension,
         height: dimension,
-        borderRadius: 'var(--radius-sm)',
+        borderRadius: 'var(--radius-xl)',
         backgroundColor: bg,
         color,
         display: 'flex',
