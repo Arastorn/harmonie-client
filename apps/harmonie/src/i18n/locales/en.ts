@@ -156,6 +156,7 @@ export const en = {
       empty: 'No messages yet.',
       error: 'Unable to load messages. Please try again.',
       memberNotFound: 'Member not found',
+      newMessages: 'New messages',
       edit: 'Edit message',
       edited: '(edited)',
       delete: 'Delete message',

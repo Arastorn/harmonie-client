@@ -28,9 +28,11 @@ export const TextChannelView = () => {
   const { onToggleMembers } = useOutletContext<MainLayoutOutletContext>();
   const [selected, setSelected] = useState<SelectedMember | null>(null);
   const [messageMenu, setMessageMenu] = useState<MessageMenuState | null>(null);
+  const [separatorDismissed, setSeparatorDismissed] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const scrollAnchorRef = useRef<{ scrollTop: number; scrollHeight: number } | null>(null);
   const previousMessageCountRef = useRef(0);
+  const suppressNextScrollEffectsRef = useRef(false);
 
   const members = useGuildMembers(guildId);
   const membersMap = useMemo(
@@ -53,10 +55,12 @@ export const TextChannelView = () => {
     error,
     loadingMore,
     editingMessageId,
+    lastReadMessageId,
     latestOwnMessage,
     loadMore,
     startEditing,
     cancelEditing,
+    dismissNewMessagesSeparator,
     saveEdit,
     removeMessage,
   } = useChannelMessages({
@@ -68,6 +72,7 @@ export const TextChannelView = () => {
 
   useEffect(() => {
     setMessageMenu(null);
+    setSeparatorDismissed(false);
     previousMessageCountRef.current = 0;
   }, [channelId]);
 
@@ -77,6 +82,7 @@ export const TextChannelView = () => {
 
     if (scrollAnchorRef.current) {
       const { scrollTop, scrollHeight } = scrollAnchorRef.current;
+      suppressNextScrollEffectsRef.current = true;
       element.scrollTop = scrollTop + (element.scrollHeight - scrollHeight);
       scrollAnchorRef.current = null;
       return;
@@ -86,12 +92,28 @@ export const TextChannelView = () => {
     const hasNewMessages = messages.length > previousMessageCount;
     const isInitialLoad = previousMessageCount === 0 && messages.length > 0;
 
-    if (hasNewMessages || isInitialLoad) {
+    if (isInitialLoad && lastReadMessageId) {
+      requestAnimationFrame(() => {
+        const lastReadElement = element.querySelector<HTMLElement>(
+          `[data-message-id="${lastReadMessageId}"]`
+        );
+
+        if (!lastReadElement) {
+          suppressNextScrollEffectsRef.current = true;
+          element.scrollTop = element.scrollHeight;
+          return;
+        }
+
+        suppressNextScrollEffectsRef.current = true;
+        lastReadElement.scrollIntoView({ block: 'center' });
+      });
+    } else if (hasNewMessages || isInitialLoad) {
+      suppressNextScrollEffectsRef.current = true;
       element.scrollTop = element.scrollHeight;
     }
 
     previousMessageCountRef.current = messages.length;
-  }, [messages]);
+  }, [lastReadMessageId, messages]);
 
   useEffect(() => {
     if (!editingMessageId) return;
@@ -103,6 +125,7 @@ export const TextChannelView = () => {
       const messageElement = element.querySelector<HTMLElement>(
         `[data-message-id="${editingMessageId}"]`
       );
+      suppressNextScrollEffectsRef.current = true;
       messageElement?.scrollIntoView({ block: 'nearest' });
     });
   }, [editingMessageId]);
@@ -112,6 +135,14 @@ export const TextChannelView = () => {
     if (!element) return;
 
     const handleScroll = async () => {
+      if (suppressNextScrollEffectsRef.current) {
+        suppressNextScrollEffectsRef.current = false;
+        return;
+      }
+
+      if (lastReadMessageId !== null && !separatorDismissed) {
+        setSeparatorDismissed(true);
+      }
       if (element.scrollTop >= 100) return;
       scrollAnchorRef.current = {
         scrollTop: element.scrollTop,
@@ -122,7 +153,7 @@ export const TextChannelView = () => {
 
     element.addEventListener('scroll', handleScroll);
     return () => element.removeEventListener('scroll', handleScroll);
-  }, [loadMore]);
+  }, [dismissNewMessagesSeparator, lastReadMessageId, loadMore, separatorDismissed]);
 
   const handleAvatarClick = (member: GuildMember, rect: DOMRect) => {
     setSelected((prev) => (prev?.member.userId === member.userId ? null : { member, rect }));
@@ -207,10 +238,22 @@ export const TextChannelView = () => {
               const grouped = daySeparatorLabel
                 ? false
                 : areMessagesGrouped(previousMessage, message);
+              const isFirstUnread =
+                lastReadMessageId !== null && previousMessage?.messageId === lastReadMessageId;
 
               return (
                 <div key={message.messageId}>
                   {daySeparatorLabel && <Separator label={daySeparatorLabel} />}
+                  {isFirstUnread && (
+                    <div
+                      className={`transition-opacity duration-500 ${separatorDismissed ? 'opacity-0' : 'opacity-100'}`}
+                      onTransitionEnd={() => {
+                        if (separatorDismissed) dismissNewMessagesSeparator();
+                      }}
+                    >
+                      <Separator label={t('channel.messages.newMessages')} variant="accent" />
+                    </div>
+                  )}
                   <MessageListItem
                     message={message}
                     member={membersMap.get(message.authorUserId)}

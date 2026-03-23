@@ -158,6 +158,7 @@ export const fr = {
       empty: 'Aucun message pour le moment.',
       error: 'Impossible de charger les messages. Réessaie.',
       memberNotFound: 'Membre non trouvé',
+      newMessages: 'Nouveaux messages',
       edit: 'Modifier le message',
       edited: '(modifié)',
       delete: 'Supprimer le message',
