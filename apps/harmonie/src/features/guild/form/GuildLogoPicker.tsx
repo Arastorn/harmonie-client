@@ -47,7 +47,7 @@ export const GuildLogoPicker = ({
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={isLoading}
-          className="group relative w-14 h-14 rounded-sm shrink-0 cursor-pointer overflow-hidden appearance-none p-0 outline-none disabled:cursor-not-allowed disabled:opacity-60"
+          className="group relative w-14 h-14 rounded-xl shrink-0 cursor-pointer overflow-hidden appearance-none p-0 outline-none disabled:cursor-not-allowed disabled:opacity-60"
         >
           {hasImage ? (
             <>
@@ -72,7 +72,7 @@ export const GuildLogoPicker = ({
                   bg={iconBg}
                   size={64}
                 />
-                <div className="absolute inset-0 rounded-xs flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-60 transition-opacity">
+                <div className="absolute inset-0 rounded-xl flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-60 transition-opacity">
                   <Upload size={18} className="text-white" />
                 </div>
               </div>
