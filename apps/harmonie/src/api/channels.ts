@@ -37,3 +37,14 @@ export const deleteMessage = (channelId: string, messageId: string): Promise<voi
   }).then((r) => {
     if (!r.ok) throw new Error('Failed to delete message');
   });
+
+export const updateMessage = (
+  channelId: string,
+  messageId: string,
+  content: string
+): Promise<Message> =>
+  apiFetch(`${API_BASE}/channels/${channelId}/messages/${messageId}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ content }),
+  }).then((r) => parseOrThrow<Message>(r));

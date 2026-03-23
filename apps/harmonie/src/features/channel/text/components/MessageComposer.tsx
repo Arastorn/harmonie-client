@@ -3,14 +3,21 @@ import { useTranslation } from 'react-i18next';
 import { SendHorizonal } from 'lucide-react';
 import { EmojiTextarea, IconButton } from '@harmonie/ui';
 import { sendMessage } from '@/api/channels';
+import type { Message } from '@/types/channel';
 
 const MAX_LENGTH = 4000;
 
-interface MessageInputProps {
+interface MessageComposerProps {
   channelId: string;
+  latestEditableMessage?: Message | null;
+  onEditingRequested?: (messageId: string) => void;
 }
 
-export const MessageInput = ({ channelId }: MessageInputProps) => {
+export const MessageComposer = ({
+  channelId,
+  latestEditableMessage = null,
+  onEditingRequested,
+}: MessageComposerProps) => {
   const { t } = useTranslation();
   const [content, setContent] = useState('');
   const [sending, setSending] = useState(false);
@@ -18,6 +25,7 @@ export const MessageInput = ({ channelId }: MessageInputProps) => {
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   const isOverLimit = content.length > MAX_LENGTH;
+  const trimmedContent = content.trim();
 
   useEffect(() => {
     wrapperRef.current?.querySelector('textarea')?.focus();
@@ -38,14 +46,13 @@ export const MessageInput = ({ channelId }: MessageInputProps) => {
   }, [content]);
 
   const submit = async () => {
-    const trimmed = content.trim();
-    if (!trimmed || sending || isOverLimit) return;
+    if (!trimmedContent || sending || isOverLimit) return;
 
     setSending(true);
     setError(undefined);
 
     try {
-      await sendMessage(channelId, trimmed);
+      await sendMessage(channelId, trimmedContent);
       setContent('');
     } catch {
       setError(t('channel.input.error'));
@@ -55,6 +62,11 @@ export const MessageInput = ({ channelId }: MessageInputProps) => {
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'ArrowUp' && !content && latestEditableMessage) {
+      e.preventDefault();
+      onEditingRequested?.(latestEditableMessage.messageId);
+      return;
+    }
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       void submit();
@@ -62,7 +74,7 @@ export const MessageInput = ({ channelId }: MessageInputProps) => {
   };
 
   return (
-    <div className="flex items-end gap-2 pt-2">
+    <div className="flex w-full items-end gap-2 pt-2 self-end">
       <div ref={wrapperRef} className="flex-1">
         <EmojiTextarea
           value={content}
@@ -84,8 +96,9 @@ export const MessageInput = ({ channelId }: MessageInputProps) => {
           variant="filled"
           size="medium"
           onClick={() => void submit()}
-          disabled={sending || !content.trim() || isOverLimit}
+          disabled={sending || !trimmedContent || isOverLimit}
           aria-label={t('channel.input.send')}
+          title={t('channel.input.send')}
         >
           <SendHorizonal size={16} />
         </IconButton>
