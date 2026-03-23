@@ -1,4 +1,4 @@
-name: CI
+name: 🚀 CI - Checks & Build
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   ci:
-    name: Lint & Build
+    name: ✅ Checks & Build
     runs-on: ubuntu-latest
 
     steps:
