@@ -1,0 +1,48 @@
+[data-theme='rose-obsidian'] {
+  /* ── Brand colors ── */
+  --color-primary: #d4789a;
+  --color-primary-fg: #150e11;
+  --color-secondary: #291b22;
+  --color-secondary-fg: #d4789a;
+  --color-tertiary: #1f1418;
+  --color-tertiary-fg: #a87890;
+
+  /* ── Background & surfaces ── */
+  --color-background: #150e11;
+  --color-surface-1: #1f1418;
+  --color-surface-2: #291b22;
+  --color-surface-3: #3d2a32;
+  --color-surface-hover: #3d2a32;
+
+  /* ── Borders ── */
+  --color-border-1: #f0e0e8;
+  --color-border-2: rgba(220, 180, 200, 0.12);
+
+  /* ── Text ── */
+  --color-text-1: #f5eaf0;
+  --color-text-2: #ccb0bc;
+  --color-text-3: #a87890;
+  --color-text-4: #6a4858;
+
+  /* ── Categories (tags, badges) ── */
+  --color-cat-1: #3d2a32;
+  --color-cat-1-fg: #d4789a;
+  --color-cat-2: #1e2a20;
+  --color-cat-2-fg: #8aad90;
+  --color-cat-3: #2d2840;
+  --color-cat-3-fg: #a89bcc;
+  --color-cat-4: #352f14;
+  --color-cat-4-fg: #c9a63e;
+  --color-cat-5: #3a1c1c;
+  --color-cat-5-fg: #c96565;
+
+  /* ── Error states ── */
+  --color-error: #3a1c1c;
+  --color-error-fg: #c96565;
+
+  /* ── User status ── */
+  --color-status-online: #72b882;
+  --color-status-away: #c8b060;
+  --color-status-busy: #c07070;
+  --color-status-offline: #6a4858;
+}

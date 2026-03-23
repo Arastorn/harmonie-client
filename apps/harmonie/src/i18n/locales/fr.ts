@@ -216,8 +216,15 @@ export const fr = {
     theme: {
       title: 'Thème',
       label: 'Thème visuel',
-      default: 'Défaut',
-      comingSoon: "D'autres thèmes arrivent bientôt.",
+      default: 'Harmonie',
+      'azure-linen': 'Azur Lin',
+      'rose-linen': 'Rose Lin',
+      'mint-linen': 'Menthe Lin',
+      'forest-obsidian': 'Forêt Obsidienne',
+      'midnight-obsidian': 'Minuit Obsidien',
+      'crimson-obsidian': 'Cramoisi Obsidien',
+      'amethyst-obsidian': 'Améthyste Obsidienne',
+      'rose-obsidian': 'Rose Obsidien',
     },
   },
   user: {

@@ -5,17 +5,20 @@ import './i18n';
 import { router } from './routes';
 import { AuthProvider } from './features/auth/AuthContext';
 import { UserProvider } from './features/user/UserContext';
+import { ThemeProvider } from './features/user/ThemeContext';
 import { RealtimeProvider } from './features/realtime/RealtimeContext';
 
 // Disable the native browser context menu across the entire app
 document.addEventListener('contextmenu', (e) => e.preventDefault());
 
 createRoot(document.getElementById('root')!).render(
-  <AuthProvider>
-    <UserProvider>
-      <RealtimeProvider>
-        <RouterProvider router={router} />
-      </RealtimeProvider>
-    </UserProvider>
-  </AuthProvider>
+  <ThemeProvider>
+    <AuthProvider>
+      <UserProvider>
+        <RealtimeProvider>
+          <RouterProvider router={router} />
+        </RealtimeProvider>
+      </UserProvider>
+    </AuthProvider>
+  </ThemeProvider>
 );

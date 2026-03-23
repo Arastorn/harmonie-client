@@ -64,3 +64,6 @@ export type {
 
 export { Badge } from './components/Badge/Badge';
 export type { BadgeProps, BadgeVariant } from './components/Badge/Badge';
+
+export { THEMES } from './themes';
+export type { Theme } from './themes';

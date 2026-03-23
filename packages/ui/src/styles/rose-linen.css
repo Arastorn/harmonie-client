@@ -1,0 +1,48 @@
+[data-theme='rose-linen'] {
+  /* ── Brand colors ── */
+  --color-primary: #b07060;
+  --color-primary-fg: #ffffff;
+  --color-secondary: #f7e9e6;
+  --color-secondary-fg: #864d3e;
+  --color-tertiary: #faf9f9;
+  --color-tertiary-fg: #615a58;
+
+  /* ── Background & surfaces ── */
+  --color-background: #faf9f9;
+  --color-surface-1: #ffffff;
+  --color-surface-2: #f4f3f3;
+  --color-surface-3: #e3e2e2;
+  --color-surface-hover: #e3e2e2;
+
+  /* ── Borders ── */
+  --color-border-1: #2d2a2a;
+  --color-border-2: rgba(45, 42, 42, 0.1);
+
+  /* ── Text ── */
+  --color-text-1: #2d2a2a;
+  --color-text-2: #5c5555;
+  --color-text-3: #8a8181;
+  --color-text-4: #b8adad;
+
+  /* ── Categories (tags, badges) ── */
+  --color-cat-1: #f7e9e6;
+  --color-cat-1-fg: #b07060;
+  --color-cat-2: #edeaf5;
+  --color-cat-2-fg: #7a6e9a;
+  --color-cat-3: #f5f0eb;
+  --color-cat-3-fg: #8aad90;
+  --color-cat-4: #f5f4e0;
+  --color-cat-4-fg: #9a8a30;
+  --color-cat-5: #f5e8e8;
+  --color-cat-5-fg: #a05050;
+
+  /* ── Error states ── */
+  --color-error: #f5e8e8;
+  --color-error-fg: #a05050;
+
+  /* ── User status ── */
+  --color-status-online: #72b882;
+  --color-status-away: #c8b060;
+  --color-status-busy: #c07070;
+  --color-status-offline: #b8adad;
+}
