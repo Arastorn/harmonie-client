@@ -3,6 +3,7 @@ import { getMe } from '@/api/users';
 import type { UserProfile } from '@/types/user';
 import { useAuth } from '@/features/auth/AuthContext';
 import i18n from '@/i18n';
+import { useTheme, THEMES, type Theme } from './ThemeContext';
 
 interface UserContextValue {
   user: UserProfile | null;
@@ -18,6 +19,7 @@ const UserContext = createContext<UserContextValue>({
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   const { isAuthenticated } = useAuth();
+  const { setTheme } = useTheme();
   const [user, setUser] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -32,6 +34,8 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         setUser(profile);
         // Apply the user's saved language preference immediately
         if (profile.language) i18n.changeLanguage(profile.language);
+        // Apply the user's saved theme preference
+        if (THEMES.includes(profile.theme as Theme)) setTheme(profile.theme as Theme);
       })
       .catch(() => setUser(null))
       .finally(() => setIsLoading(false));

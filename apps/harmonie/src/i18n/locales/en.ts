@@ -214,8 +214,15 @@ export const en = {
     theme: {
       title: 'Theme',
       label: 'Visual theme',
-      default: 'Default',
-      comingSoon: 'More themes coming soon.',
+      default: 'Harmonie',
+      'azure-linen': 'Azure Linen',
+      'rose-linen': 'Rose Linen',
+      'mint-linen': 'Mint Linen',
+      'forest-obsidian': 'Forest Obsidian',
+      'midnight-obsidian': 'Midnight Obsidian',
+      'crimson-obsidian': 'Crimson Obsidian',
+      'amethyst-obsidian': 'Amethyst Obsidian',
+      'rose-obsidian': 'Blush Obsidian',
     },
   },
   user: {

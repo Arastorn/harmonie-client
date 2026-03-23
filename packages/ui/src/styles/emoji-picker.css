@@ -10,6 +10,16 @@ aside.EmojiPickerReact {
   --epr-emoji-size: 25px;
 }
 
+aside.EmojiPickerReact .epr-cat-btn svg {
+  stroke: var(--color-text-3);
+  fill: none;
+}
+
+aside.EmojiPickerReact .epr-cat-btn.epr-active svg {
+  stroke: var(--color-primary);
+  fill: none;
+}
+
 aside.EmojiPickerReact .epr-cat-btn.epr-active {
   border-radius: 999px;
 }

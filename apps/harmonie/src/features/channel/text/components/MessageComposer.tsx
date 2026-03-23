@@ -93,7 +93,7 @@ export const MessageComposer = ({
       </div>
       <div className="flex flex-col items-end gap-1">
         <IconButton
-          variant="filled"
+          variant="primary"
           size="medium"
           onClick={() => void submit()}
           disabled={sending || !trimmedContent || isOverLimit}

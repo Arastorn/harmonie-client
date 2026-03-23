@@ -61,3 +61,54 @@
   --radius-lg: 22px;
   --radius-xl: 32px;
 }
+
+/* ── Default theme (Harmonie) ── */
+[data-theme='default'] {
+  --color-primary: #8aad90;
+  --color-primary-fg: #ffffff;
+  --color-secondary: #d4e4d7;
+  --color-secondary-fg: #3d6b48;
+  --color-tertiary: #f5f0eb;
+  --color-tertiary-fg: #6b5f58;
+  --color-background: #f5f0eb;
+  --color-surface-1: #fdfbf8;
+  --color-surface-2: #faf7f2;
+  --color-surface-3: #eee9e2;
+  --color-surface-hover: #eee9e2;
+  --color-border-1: #3d3530;
+  --color-border-2: rgba(61, 53, 48, 0.14);
+  --color-text-1: #3d3530;
+  --color-text-2: #6b5f58;
+  --color-text-3: #9a8e88;
+  --color-text-4: #c8bfb8;
+  --color-cat-1: #d4e4d7;
+  --color-cat-1-fg: #8aad90;
+  --color-cat-2: #e2dcef;
+  --color-cat-2-fg: #7b6fa0;
+  --color-cat-3: #fae4d8;
+  --color-cat-3-fg: #b07060;
+  --color-cat-4: #faf4dc;
+  --color-cat-4-fg: #9a8030;
+  --color-cat-5: #fae8e8;
+  --color-cat-5-fg: #a05050;
+  --color-error: #fae8e8;
+  --color-error-fg: #a05050;
+  --color-status-online: #72b882;
+  --color-status-away: #c8b060;
+  --color-status-busy: #c07070;
+  --color-status-offline: #c8bfb8;
+  --font-display: 'Lora', Georgia, serif;
+  --font-body: 'DM Sans', system-ui, sans-serif;
+}
+
+/* ── Light — Linen ── */
+@import './azure-linen.css';
+@import './rose-linen.css';
+@import './mint-linen.css';
+
+/* ── Dark — Obsidian ── */
+@import './forest-obsidian.css';
+@import './midnight-obsidian.css';
+@import './crimson-obsidian.css';
+@import './amethyst-obsidian.css';
+@import './rose-obsidian.css';

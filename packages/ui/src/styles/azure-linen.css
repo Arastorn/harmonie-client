@@ -1,0 +1,48 @@
+[data-theme='azure-linen'] {
+  /* ── Brand colors ── */
+  --color-primary: #5d8aa8;
+  --color-primary-fg: #ffffff;
+  --color-secondary: #eef2f5;
+  --color-secondary-fg: #32617d;
+  --color-tertiary: #fbf9f7;
+  --color-tertiary-fg: #5d5a58;
+
+  /* ── Background & surfaces ── */
+  --color-background: #fbf9f7;
+  --color-surface-1: #ffffff;
+  --color-surface-2: #f5f3f1;
+  --color-surface-3: #e4e2e0;
+  --color-surface-hover: #e4e2e0;
+
+  /* ── Borders ── */
+  --color-border-1: #1b1c1b;
+  --color-border-2: rgba(27, 28, 27, 0.1);
+
+  /* ── Text ── */
+  --color-text-1: #1b1c1b;
+  --color-text-2: #4a4d4a;
+  --color-text-3: #7b7e7b;
+  --color-text-4: #a8aca8;
+
+  /* ── Categories (tags, badges) ── */
+  --color-cat-1: #eef2f5;
+  --color-cat-1-fg: #5d8aa8;
+  --color-cat-2: #f2edf9;
+  --color-cat-2-fg: #8a7ab0;
+  --color-cat-3: #f9f0ed;
+  --color-cat-3-fg: #b07060;
+  --color-cat-4: #f9f6e8;
+  --color-cat-4-fg: #9a8030;
+  --color-cat-5: #f9eded;
+  --color-cat-5-fg: #a05050;
+
+  /* ── Error states ── */
+  --color-error: #f9eded;
+  --color-error-fg: #a05050;
+
+  /* ── User status ── */
+  --color-status-online: #72b882;
+  --color-status-away: #c8b060;
+  --color-status-busy: #c07070;
+  --color-status-offline: #a8aca8;
+}

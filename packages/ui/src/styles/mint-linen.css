@@ -1,0 +1,48 @@
+[data-theme='mint-linen'] {
+  /* ── Brand colors ── */
+  --color-primary: #6b8e23;
+  --color-primary-fg: #ffffff;
+  --color-secondary: #cfe0a8;
+  --color-secondary-fg: #3a5200;
+  --color-tertiary: #f4f7f4;
+  --color-tertiary-fg: #5a6a5a;
+
+  /* ── Background & surfaces ── */
+  --color-background: #f4f7f4;
+  --color-surface-1: #ffffff;
+  --color-surface-2: #f2f5ea;
+  --color-surface-3: #ecefe4;
+  --color-surface-hover: #ecefe4;
+
+  /* ── Borders ── */
+  --color-border-1: #191d16;
+  --color-border-2: rgba(25, 29, 22, 0.14);
+
+  /* ── Text ── */
+  --color-text-1: #191d16;
+  --color-text-2: #414a3a;
+  --color-text-3: #6a7563;
+  --color-text-4: #93a08d;
+
+  /* ── Categories (tags, badges) ── */
+  --color-cat-1: #ecf2df;
+  --color-cat-1-fg: #6b8e23;
+  --color-cat-2: #edf0f9;
+  --color-cat-2-fg: #7a8eb0;
+  --color-cat-3: #f9f1f0;
+  --color-cat-3-fg: #b07060;
+  --color-cat-4: #f9f8e8;
+  --color-cat-4-fg: #9a9030;
+  --color-cat-5: #f9eded;
+  --color-cat-5-fg: #a05050;
+
+  /* ── Error states ── */
+  --color-error: #f9eded;
+  --color-error-fg: #a05050;
+
+  /* ── User status ── */
+  --color-status-online: #72b882;
+  --color-status-away: #c8b060;
+  --color-status-busy: #c07070;
+  --color-status-offline: #93a08d;
+}
