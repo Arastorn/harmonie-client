@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Avatar } from '@harmonie/ui';
 import { useTranslation } from 'react-i18next';
 import { formatRelative } from 'date-fns';
@@ -5,7 +6,9 @@ import type { Message } from '@/types/channel';
 import type { GuildMember } from '@/types/guild';
 import { useFileBlobUrl } from '@/shared/hooks/useFileBlobUrl';
 import { MessageActions } from './message/MessageActions';
+import { MessageEmojiPicker } from './message/MessageEmojiPicker';
 import { MessageInlineEditor } from './message/MessageInlineEditor';
+import { MessageReactions } from './message/MessageReactions';
 
 interface MessageListItemProps {
   message: Message;
@@ -19,6 +22,7 @@ interface MessageListItemProps {
   onCancelEdit?: () => void;
   onSaveEdit?: (messageId: string, content: string) => Promise<void>;
   onDelete?: (messageId: string) => void;
+  onReact?: (messageId: string, emoji: string) => void;
   onOpenMenu?: (
     event: React.MouseEvent<HTMLElement>,
     messageId: string,
@@ -38,9 +42,11 @@ export const MessageListItem = ({
   onCancelEdit,
   onSaveEdit,
   onDelete,
+  onReact,
   onOpenMenu,
 }: MessageListItemProps) => {
   const { t } = useTranslation();
+  const [pickerAnchorRect, setPickerAnchorRect] = useState<DOMRect | null>(null);
   const avatarUrl = useFileBlobUrl(member?.avatarFileId);
   const label = member
     ? (member.displayName ?? member.username)
@@ -61,6 +67,15 @@ export const MessageListItem = ({
     onOpenMenu?.(event, message.messageId, 'right');
   };
 
+  const handlePickerOpen = (rect: DOMRect) => {
+    setPickerAnchorRect((prev) => (prev ? null : rect));
+  };
+
+  const handleReact = (emoji: string) => {
+    onReact?.(message.messageId, emoji);
+    setPickerAnchorRect(null);
+  };
+
   return (
     <div
       data-message-id={message.messageId}
@@ -68,7 +83,7 @@ export const MessageListItem = ({
       className={[
         'group flex items-start gap-3 relative px-2 -mx-2 rounded-sm',
         'hover:bg-surface-3 transition-colors',
-        isEditing || isMenuOpen ? 'bg-surface-3' : '',
+        isEditing || isMenuOpen || pickerAnchorRect ? 'bg-surface-3' : '',
         grouped ? 'py-0.5' : 'pt-3 pb-2',
       ].join(' ')}
     >
@@ -120,16 +135,31 @@ export const MessageListItem = ({
             )}
           </>
         )}
+        <MessageReactions
+          reactions={message.reactions}
+          onToggle={(emoji) => onReact?.(message.messageId, emoji)}
+        />
       </div>
 
-      {isOwn && !isEditing && (
+      {!isEditing && (
         <MessageActions
-          canEdit={Boolean(onEdit)}
-          canDelete={Boolean(onDelete)}
+          canEdit={isOwn && Boolean(onEdit)}
+          canDelete={isOwn && Boolean(onDelete)}
+          canReact={Boolean(onReact)}
           editLabel={t('channel.messages.edit')}
           deleteLabel={t('channel.messages.delete')}
+          reactLabel={t('channel.messages.react')}
           onEdit={() => onEdit?.(message.messageId)}
           onDelete={() => onDelete?.(message.messageId)}
+          onPickerOpen={handlePickerOpen}
+        />
+      )}
+
+      {pickerAnchorRect && (
+        <MessageEmojiPicker
+          anchorRect={pickerAnchorRect}
+          onSelect={handleReact}
+          onClose={() => setPickerAnchorRect(null)}
         />
       )}
     </div>

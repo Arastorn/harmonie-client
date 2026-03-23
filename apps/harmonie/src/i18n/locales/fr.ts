@@ -163,6 +163,7 @@ export const fr = {
       edited: '(modifié)',
       delete: 'Supprimer le message',
       deleteError: 'Impossible de supprimer le message. Réessaie.',
+      react: 'Réagir au message',
     },
     input: {
       placeholder: 'Écrire un message…',

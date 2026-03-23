@@ -1,21 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import {
-  Clock3,
-  Flag,
-  Hash,
-  Leaf,
-  Lightbulb,
-  Plane,
-  Smile,
-  Trophy,
-  Users,
-  UtensilsCrossed,
-} from 'lucide-react';
-import EmojiPicker, { Categories, type EmojiClickData, type PickerProps } from 'emoji-picker-react';
-import emojisFr from 'emoji-picker-react/dist/data/emojis-fr';
-import emojisEn from 'emoji-picker-react/dist/data/emojis-en';
+import { Smile } from 'lucide-react';
+import type { EmojiClickData, PickerProps } from 'emoji-picker-react';
 import { Textarea, type TextareaProps } from '../Textarea/Textarea';
+import { EmojiPickerBase } from '../EmojiPickerBase/EmojiPickerBase';
 
 export interface EmojiTextareaProps extends Omit<
   TextareaProps,
@@ -30,18 +18,6 @@ export interface EmojiTextareaProps extends Omit<
 const PICKER_W = 320;
 const PICKER_H = 380;
 const OFFSET = 8;
-
-const defaultCategoryIcons = {
-  [Categories.SUGGESTED]: <Clock3 size={14} strokeWidth={2.25} />,
-  [Categories.SMILEYS_PEOPLE]: <Users size={14} strokeWidth={2.25} />,
-  [Categories.ANIMALS_NATURE]: <Leaf size={14} strokeWidth={2.25} />,
-  [Categories.FOOD_DRINK]: <UtensilsCrossed size={14} strokeWidth={2.25} />,
-  [Categories.TRAVEL_PLACES]: <Plane size={14} strokeWidth={2.25} />,
-  [Categories.ACTIVITIES]: <Trophy size={14} strokeWidth={2.25} />,
-  [Categories.OBJECTS]: <Lightbulb size={14} strokeWidth={2.25} />,
-  [Categories.SYMBOLS]: <Hash size={14} strokeWidth={2.25} />,
-  [Categories.FLAGS]: <Flag size={14} strokeWidth={2.25} />,
-};
 
 export const EmojiTextarea = ({
   value,
@@ -112,15 +88,6 @@ export const EmojiTextarea = ({
     insertEmoji(emojiData.emoji);
   };
 
-  const detectedLanguage =
-    (typeof document !== 'undefined' && document.documentElement.lang) ||
-    (typeof navigator !== 'undefined' ? navigator.language : '') ||
-    'en';
-  const defaultEmojiData = detectedLanguage.toLowerCase().startsWith('fr') ? emojisFr : emojisEn;
-
-  const { emojiData: pickerEmojiData, ...restPickerProps } = pickerProps ?? {};
-  const mergedEmojiData = pickerEmojiData ?? defaultEmojiData;
-
   const emojiButton = (
     <>
       <button
@@ -139,19 +106,11 @@ export const EmojiTextarea = ({
             className="fixed z-50 shadow-lg"
             style={{ top: pickerPos.top, left: pickerPos.left }}
           >
-            <EmojiPicker
-              className="channel-emoji-picker"
+            <EmojiPickerBase
               onEmojiClick={handleEmojiClick}
-              emojiData={mergedEmojiData}
-              searchDisabled
-              autoFocusSearch={false}
-              lazyLoadEmojis
-              skinTonesDisabled
-              previewConfig={{ showPreview: false }}
-              categoryIcons={defaultCategoryIcons}
               width={PICKER_W}
               height={PICKER_H}
-              {...restPickerProps}
+              {...(pickerProps ?? {})}
             />
           </div>,
           document.body

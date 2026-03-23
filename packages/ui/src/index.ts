@@ -12,6 +12,8 @@ export { Input } from './components/Input/Input';
 export type { InputProps } from './components/Input/Input';
 export { Textarea } from './components/Textarea/Textarea';
 export type { TextareaProps } from './components/Textarea/Textarea';
+export { EmojiPickerBase } from './components/EmojiPickerBase/EmojiPickerBase';
+export type { EmojiPickerBaseProps } from './components/EmojiPickerBase/EmojiPickerBase';
 export { EmojiInput } from './components/EmojiInput/EmojiInput';
 export type { EmojiInputProps } from './components/EmojiInput/EmojiInput';
 export { EmojiTextarea } from './components/EmojiTextarea/EmojiTextarea';
