@@ -1,48 +1,74 @@
-import { Avatar, IconButton } from '@harmonie/ui';
-import { Trash2 } from 'lucide-react';
+import { Avatar } from '@harmonie/ui';
 import { useTranslation } from 'react-i18next';
+import { formatRelative } from 'date-fns';
 import type { Message } from '@/types/channel';
 import type { GuildMember } from '@/types/guild';
 import { useFileBlobUrl } from '@/shared/hooks/useFileBlobUrl';
-import { formatRelative } from 'date-fns';
+import { MessageActions } from './message/MessageActions';
+import { MessageInlineEditor } from './message/MessageInlineEditor';
 
-interface MessageItemProps {
+interface MessageListItemProps {
   message: Message;
   member?: GuildMember;
   grouped?: boolean;
   isOwn?: boolean;
+  isEditing?: boolean;
+  isMenuOpen?: boolean;
   onAvatarClick?: (member: GuildMember, rect: DOMRect) => void;
+  onEdit?: (messageId: string) => void;
+  onCancelEdit?: () => void;
+  onSaveEdit?: (messageId: string, content: string) => Promise<void>;
   onDelete?: (messageId: string) => void;
+  onOpenMenu?: (
+    event: React.MouseEvent<HTMLElement>,
+    messageId: string,
+    horizontalAnchor?: 'left' | 'right'
+  ) => void;
 }
 
-export const MessageItem = ({
+export const MessageListItem = ({
   message,
   member,
   grouped = false,
   isOwn = false,
+  isEditing = false,
+  isMenuOpen = false,
   onAvatarClick,
+  onEdit,
+  onCancelEdit,
+  onSaveEdit,
   onDelete,
-}: MessageItemProps) => {
+  onOpenMenu,
+}: MessageListItemProps) => {
   const { t } = useTranslation();
   const avatarUrl = useFileBlobUrl(member?.avatarFileId);
   const label = member
     ? (member.displayName ?? member.username)
     : t('channel.messages.memberNotFound');
-  const handleAvatarClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (member && onAvatarClick) {
-      onAvatarClick(member, e.currentTarget.getBoundingClientRect());
-    }
-  };
   const avatarIcon = member?.avatar?.icon ?? (member ? 'PawPrint' : 'User');
   const avatarColor =
     member?.avatar?.color ?? (member ? 'var(--color-cat-1-fg)' : 'var(--color-text-3)');
   const avatarBg = member?.avatar?.bg ?? (member ? 'var(--color-cat-1)' : 'var(--color-surface-3)');
 
+  const handleAvatarClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (!member || !onAvatarClick) return;
+    onAvatarClick(member, event.currentTarget.getBoundingClientRect());
+  };
+
+  const handleContextMenu = (event: React.MouseEvent<HTMLElement>) => {
+    if (!isOwn || !(onEdit || onDelete)) return;
+    event.preventDefault();
+    onOpenMenu?.(event, message.messageId, 'right');
+  };
+
   return (
     <div
+      data-message-id={message.messageId}
+      onContextMenu={handleContextMenu}
       className={[
         'group flex items-start gap-3 relative px-2 -mx-2 rounded-sm',
         'hover:bg-surface-3 transition-colors',
+        isEditing || isMenuOpen ? 'bg-surface-3' : '',
         grouped ? 'py-0.5' : 'pt-3 pb-2',
       ].join(' ')}
     >
@@ -65,6 +91,7 @@ export const MessageItem = ({
           </div>
         </div>
       )}
+
       <div className="flex-1 min-w-0">
         {!grouped && (
           <div
@@ -76,18 +103,34 @@ export const MessageItem = ({
             </span>
           </div>
         )}
-        <p className="text-sm text-text-2 whitespace-pre-wrap wrap-break-word">{message.content}</p>
+
+        {isEditing ? (
+          <MessageInlineEditor
+            initialValue={message.content}
+            onCancel={() => onCancelEdit?.()}
+            onSave={(content) => onSaveEdit?.(message.messageId, content) ?? Promise.resolve()}
+          />
+        ) : (
+          <>
+            <p className="text-sm text-text-2 whitespace-pre-wrap wrap-break-word">
+              {message.content}
+            </p>
+            {message.updatedAtUtc && (
+              <span className="text-xs text-text-3">{t('channel.messages.edited')}</span>
+            )}
+          </>
+        )}
       </div>
-      {isOwn && onDelete && (
-        <div className="absolute right-2 -top-3 opacity-0 group-hover:opacity-100 transition-opacity z-10 bg-surface-1 border border-border-2 rounded-sm shadow-sm">
-          <IconButton
-            size="small"
-            title={t('channel.messages.delete')}
-            onClick={() => onDelete(message.messageId)}
-          >
-            <Trash2 size={14} />
-          </IconButton>
-        </div>
+
+      {isOwn && !isEditing && (
+        <MessageActions
+          canEdit={Boolean(onEdit)}
+          canDelete={Boolean(onDelete)}
+          editLabel={t('channel.messages.edit')}
+          deleteLabel={t('channel.messages.delete')}
+          onEdit={() => onEdit?.(message.messageId)}
+          onDelete={() => onDelete?.(message.messageId)}
+        />
       )}
     </div>
   );

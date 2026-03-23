@@ -38,3 +38,11 @@ export interface MessageDeletedEvent {
   channelId: string;
   guildId: string;
 }
+
+export interface MessageUpdatedEvent {
+  messageId: string;
+  channelId: string;
+  guildId: string;
+  content: string;
+  updatedAtUtc: string;
+}

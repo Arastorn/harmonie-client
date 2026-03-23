@@ -1,11 +1,8 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Navigate, useOutletContext, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Users } from 'lucide-react';
-import { differenceInMinutes, format, isSameDay } from 'date-fns';
 import { IconButton, Separator } from '@harmonie/ui';
-import { deleteMessage, getChannelMessages } from '@/api/channels';
-import type { Message, MessageCreatedEvent, MessageDeletedEvent } from '@/types/channel';
 import type { GuildMember } from '@/types/guild';
 import { useMemberBanActions } from '@/features/guild/hooks/useMemberBanActions';
 import { useGuildMembers, useGuilds } from '@/features/guild/GuildContext';
@@ -13,174 +10,152 @@ import { useChannels } from '@/features/channel/ChannelContext';
 import { useRealtime } from '@/features/realtime/RealtimeContext';
 import { useUser } from '@/features/user/UserContext';
 import { MemberPopover } from '@/shared/components/MemberPopover';
-import { sortMessagesAsc } from '@/shared/utils/message';
 import type { MainLayoutOutletContext } from '@/layouts/MainLayout';
-import { MessageItem } from './MessageItem';
-import { MessageInput } from './MessageInput';
+import { MessageComposer } from './components/MessageComposer';
+import { MessageListItem } from './components/MessageListItem';
+import { MessageContextMenu, type MessageMenuState } from './components/message/MessageContextMenu';
+import { useChannelMessages } from './hooks/useChannelMessages';
+import { areMessagesGrouped, getDaySeparatorLabel } from './utils/messagePresentation';
 
 interface SelectedMember {
   member: GuildMember;
   rect: DOMRect;
 }
 
-const MESSAGE_GROUPING_WINDOW_MINUTES = 10;
-
-const areMessagesGrouped = (previousMessage?: Message, currentMessage?: Message) => {
-  if (!previousMessage || !currentMessage) return false;
-  if (previousMessage.authorUserId !== currentMessage.authorUserId) return false;
-
-  return (
-    differenceInMinutes(
-      new Date(currentMessage.createdAtUtc),
-      new Date(previousMessage.createdAtUtc)
-    ) < MESSAGE_GROUPING_WINDOW_MINUTES
-  );
-};
-
-const getDaySeparatorLabel = (previousMessage?: Message, currentMessage?: Message) => {
-  if (!previousMessage || !currentMessage) return null;
-
-  const previousDate = new Date(previousMessage.createdAtUtc);
-  const currentDate = new Date(currentMessage.createdAtUtc);
-
-  if (isSameDay(previousDate, currentDate)) return null;
-
-  return format(currentDate, 'PPP');
-};
-
 export const TextChannelView = () => {
   const { t } = useTranslation();
   const { channelId, guildId } = useParams<{ channelId: string; guildId: string }>();
   const { onToggleMembers } = useOutletContext<MainLayoutOutletContext>();
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
   const [selected, setSelected] = useState<SelectedMember | null>(null);
-  const [nextCursor, setNextCursor] = useState<string | null>(null);
-  const [loadingMore, setLoadingMore] = useState(false);
+  const [messageMenu, setMessageMenu] = useState<MessageMenuState | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const scrollAnchorRef = useRef<{ scrollTop: number; scrollHeight: number } | null>(null);
-  const loadingMoreRef = useRef(false);
+  const previousMessageCountRef = useRef(0);
 
   const members = useGuildMembers(guildId);
-  const membersMap = useMemo(() => new Map((members ?? []).map((m) => [m.userId, m])), [members]);
+  const membersMap = useMemo(
+    () => new Map((members ?? []).map((member) => [member.userId, member])),
+    [members]
+  );
   const { channels } = useChannels();
   const { guilds, guildsLoading } = useGuilds();
   const { user } = useUser();
+  const { connection } = useRealtime();
+  const currentChannel = channels?.find((channel) => channel.channelId === channelId);
+  const channelReady = Boolean(channelId && channels !== null && currentChannel);
   const { banModal, canBanMember, openBanModal } = useMemberBanActions(guildId, () => {
     setSelected(null);
   });
-  const currentChannel = channels?.find((c) => c.channelId === channelId);
-  const { connection } = useRealtime();
+
+  const {
+    messages,
+    loading,
+    error,
+    loadingMore,
+    editingMessageId,
+    latestOwnMessage,
+    loadMore,
+    startEditing,
+    cancelEditing,
+    saveEdit,
+    removeMessage,
+  } = useChannelMessages({
+    channelId,
+    channelReady,
+    connection,
+    currentUserId: user?.userId,
+  });
 
   useEffect(() => {
-    if (!channelId || channels === null || !currentChannel) return;
-    setLoading(true);
-    setError(false);
-    setNextCursor(null);
-    getChannelMessages(channelId)
-      .then((data) => {
-        setMessages(sortMessagesAsc(data.items));
-        setNextCursor(data.nextCursor);
-      })
-      .catch(() => setError(true))
-      .finally(() => setLoading(false));
-  }, [channelId, channels, currentChannel]);
+    setMessageMenu(null);
+    previousMessageCountRef.current = 0;
+  }, [channelId]);
 
   useEffect(() => {
-    if (!connection || !channelId || channels === null || !currentChannel) return;
+    const element = scrollRef.current;
+    if (!element) return;
 
-    const handleMessageCreated = (event: MessageCreatedEvent) => {
-      if (event.channelId !== channelId) return;
-      setMessages((prev) => [
-        ...prev,
-        {
-          messageId: event.messageId,
-          authorUserId: event.authorUserId,
-          content: event.content,
-          createdAtUtc: event.createdAtUtc,
-          updatedAtUtc: null,
-        },
-      ]);
-    };
-
-    const handleMessageDeleted = (event: MessageDeletedEvent) => {
-      if (event.channelId !== channelId) return;
-      setMessages((prev) => prev.filter((m) => m.messageId !== event.messageId));
-    };
-
-    connection.on('MessageCreated', handleMessageCreated);
-    connection.on('MessageDeleted', handleMessageDeleted);
-
-    return () => {
-      connection.off('MessageCreated', handleMessageCreated);
-      connection.off('MessageDeleted', handleMessageDeleted);
-    };
-  }, [connection, channelId, channels, currentChannel]);
-
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    if (scrollAnchorRef.current !== null) {
-      // Restore scroll position: offset by the height added by prepended messages
+    if (scrollAnchorRef.current) {
       const { scrollTop, scrollHeight } = scrollAnchorRef.current;
-      el.scrollTop = scrollTop + (el.scrollHeight - scrollHeight);
+      element.scrollTop = scrollTop + (element.scrollHeight - scrollHeight);
       scrollAnchorRef.current = null;
-    } else {
-      el.scrollTop = el.scrollHeight;
+      return;
     }
+
+    const previousMessageCount = previousMessageCountRef.current;
+    const hasNewMessages = messages.length > previousMessageCount;
+    const isInitialLoad = previousMessageCount === 0 && messages.length > 0;
+
+    if (hasNewMessages || isInitialLoad) {
+      element.scrollTop = element.scrollHeight;
+    }
+
+    previousMessageCountRef.current = messages.length;
   }, [messages]);
 
-  const loadMore = useCallback(() => {
-    if (!channelId || !nextCursor || loadingMoreRef.current) return;
-    loadingMoreRef.current = true;
-    setLoadingMore(true);
-    getChannelMessages(channelId, nextCursor)
-      .then((data) => {
-        // Capture scroll position just before prepending so the indicator height is excluded
-        const el = scrollRef.current;
-        if (el)
-          scrollAnchorRef.current = { scrollTop: el.scrollTop, scrollHeight: el.scrollHeight };
-        setMessages((prev) => {
-          const existingIds = new Set(prev.map((m) => m.messageId));
-          const newItems = sortMessagesAsc(data.items).filter((m) => !existingIds.has(m.messageId));
-          return [...newItems, ...prev];
-        });
-        setNextCursor(data.nextCursor);
-      })
-      .catch(() => {})
-      .finally(() => {
-        loadingMoreRef.current = false;
-        setLoadingMore(false);
-      });
-  }, [channelId, nextCursor]);
+  useEffect(() => {
+    if (!editingMessageId) return;
+
+    const element = scrollRef.current;
+    if (!element) return;
+
+    requestAnimationFrame(() => {
+      const messageElement = element.querySelector<HTMLElement>(
+        `[data-message-id="${editingMessageId}"]`
+      );
+      messageElement?.scrollIntoView({ block: 'nearest' });
+    });
+  }, [editingMessageId]);
 
   useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const handleScroll = () => {
-      if (el.scrollTop < 100) loadMore();
+    const element = scrollRef.current;
+    if (!element) return;
+
+    const handleScroll = async () => {
+      if (element.scrollTop >= 100) return;
+      scrollAnchorRef.current = {
+        scrollTop: element.scrollTop,
+        scrollHeight: element.scrollHeight,
+      };
+      await loadMore();
     };
-    el.addEventListener('scroll', handleScroll);
-    return () => el.removeEventListener('scroll', handleScroll);
+
+    element.addEventListener('scroll', handleScroll);
+    return () => element.removeEventListener('scroll', handleScroll);
   }, [loadMore]);
 
-  const handleDeleteMessage = useCallback(
-    (messageId: string) => {
-      if (!channelId) return;
-      setMessages((prev) => prev.filter((m) => m.messageId !== messageId));
-      deleteMessage(channelId, messageId).catch(() => {});
-    },
-    [channelId]
-  );
+  const handleAvatarClick = (member: GuildMember, rect: DOMRect) => {
+    setSelected((prev) => (prev?.member.userId === member.userId ? null : { member, rect }));
+  };
+
+  const handleOpenMessageMenu = (
+    event: React.MouseEvent<HTMLElement>,
+    messageId: string,
+    horizontalAnchor: 'left' | 'right' = 'left'
+  ) => {
+    event.preventDefault();
+    setMessageMenu({
+      messageId,
+      position: { x: event.clientX, y: event.clientY },
+      horizontalAnchor,
+    });
+  };
+
+  const handleStartEditing = (messageId: string) => {
+    setMessageMenu(null);
+    startEditing(messageId);
+  };
+
+  const handleDeleteMessage = (messageId: string) => {
+    setMessageMenu(null);
+    removeMessage(messageId);
+  };
 
   if (!guildId || !channelId || guildsLoading || channels === null) {
     return null;
   }
 
-  const guildExists = guilds.some((guild) => guild.guildId === guildId);
-
-  if (!guildExists) {
+  if (!guilds.some((guild) => guild.guildId === guildId)) {
     return <Navigate to="/" replace />;
   }
 
@@ -204,26 +179,22 @@ export const TextChannelView = () => {
     );
   }
 
-  const handleAvatarClick = (member: GuildMember, rect: DOMRect) => {
-    setSelected((prev) => (prev?.member.userId === member.userId ? null : { member, rect }));
-  };
-
   return (
     <>
       <div className="flex flex-col h-full bg-surface-1 rounded-md overflow-hidden">
         <div className="flex items-center justify-between px-4 py-3 shrink-0 bg-surface-2 rounded-t-md">
-          <span className="text-sm font-semibold text-text-1">
-            {currentChannel ? `# ${currentChannel.name}` : ''}
-          </span>
+          <span className="text-sm font-semibold text-text-1"># {currentChannel.name}</span>
           <IconButton size="small" onClick={onToggleMembers}>
             <Users size={16} />
           </IconButton>
         </div>
+
         {loadingMore && (
           <div className="flex justify-center py-1 text-text-3 text-xs shrink-0">
             {t('channel.messages.loading')}
           </div>
         )}
+
         <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 gap-0">
           {messages.length === 0 ? (
             <div className="flex h-full items-center justify-center text-text-3 text-sm">
@@ -231,28 +202,51 @@ export const TextChannelView = () => {
             </div>
           ) : (
             messages.map((message, index) => {
-              const prev = messages[index - 1];
-              const daySeparatorLabel = getDaySeparatorLabel(prev, message);
-              // A day separator always forces a new group so the author header is shown
-              const grouped = daySeparatorLabel ? false : areMessagesGrouped(prev, message);
+              const previousMessage = messages[index - 1];
+              const daySeparatorLabel = getDaySeparatorLabel(previousMessage, message);
+              const grouped = daySeparatorLabel
+                ? false
+                : areMessagesGrouped(previousMessage, message);
+
               return (
                 <div key={message.messageId}>
                   {daySeparatorLabel && <Separator label={daySeparatorLabel} />}
-                  <MessageItem
+                  <MessageListItem
                     message={message}
                     member={membersMap.get(message.authorUserId)}
                     grouped={grouped}
                     isOwn={message.authorUserId === user?.userId}
+                    isEditing={message.messageId === editingMessageId}
+                    isMenuOpen={message.messageId === messageMenu?.messageId}
                     onAvatarClick={handleAvatarClick}
+                    onEdit={handleStartEditing}
+                    onCancelEdit={cancelEditing}
+                    onSaveEdit={saveEdit}
                     onDelete={handleDeleteMessage}
+                    onOpenMenu={handleOpenMessageMenu}
                   />
                 </div>
               );
             })
           )}
         </div>
-        <div className="px-4 pb-4">{channelId && <MessageInput channelId={channelId} />}</div>
+
+        <div className="mt-auto flex items-end px-4 pb-4">
+          <MessageComposer
+            channelId={channelId}
+            latestEditableMessage={latestOwnMessage}
+            onEditingRequested={handleStartEditing}
+          />
+        </div>
       </div>
+
+      <MessageContextMenu
+        menu={messageMenu}
+        onClose={() => setMessageMenu(null)}
+        onEdit={handleStartEditing}
+        onDelete={handleDeleteMessage}
+      />
+
       {selected && (
         <MemberPopover
           member={selected.member}
@@ -261,10 +255,12 @@ export const TextChannelView = () => {
           side="right"
           onBan={canBanMember(selected.member) ? () => openBanModal(selected.member) : undefined}
           isOwner={
-            guilds.find((g) => g.guildId === guildId)?.ownerUserId === selected.member.userId
+            guilds.find((guild) => guild.guildId === guildId)?.ownerUserId ===
+            selected.member.userId
           }
         />
       )}
+
       {banModal}
     </>
   );
