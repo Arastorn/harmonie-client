@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { deleteMessage, getChannelMessages, updateMessage } from '@/api/channels';
+import { ackChannel, deleteMessage, getChannelMessages, updateMessage } from '@/api/channels';
 import { sortMessagesAsc } from '@/shared/utils/message';
 import type {
   Message,
@@ -28,7 +28,20 @@ export const useChannelMessages = ({
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [loadingMore, setLoadingMore] = useState(false);
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const [lastReadMessageId, setLastReadMessageId] = useState<string | null>(null);
   const loadingMoreRef = useRef(false);
+
+  const markChannelAsRead = useCallback(
+    async (messageId: string) => {
+      if (!channelId) return;
+      await ackChannel(channelId, messageId);
+    },
+    [channelId]
+  );
+
+  const dismissNewMessagesSeparator = useCallback(() => {
+    setLastReadMessageId(null);
+  }, []);
 
   useEffect(() => {
     if (!channelId || !channelReady) return;
@@ -37,15 +50,24 @@ export const useChannelMessages = ({
     setError(false);
     setNextCursor(null);
     setEditingMessageId(null);
+    setLastReadMessageId(null);
 
     getChannelMessages(channelId)
       .then((data) => {
-        setMessages(sortMessagesAsc(data.items));
+        const sorted = sortMessagesAsc(data.items);
+        setMessages(sorted);
         setNextCursor(data.nextCursor);
+        const lastMessage = sorted[sorted.length - 1];
+        const hasUnread =
+          data.lastReadMessageId !== null && data.lastReadMessageId !== lastMessage?.messageId;
+        setLastReadMessageId(hasUnread ? data.lastReadMessageId : null);
+        if (lastMessage) {
+          markChannelAsRead(lastMessage.messageId).catch(() => {});
+        }
       })
       .catch(() => setError(true))
       .finally(() => setLoading(false));
-  }, [channelId, channelReady]);
+  }, [channelId, channelReady, markChannelAsRead]);
 
   useEffect(() => {
     if (!connection || !channelId || !channelReady) return;
@@ -62,6 +84,7 @@ export const useChannelMessages = ({
           updatedAtUtc: null,
         },
       ]);
+      markChannelAsRead(event.messageId).catch(() => {});
     };
 
     const handleMessageDeleted = (event: MessageDeletedEvent) => {
@@ -92,7 +115,7 @@ export const useChannelMessages = ({
       connection.off('MessageDeleted', handleMessageDeleted);
       connection.off('MessageUpdated', handleMessageUpdated);
     };
-  }, [channelId, channelReady, connection, editingMessageId]);
+  }, [channelId, channelReady, connection, editingMessageId, markChannelAsRead]);
 
   const loadMore = useCallback(async () => {
     if (!channelId || !nextCursor || loadingMoreRef.current) return [];
@@ -166,10 +189,12 @@ export const useChannelMessages = ({
     error,
     loadingMore,
     editingMessageId,
+    lastReadMessageId,
     latestOwnMessage,
     loadMore,
     startEditing,
     cancelEditing,
+    dismissNewMessagesSeparator,
     saveEdit,
     removeMessage,
   };

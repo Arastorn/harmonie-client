@@ -38,6 +38,15 @@ export const deleteMessage = (channelId: string, messageId: string): Promise<voi
     if (!r.ok) throw new Error('Failed to delete message');
   });
 
+export const ackChannel = (channelId: string, messageId: string): Promise<void> =>
+  apiFetch(`${API_BASE}/channels/${channelId}/ack`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ messageId }),
+  }).then((r) => {
+    if (!r.ok) throw new Error('Failed to ack channel');
+  });
+
 export const updateMessage = (
   channelId: string,
   messageId: string,

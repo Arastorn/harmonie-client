@@ -22,3 +22,11 @@ export const Default: Story = {};
 export const WithLabel: Story = {
   args: { label: 'ou' },
 };
+
+export const Accent: Story = {
+  args: { label: 'New messages', variant: 'accent' },
+};
+
+export const AccentNoLabel: Story = {
+  args: { variant: 'accent' },
+};

@@ -10,6 +10,7 @@ export interface MessageList {
   conversationId: string;
   items: Message[];
   nextCursor: string | null;
+  lastReadMessageId: string | null;
 }
 
 export interface UpdateChannelInput {
