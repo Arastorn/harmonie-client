@@ -161,6 +161,7 @@ export const en = {
       edited: '(edited)',
       delete: 'Delete message',
       deleteError: 'Unable to delete message. Please try again.',
+      react: 'React to message',
     },
     input: {
       placeholder: 'Type a message…',

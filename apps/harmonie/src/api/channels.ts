@@ -57,3 +57,23 @@ export const updateMessage = (
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ content }),
   }).then((r) => parseOrThrow<Message>(r));
+
+export const addReaction = (channelId: string, messageId: string, emoji: string): Promise<void> =>
+  apiFetch(
+    `${API_BASE}/channels/${channelId}/messages/${messageId}/reactions/${encodeURIComponent(emoji)}`,
+    { method: 'PUT' }
+  ).then((r) => {
+    if (!r.ok) throw new Error('Failed to add reaction');
+  });
+
+export const removeReaction = (
+  channelId: string,
+  messageId: string,
+  emoji: string
+): Promise<void> =>
+  apiFetch(
+    `${API_BASE}/channels/${channelId}/messages/${messageId}/reactions/${encodeURIComponent(emoji)}`,
+    { method: 'DELETE' }
+  ).then((r) => {
+    if (!r.ok) throw new Error('Failed to remove reaction');
+  });

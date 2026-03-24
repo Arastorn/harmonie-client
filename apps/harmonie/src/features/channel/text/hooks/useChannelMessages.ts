@@ -1,11 +1,20 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ackChannel, deleteMessage, getChannelMessages, updateMessage } from '@/api/channels';
+import {
+  ackChannel,
+  addReaction,
+  deleteMessage,
+  getChannelMessages,
+  removeReaction,
+  updateMessage,
+} from '@/api/channels';
 import { sortMessagesAsc } from '@/shared/utils/message';
 import type {
   Message,
   MessageCreatedEvent,
   MessageDeletedEvent,
   MessageUpdatedEvent,
+  ReactionAddedEvent,
+  ReactionRemovedEvent,
 } from '@/types/channel';
 import type { HubConnection } from '@microsoft/signalr';
 
@@ -30,6 +39,11 @@ export const useChannelMessages = ({
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [lastReadMessageId, setLastReadMessageId] = useState<string | null>(null);
   const loadingMoreRef = useRef(false);
+  const messagesRef = useRef<Message[]>([]);
+
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
 
   const markChannelAsRead = useCallback(
     async (messageId: string) => {
@@ -80,6 +94,8 @@ export const useChannelMessages = ({
           messageId: event.messageId,
           authorUserId: event.authorUserId,
           content: event.content,
+          attachments: event.attachments ?? [],
+          reactions: [],
           createdAtUtc: event.createdAtUtc,
           updatedAtUtc: null,
         },
@@ -106,16 +122,54 @@ export const useChannelMessages = ({
       );
     };
 
+    const handleReactionAdded = (event: ReactionAddedEvent) => {
+      if (event.channelId !== channelId || event.userId === currentUserId) return;
+      setMessages((prev) =>
+        prev.map((message) => {
+          if (message.messageId !== event.messageId) return message;
+          const exists = message.reactions.some((r) => r.emoji === event.emoji);
+          return {
+            ...message,
+            reactions: exists
+              ? message.reactions.map((r) =>
+                  r.emoji === event.emoji ? { ...r, count: r.count + 1 } : r
+                )
+              : [...message.reactions, { emoji: event.emoji, count: 1, reactedByMe: false }],
+          };
+        })
+      );
+    };
+
+    const handleReactionRemoved = (event: ReactionRemovedEvent) => {
+      if (event.channelId !== channelId || event.userId === currentUserId) return;
+      setMessages((prev) =>
+        prev.map((message) =>
+          message.messageId !== event.messageId
+            ? message
+            : {
+                ...message,
+                reactions: message.reactions
+                  .map((r) => (r.emoji === event.emoji ? { ...r, count: r.count - 1 } : r))
+                  .filter((r) => r.count > 0),
+              }
+        )
+      );
+    };
+
     connection.on('MessageCreated', handleMessageCreated);
     connection.on('MessageDeleted', handleMessageDeleted);
     connection.on('MessageUpdated', handleMessageUpdated);
+    connection.on('ReactionAdded', handleReactionAdded);
+    connection.on('ReactionRemoved', handleReactionRemoved);
 
     return () => {
       connection.off('MessageCreated', handleMessageCreated);
       connection.off('MessageDeleted', handleMessageDeleted);
       connection.off('MessageUpdated', handleMessageUpdated);
+      connection.off('ReactionAdded', handleReactionAdded);
+      connection.off('ReactionRemoved', handleReactionRemoved);
     };
-  }, [channelId, channelReady, connection, editingMessageId, markChannelAsRead]);
+  }, [channelId, channelReady, connection, currentUserId, editingMessageId, markChannelAsRead]);
 
   const loadMore = useCallback(async () => {
     if (!channelId || !nextCursor || loadingMoreRef.current) return [];
@@ -178,6 +232,46 @@ export const useChannelMessages = ({
     [channelId, editingMessageId]
   );
 
+  const toggleReaction = useCallback(
+    async (messageId: string, emoji: string) => {
+      if (!channelId) return;
+      const message = messagesRef.current.find((m) => m.messageId === messageId);
+      if (!message) return;
+
+      const { reactions } = message;
+      const existing = reactions.find((r) => r.emoji === emoji);
+      const isReacting = !existing?.reactedByMe;
+      const originalReactions = reactions;
+
+      const nextReactions = isReacting
+        ? existing
+          ? reactions.map((reaction) =>
+              reaction.emoji === emoji
+                ? { ...reaction, count: reaction.count + 1, reactedByMe: true }
+                : reaction
+            )
+          : [...reactions, { emoji, count: 1, reactedByMe: true }]
+        : reactions
+            .map((r) => (r.emoji === emoji ? { ...r, count: r.count - 1, reactedByMe: false } : r))
+            .filter((r) => r.count > 0);
+
+      setMessages((prev) =>
+        prev.map((message) =>
+          message.messageId === messageId ? { ...message, reactions: nextReactions } : message
+        )
+      );
+
+      try {
+        await (isReacting ? addReaction : removeReaction)(channelId, messageId, emoji);
+      } catch {
+        setMessages((prev) =>
+          prev.map((m) => (m.messageId === messageId ? { ...m, reactions: originalReactions } : m))
+        );
+      }
+    },
+    [channelId]
+  );
+
   const latestOwnMessage = useMemo(
     () => [...messages].reverse().find((message) => message.authorUserId === currentUserId) ?? null,
     [currentUserId, messages]
@@ -197,5 +291,6 @@ export const useChannelMessages = ({
     dismissNewMessagesSeparator,
     saveEdit,
     removeMessage,
+    toggleReaction,
   };
 };

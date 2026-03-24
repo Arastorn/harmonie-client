@@ -63,6 +63,7 @@ export const TextChannelView = () => {
     dismissNewMessagesSeparator,
     saveEdit,
     removeMessage,
+    toggleReaction,
   } = useChannelMessages({
     channelId,
     channelReady,
@@ -266,6 +267,7 @@ export const TextChannelView = () => {
                     onCancelEdit={cancelEditing}
                     onSaveEdit={saveEdit}
                     onDelete={handleDeleteMessage}
+                    onReact={toggleReaction}
                     onOpenMenu={handleOpenMessageMenu}
                   />
                 </div>
