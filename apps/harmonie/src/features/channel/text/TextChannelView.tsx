@@ -11,9 +11,9 @@ import { useRealtime } from '@/features/realtime/RealtimeContext';
 import { useUser } from '@/features/user/UserContext';
 import { MemberPopover } from '@/shared/components/MemberPopover';
 import type { MainLayoutOutletContext } from '@/layouts/MainLayout';
-import { MessageComposer } from './components/MessageComposer';
-import { MessageListItem } from './components/MessageListItem';
-import { MessageContextMenu, type MessageMenuState } from './components/message/MessageContextMenu';
+import { MessageComposer } from './MessageComposer';
+import { MessageListItem } from './MessageListItem/MessageListItem';
+import { MessageContextMenu, type MessageMenuState } from './MessageListItem/MessageContextMenu';
 import { useChannelMessages } from './hooks/useChannelMessages';
 import { areMessagesGrouped, getDaySeparatorLabel } from './utils/messagePresentation';
 

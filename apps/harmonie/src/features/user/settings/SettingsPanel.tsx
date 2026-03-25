@@ -4,11 +4,11 @@ import { FileText, Globe, LogOut, Palette, UserRound } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { ModalPanel, NavList, Separator } from '@harmonie/ui';
 import { useAuth } from '@/features/auth/AuthContext';
-import { useUser } from './UserContext';
-import { AvatarSection } from './settings/AvatarSection';
-import { BioSection } from './settings/BioSection';
-import { LanguageSection } from './settings/LanguageSection';
-import { ThemeSection } from './settings/ThemeSection';
+import { useUser } from '@/features/user/UserContext';
+import { AvatarSection } from './AvatarSection';
+import { BioSection } from './BioSection';
+import { LanguageSection } from './LanguageSection';
+import { ThemeSection } from './ThemeSection';
 
 type Section = 'bio' | 'language' | 'avatar' | 'theme';
 

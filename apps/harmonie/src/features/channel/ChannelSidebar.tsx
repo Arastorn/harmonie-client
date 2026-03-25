@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ContextMenu, IconButton } from '@harmonie/ui';
 import { Plus, Pencil, Settings, Trash2 } from 'lucide-react';
-import { GuildSettingsModal } from '@/features/guild/GuildSettingsModal';
+import { GuildSettingsModal } from '@/features/guild/settings/GuildSettingsModal';
 import { useGuildPermissions } from '@/features/guild/hooks/useGuildPermissions';
 import type { Channel, Guild } from '@/types/guild';
 import { useGuilds } from '@/features/guild/GuildContext';

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Headphones, Mic, Settings } from 'lucide-react';
 import { useUser } from './UserContext';
 import { Avatar, IconButton } from '@harmonie/ui';
-import { SettingsPanel } from './SettingsPanel';
+import { SettingsPanel } from './settings/SettingsPanel';
 import { useFileBlobUrl } from '@/shared/hooks/useFileBlobUrl';
 
 export const UserPanel = () => {
