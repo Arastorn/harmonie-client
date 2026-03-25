@@ -173,6 +173,11 @@ export const en = {
       updateError: 'Failed to update message. Please try again.',
       tooLong: 'Message too long ({{count}}/{{max}} characters).',
     },
+    typing: {
+      one: '{{name}} is typing…',
+      two: '{{name1}} and {{name2}} are typing…',
+      several: 'Several people are typing…',
+    },
   },
   settings: {
     title: 'Settings',

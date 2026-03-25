@@ -71,3 +71,9 @@ export interface ReactionRemovedEvent {
   emoji: string;
   userId: string;
 }
+
+export interface UserTypingEvent {
+  userId: string;
+  channelId: string;
+  timestamp: string;
+}

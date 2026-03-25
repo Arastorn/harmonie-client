@@ -22,7 +22,6 @@ export const MessageEmojiPicker = ({ anchorRect, onSelect, onClose }: MessageEmo
         onClose();
       }
     };
-    // Delay to avoid closing on the same click that opened the picker
     const timer = setTimeout(() => {
       document.addEventListener('mousedown', handleClick);
     }, 0);
@@ -40,7 +39,6 @@ export const MessageEmojiPicker = ({ anchorRect, onSelect, onClose }: MessageEmo
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [onClose]);
 
-  // Prefer below the anchor, fall back to above if not enough room
   let top = anchorRect.bottom + OFFSET;
   if (top + PICKER_HEIGHT > window.innerHeight - OFFSET) {
     top = anchorRect.top - PICKER_HEIGHT - OFFSET;

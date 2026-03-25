@@ -28,9 +28,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
 
-  // useRef guard intentional: POST /auth/refresh consumes the token.
-  // A double call (StrictMode) would trigger AUTH_REFRESH_TOKEN_REUSE_DETECTED
-  // and invalidate the entire token family server-side.
   const initialized = useRef(false);
 
   useEffect(() => {
@@ -66,7 +63,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       try {
         await logoutApi({ refreshToken });
       } catch (error) {
-        // Ignore backend logout errors and continue local logout.
         void error;
       }
     }

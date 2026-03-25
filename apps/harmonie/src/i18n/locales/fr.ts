@@ -175,6 +175,11 @@ export const fr = {
       updateError: 'Impossible de modifier le message. Réessaie.',
       tooLong: 'Message trop long ({{count}}/{{max}} caractères).',
     },
+    typing: {
+      one: "{{name}} est en train d'écrire…",
+      two: '{{name1}} et {{name2}} écrivent…',
+      several: 'Plusieurs personnes écrivent…',
+    },
   },
   settings: {
     title: 'Paramètres',

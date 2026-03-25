@@ -57,6 +57,7 @@ export const TextChannelView = () => {
     editingMessageId,
     lastReadMessageId,
     latestOwnMessage,
+    typingUserIds,
     loadMore,
     startEditing,
     cancelEditing,
@@ -276,11 +277,26 @@ export const TextChannelView = () => {
           )}
         </div>
 
+        {typingUserIds.length > 0 && (
+          <div className="px-4 py-1 text-xs text-text-3 shrink-0 h-6">
+            {(() => {
+              const names = typingUserIds.map(
+                (id) => membersMap.get(id)?.displayName ?? membersMap.get(id)?.username ?? id
+              );
+              if (names.length === 1) return t('channel.typing.one', { name: names[0] });
+              if (names.length === 2)
+                return t('channel.typing.two', { name1: names[0], name2: names[1] });
+              return t('channel.typing.several');
+            })()}
+          </div>
+        )}
+
         <div className="mt-auto flex items-end px-4 pb-4">
           <MessageComposer
             channelId={channelId}
             latestEditableMessage={latestOwnMessage}
             onEditingRequested={handleStartEditing}
+            connection={connection}
           />
         </div>
       </div>

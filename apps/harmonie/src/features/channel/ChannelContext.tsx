@@ -3,16 +3,12 @@ import { useParams } from 'react-router-dom';
 import { listChannels, reorderChannels } from '@/api/guilds';
 import type { Channel } from '@/types/guild';
 
-// Internal state: channels are always tagged with the guildId they belong to.
-// This prevents stale data from a previous guild leaking to a new one during
-// the render cycle before the fetch effect has had a chance to reset.
 interface ChannelState {
   guildId: string;
   channels: Channel[];
 }
 
 interface ChannelContextValue {
-  // null while loading OR while the loaded data belongs to a different guild
   channels: Channel[] | null;
   addChannel: (channel: Channel) => void;
   updateChannel: (updated: Channel) => void;

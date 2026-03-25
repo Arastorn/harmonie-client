@@ -40,7 +40,6 @@ export const GuildInvites = ({ guildId }: GuildInvitesProps) => {
         maxUses: parsedMaxUses,
         expiresInHours: null,
       });
-      // Refresh the list to get the full invite object
       setInvites((prev) => [
         {
           code: newInvite.code,

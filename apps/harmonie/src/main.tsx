@@ -8,7 +8,6 @@ import { UserProvider } from './features/user/UserContext';
 import { ThemeProvider } from './features/user/ThemeContext';
 import { RealtimeProvider } from './features/realtime/RealtimeContext';
 
-// Disable the native browser context menu across the entire app
 document.addEventListener('contextmenu', (e) => e.preventDefault());
 
 createRoot(document.getElementById('root')!).render(

@@ -105,13 +105,11 @@ export const ChannelSection = ({
     const newIndex = sectionChannels.findIndex((c) => c.channelId === over.id);
     if (oldIndex === -1 || newIndex === -1) return;
 
-    // Build reordered list for this section with sequential positions
     const reorderedSection = [...sectionChannels];
     const [moved] = reorderedSection.splice(oldIndex, 1);
     reorderedSection.splice(newIndex, 0, moved);
     const reorderedWithPositions = reorderedSection.map((c, i) => ({ ...c, position: i + 1 }));
 
-    // Merge with channels from the other section (unchanged)
     const allChannels = channels ?? [];
     const otherChannels = allChannels.filter((c) => c.type !== sectionChannels[0].type);
     const merged = [...otherChannels, ...reorderedWithPositions];
