@@ -33,7 +33,7 @@ export const ModalPanel = ({
       aria-label={title}
     >
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/30" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
 
       {/* Dialog */}
       <div className="relative flex w-full max-w-3xl h-[80vh] max-h-[620px] rounded-md overflow-hidden shadow-xl border border-border-2">

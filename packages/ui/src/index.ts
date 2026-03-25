@@ -67,5 +67,11 @@ export type {
 export { Badge } from './components/Badge/Badge';
 export type { BadgeProps, BadgeVariant } from './components/Badge/Badge';
 
+export { RowCard } from './components/RowCard/RowCard';
+export type { RowCardProps } from './components/RowCard/RowCard';
+
+export { Select } from './components/Select/Select';
+export type { SelectProps, SelectOption, SelectSize } from './components/Select/Select';
+
 export { THEMES } from './themes';
 export type { Theme } from './themes';

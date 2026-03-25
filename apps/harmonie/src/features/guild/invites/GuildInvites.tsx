@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Copy, Link, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Button, Input } from '@harmonie/ui';
+import { Button, Input, RowCard } from '@harmonie/ui';
 import { createGuildInvite, listGuildInvites, revokeGuildInvite } from '@/api/guilds';
 import type { GuildInvite } from '@/types/guild';
 
@@ -111,22 +111,21 @@ export const GuildInvites = ({ guildId }: GuildInvitesProps) => {
       ) : (
         <ul className="flex flex-col gap-2">
           {activeInvites.map((invite) => (
-            <li
-              key={invite.code}
-              className="flex items-center justify-between gap-3 rounded-md bg-surface-2 px-3 py-2"
-            >
-              <span className="font-mono text-sm text-text-1 truncate">{invite.code}</span>
-              <span className="text-xs text-text-3 shrink-0">
+            <RowCard key={invite.code}>
+              <span className="flex-1 min-w-0 font-mono text-sm text-text-1 truncate">
+                {invite.code}
+              </span>
+              <span className="flex-1 text-center text-xs text-text-3">
                 {invite.maxUses !== null
                   ? t('guild.invites.usesOf', { count: invite.usesCount, max: invite.maxUses })
                   : t('guild.invites.uses', { count: invite.usesCount })}
               </span>
-              <div className="flex items-center gap-1 shrink-0">
+              <div className="flex-1 flex items-center justify-end gap-1">
                 <Button
                   variant="tertiary"
                   onClick={() => handleCopy(invite.code)}
                   title={t('guild.invites.copy')}
-                  className="px-3 py-1.5 text-xs"
+                  className="px-3 py-1.5 text-xs whitespace-nowrap w-20 justify-center"
                 >
                   <Copy size={13} />
                   {copiedCode === invite.code ? t('guild.invites.copied') : t('guild.invites.copy')}
@@ -141,7 +140,7 @@ export const GuildInvites = ({ guildId }: GuildInvitesProps) => {
                   <Trash2 size={13} />
                 </Button>
               </div>
-            </li>
+            </RowCard>
           ))}
         </ul>
       )}

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { DoorOpen, Mailbox, Pencil, ShieldBan, Trash2 } from 'lucide-react';
+import { DoorOpen, Mailbox, Pencil, ShieldBan, Trash2, Users } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { ModalPanel, NavList, Separator } from '@harmonie/ui';
 import type { Guild } from '@/types/guild';
@@ -7,7 +7,8 @@ import { GuildDangerSection } from '@/features/guild/settings/GuildDangerSection
 import { GuildLeaveSection } from '@/features/guild/settings/GuildLeaveSection';
 import { GuildForm } from '@/features/guild/form/GuildForm';
 import { GuildInvites } from '@/features/guild/invites/GuildInvites';
-import { GuildBans } from '@/features/guild/bans/GuildBans';
+import { GuildBans } from '@/features/guild/members/admin/GuildBans';
+import { GuildMembers } from '@/features/guild/members/admin/GuildMembers';
 import { useGuildPermissions } from '@/features/guild/hooks/useGuildPermissions';
 import { AdminSectionMenu } from '@/features/guild/types/adminSection';
 
@@ -53,6 +54,14 @@ export const GuildSettingsModal = ({
             label={t('guild.edit.nav.identity')}
             active={section === 'identity'}
             onClick={() => setSection('identity')}
+          />
+        )}
+        {canManageGuild && (
+          <NavList.Item
+            icon={<Users size={15} />}
+            label={t('guild.edit.nav.members')}
+            active={section === 'members'}
+            onClick={() => setSection('members')}
           />
         )}
         {canManageGuild && (
@@ -108,6 +117,8 @@ export const GuildSettingsModal = ({
           onSuccess={onClose}
         />
       )}
+
+      {section === 'members' && canManageGuild && <GuildMembers guild={guild} />}
 
       {section === 'invites' && canManageGuild && <GuildInvites guildId={guild.guildId} />}
 

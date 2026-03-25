@@ -4,12 +4,11 @@ import { useTranslation } from 'react-i18next';
 import { Users } from 'lucide-react';
 import { IconButton, Separator } from '@harmonie/ui';
 import type { GuildMember } from '@/types/guild';
-import { useMemberBanActions } from '@/features/guild/hooks/useMemberBanActions';
-import { useGuildMembers, useGuilds } from '@/features/guild/GuildContext';
+import { useCurrentGuild, useGuildMembers } from '@/features/guild/GuildContext';
 import { useChannels } from '@/features/channel/ChannelContext';
 import { useRealtime } from '@/features/realtime/RealtimeContext';
 import { useUser } from '@/features/user/UserContext';
-import { MemberPopover } from '@/shared/components/MemberPopover';
+import { MemberPopover } from '@/features/guild/members/panel/MemberPopover';
 import type { MainLayoutOutletContext } from '@/layouts/MainLayout';
 import { MessageComposer } from './MessageComposer';
 import { MessageListItem } from './MessageListItem/MessageListItem';
@@ -40,14 +39,11 @@ export const TextChannelView = () => {
     [members]
   );
   const { channels } = useChannels();
-  const { guilds, guildsLoading } = useGuilds();
+  const { guildsLoading, guild } = useCurrentGuild();
   const { user } = useUser();
   const { connection } = useRealtime();
   const currentChannel = channels?.find((channel) => channel.channelId === channelId);
   const channelReady = Boolean(channelId && channels !== null && currentChannel);
-  const { banModal, canBanMember, openBanModal } = useMemberBanActions(guildId, () => {
-    setSelected(null);
-  });
 
   const {
     messages,
@@ -188,7 +184,7 @@ export const TextChannelView = () => {
     return null;
   }
 
-  if (!guilds.some((guild) => guild.guildId === guildId)) {
+  if (!guild) {
     return <Navigate to="/" replace />;
   }
 
@@ -308,21 +304,17 @@ export const TextChannelView = () => {
         onDelete={handleDeleteMessage}
       />
 
-      {selected && (
+      {selected && guildId && (
         <MemberPopover
           member={selected.member}
+          guildId={guildId}
           anchorRect={selected.rect}
           onClose={() => setSelected(null)}
           side="right"
-          onBan={canBanMember(selected.member) ? () => openBanModal(selected.member) : undefined}
-          isOwner={
-            guilds.find((guild) => guild.guildId === guildId)?.ownerUserId ===
-            selected.member.userId
-          }
+          onRemoved={() => setSelected(null)}
+          onBanned={() => setSelected(null)}
         />
       )}
-
-      {banModal}
     </>
   );
 };
