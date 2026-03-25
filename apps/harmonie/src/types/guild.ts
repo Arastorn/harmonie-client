@@ -148,3 +148,9 @@ export interface BanMemberInput {
   reason: string | null;
   purgeMessagesDays: number;
 }
+
+export type GuildMemberRole = 'Admin' | 'Member';
+
+export interface UpdateMemberRoleInput {
+  role: GuildMemberRole;
+}

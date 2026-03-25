@@ -7,6 +7,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import { useParams } from 'react-router-dom';
 import { listGuilds, listGuildMembers } from '@/api/guilds';
 import type { Guild, GuildMember } from '@/types/guild';
 
@@ -80,6 +81,13 @@ export const GuildProvider = ({ children }: { children: ReactNode }) => {
 };
 
 export const useGuilds = () => useContext(GuildContext);
+
+export const useCurrentGuild = () => {
+  const { guildId } = useParams<{ guildId: string }>();
+  const { guilds, guildsLoading } = useContext(GuildContext);
+  const guild = guilds.find((g) => g.guildId === guildId) ?? null;
+  return { guild, guildsLoading };
+};
 
 export const useGuildMembers = (guildId: string | undefined) => {
   const { membersByGuild, fetchGuildMembers } = useContext(GuildContext);

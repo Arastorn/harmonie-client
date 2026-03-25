@@ -12,7 +12,7 @@ export const useGuildPermissions = (guild: Guild | null | undefined) => {
   const canLeaveGuild = Boolean(guild) && !isOwner;
   const canOpenGuildContextMenu = Boolean(guild);
 
-  const canBanMember = (member: GuildMember): boolean => {
+  const canActOnMember = (member: GuildMember): boolean => {
     if (!guild) return false;
     if (isOwner) return member.userId !== guild.ownerUserId;
     if (!isAdmin) return false;
@@ -20,11 +20,17 @@ export const useGuildPermissions = (guild: Guild | null | undefined) => {
     return member.role !== 'Admin';
   };
 
+  const canBanMember = canActOnMember;
+  const canRemoveMember = canActOnMember;
+  const canEditMemberRole = canActOnMember;
+
   return {
     isAdmin,
     isOwner,
     canAccessDangerZone,
     canBanMember,
+    canEditMemberRole,
+    canRemoveMember,
     canLeaveGuild,
     canManageChannels,
     canManageGuild,

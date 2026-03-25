@@ -16,6 +16,7 @@ import type {
   InvitePreview,
   ReorderChannelsInput,
   UpdateGuildInput,
+  UpdateMemberRoleInput,
 } from '@/types/guild';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
@@ -119,6 +120,26 @@ export const listGuildBans = (guildId: string): Promise<GuildBanList> =>
 export const unbanMember = (guildId: string, userId: string): Promise<void> =>
   apiFetch(`${API_BASE}/guilds/${guildId}/bans/${userId}`, {
     method: 'DELETE',
+  }).then(async (r) => {
+    if (!r.ok) throw await r.json();
+  });
+
+export const removeMember = (guildId: string, userId: string): Promise<void> =>
+  apiFetch(`${API_BASE}/guilds/${guildId}/members/${userId}`, {
+    method: 'DELETE',
+  }).then(async (r) => {
+    if (!r.ok) throw await r.json();
+  });
+
+export const updateMemberRole = (
+  guildId: string,
+  userId: string,
+  input: UpdateMemberRoleInput
+): Promise<void> =>
+  apiFetch(`${API_BASE}/guilds/${guildId}/members/${userId}/role`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
   }).then(async (r) => {
     if (!r.ok) throw await r.json();
   });

@@ -1,14 +1,13 @@
-import { useMemo, useState } from 'react';
-import { BanMemberModal } from '@/features/guild/bans/BanMemberModal';
-import { useGuilds } from '@/features/guild/GuildContext';
+import { useState } from 'react';
+import { BanMemberModal } from '@/features/guild/members/modals/BanMemberModal';
+import { useCurrentGuild, useGuilds } from '@/features/guild/GuildContext';
 import { useGuildPermissions } from '@/features/guild/hooks/useGuildPermissions';
 import type { GuildMember } from '@/types/guild';
 
 export const useMemberBanActions = (guildId: string | undefined, onBanned?: () => void) => {
   const [banTarget, setBanTarget] = useState<GuildMember | null>(null);
-  const { guilds, fetchGuildMembers } = useGuilds();
-
-  const guild = useMemo(() => guilds.find((item) => item.guildId === guildId), [guildId, guilds]);
+  const { fetchGuildMembers } = useGuilds();
+  const { guild } = useCurrentGuild();
   const { canBanMember } = useGuildPermissions(guild);
 
   const banModal =

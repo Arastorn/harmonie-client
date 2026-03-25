@@ -4,7 +4,7 @@ import { GuildProvider, useGuilds } from '@/features/guild/GuildContext';
 import { GuildSidebar } from '@/features/guild/GuildSidebar';
 import { ChannelSidebar } from '@/features/channel/ChannelSidebar';
 import { ChannelProvider } from '@/features/channel/ChannelContext';
-import { MembersPanel } from '@/features/guild/members/MembersPanel';
+import { MembersPanel } from '@/features/guild/members/panel/MembersPanel';
 import { MessageActivityProvider } from '@/features/realtime/MessageActivityContext';
 import { useDocumentTitleSync } from '@/shared/hooks/useDocumentTitleSync';
 import { useNotificationNavigationSync } from '@/shared/hooks/useNotificationNavigationSync';

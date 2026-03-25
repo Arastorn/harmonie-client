@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Gavel } from 'lucide-react';
+import { Gavel, UserMinus } from 'lucide-react';
 import { Avatar, ContextMenu } from '@harmonie/ui';
 import type { GuildMember } from '@/types/guild';
 import { useFileBlobUrl } from '@/shared/hooks/useFileBlobUrl';
@@ -9,9 +9,10 @@ interface MemberItemProps {
   member: GuildMember;
   onSelect: (member: GuildMember, rect: DOMRect) => void;
   onBan?: (member: GuildMember) => void;
+  onRemove?: (member: GuildMember) => void;
 }
 
-export const MemberItem = ({ member, onSelect, onBan }: MemberItemProps) => {
+export const MemberItem = ({ member, onSelect, onBan, onRemove }: MemberItemProps) => {
   const { t } = useTranslation();
   const avatarUrl = useFileBlobUrl(member.avatarFileId);
   const label = member.displayName ?? member.username;
@@ -22,7 +23,7 @@ export const MemberItem = ({ member, onSelect, onBan }: MemberItemProps) => {
   };
 
   const handleContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!onBan) return;
+    if (!onBan && !onRemove) return;
     e.preventDefault();
     setContextMenu({ x: e.clientX, y: e.clientY });
   };
@@ -47,20 +48,36 @@ export const MemberItem = ({ member, onSelect, onBan }: MemberItemProps) => {
         </div>
       </div>
 
-      {contextMenu && onBan && (
+      {contextMenu && (onBan || onRemove) && (
         <ContextMenu
           position={contextMenu}
           horizontalAnchor="right"
           onClose={() => setContextMenu(null)}
           items={[
-            {
-              label: t('guild.bans.banAction'),
-              icon: <Gavel size={14} />,
-              onClick: () => {
-                setContextMenu(null);
-                onBan(member);
-              },
-            },
+            ...(onRemove
+              ? [
+                  {
+                    label: t('guild.members.kickAction'),
+                    icon: <UserMinus size={14} />,
+                    onClick: () => {
+                      setContextMenu(null);
+                      onRemove(member);
+                    },
+                  },
+                ]
+              : []),
+            ...(onBan
+              ? [
+                  {
+                    label: t('guild.bans.banAction'),
+                    icon: <Gavel size={14} />,
+                    onClick: () => {
+                      setContextMenu(null);
+                      onBan(member);
+                    },
+                  },
+                ]
+              : []),
           ]}
         />
       )}

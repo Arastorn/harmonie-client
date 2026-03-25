@@ -4,10 +4,11 @@ import { useTranslation } from 'react-i18next';
 import { X } from 'lucide-react';
 import { IconButton } from '@harmonie/ui';
 import type { GuildMember } from '@/types/guild';
-import { MemberItem } from '@/features/guild/members/MemberItem';
-import { useMemberBanActions } from '@/features/guild/hooks/useMemberBanActions';
-import { MemberPopover } from '@/shared/components/MemberPopover';
-import { useGuildMembers, useGuilds } from '@/features/guild/GuildContext';
+import { MemberItem } from '@/features/guild/members/panel/MemberItem';
+import { useMemberBanActions } from '@/features/guild/members/modals/useMemberBanActions';
+import { useMemberRemoveActions } from '@/features/guild/members/modals/useMemberRemoveActions';
+import { MemberPopover } from '@/features/guild/members/panel/MemberPopover';
+import { useGuildMembers } from '@/features/guild/GuildContext';
 
 interface SelectedMember {
   member: GuildMember;
@@ -27,7 +28,10 @@ export const MembersPanel = ({ onClose }: MembersPanelProps) => {
     setSelected(null);
   });
 
-  const { guilds } = useGuilds();
+  const { removeModal, canRemoveMember, openRemoveModal } = useMemberRemoveActions(guildId, () => {
+    setSelected(null);
+  });
+
   const membersOrNull = useGuildMembers(guildId);
   const loading = membersOrNull === null;
   const members = membersOrNull ?? [];
@@ -69,6 +73,7 @@ export const MembersPanel = ({ onClose }: MembersPanelProps) => {
                       member={m}
                       onSelect={handleSelect}
                       onBan={canBanMember(m) ? openBanModal : undefined}
+                      onRemove={canRemoveMember(m) ? openRemoveModal : undefined}
                     />
                   ))}
                 </div>
@@ -84,6 +89,7 @@ export const MembersPanel = ({ onClose }: MembersPanelProps) => {
                       member={m}
                       onSelect={handleSelect}
                       onBan={canBanMember(m) ? openBanModal : undefined}
+                      onRemove={canRemoveMember(m) ? openRemoveModal : undefined}
                     />
                   ))}
                 </div>
@@ -93,18 +99,18 @@ export const MembersPanel = ({ onClose }: MembersPanelProps) => {
         </div>
       </div>
 
-      {selected && (
+      {selected && guildId && (
         <MemberPopover
           member={selected.member}
+          guildId={guildId}
           anchorRect={selected.rect}
           onClose={() => setSelected(null)}
-          onBan={canBanMember(selected.member) ? () => openBanModal(selected.member) : undefined}
-          isOwner={
-            guilds.find((g) => g.guildId === guildId)?.ownerUserId === selected.member.userId
-          }
+          onRemoved={() => setSelected(null)}
+          onBanned={() => setSelected(null)}
         />
       )}
       {banModal}
+      {removeModal}
     </>
   );
 };
