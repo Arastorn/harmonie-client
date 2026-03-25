@@ -5,10 +5,10 @@ import { formatRelative } from 'date-fns';
 import type { Message } from '@/types/channel';
 import type { GuildMember } from '@/types/guild';
 import { useFileBlobUrl } from '@/shared/hooks/useFileBlobUrl';
-import { MessageActions } from './message/MessageActions';
-import { MessageEmojiPicker } from './message/MessageEmojiPicker';
-import { MessageInlineEditor } from './message/MessageInlineEditor';
-import { MessageReactions } from './message/MessageReactions';
+import { MessageActions } from './MessageActions';
+import { MessageEmojiPicker } from './MessageEmojiPicker';
+import { MessageInlineEditor } from './MessageInlineEditor';
+import { MessageReactions } from './MessageReactions';
 
 interface MessageListItemProps {
   message: Message;

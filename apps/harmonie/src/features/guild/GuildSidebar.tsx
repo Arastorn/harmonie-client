@@ -6,10 +6,10 @@ import { ContextMenu, GuildAvatar } from '@harmonie/ui';
 import { useMessageActivity } from '@/features/realtime/MessageActivityContext';
 import { useFileBlobUrl } from '@/shared/hooks/useFileBlobUrl';
 import { useGuilds } from './GuildContext';
-import { GuildCreateOrJoinModal } from '@/features/guild/GuildCreateOrJoinModal';
+import { GuildCreateOrJoinModal } from '@/features/guild/join/GuildCreateOrJoinModal';
 import { useGuildPermissions } from '@/features/guild/hooks/useGuildPermissions';
 import type { Guild } from '@/types/guild';
-import { GuildSettingsModal } from '@/features/guild/GuildSettingsModal';
+import { GuildSettingsModal } from '@/features/guild/settings/GuildSettingsModal';
 import { AdminSectionMenu } from '@/features/guild/types/adminSection';
 
 const GuildSidebarItem = ({
