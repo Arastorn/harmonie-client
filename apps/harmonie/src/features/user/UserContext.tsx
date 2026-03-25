@@ -32,14 +32,12 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     getMe()
       .then((profile) => {
         setUser(profile);
-        // Apply the user's saved language preference immediately
         if (profile.language) i18n.changeLanguage(profile.language);
-        // Apply the user's saved theme preference
         if (THEMES.includes(profile.theme as Theme)) setTheme(profile.theme as Theme);
       })
       .catch(() => setUser(null))
       .finally(() => setIsLoading(false));
-  }, [isAuthenticated]);
+  }, [isAuthenticated, setTheme]);
 
   return (
     <UserContext.Provider value={{ user, isLoading, updateUser: setUser }}>

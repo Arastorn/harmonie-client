@@ -37,7 +37,6 @@ export const WithBottomRightElement: Story = {
   },
 };
 
-// Interactive component extracted as a named component to satisfy rules-of-hooks
 const MAX = 500;
 
 const TextareaWithCounter = () => {

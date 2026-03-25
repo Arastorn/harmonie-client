@@ -4,25 +4,30 @@ import { SendHorizonal } from 'lucide-react';
 import { EmojiTextarea, IconButton } from '@harmonie/ui';
 import { sendMessage } from '@/api/channels';
 import type { Message } from '@/types/channel';
+import type { HubConnection } from '@microsoft/signalr';
 
 const MAX_LENGTH = 4000;
+const TYPING_THROTTLE_MS = 4000;
 
 interface MessageComposerProps {
   channelId: string;
   latestEditableMessage?: Message | null;
   onEditingRequested?: (messageId: string) => void;
+  connection?: HubConnection | null;
 }
 
 export const MessageComposer = ({
   channelId,
   latestEditableMessage = null,
   onEditingRequested,
+  connection,
 }: MessageComposerProps) => {
   const { t } = useTranslation();
   const [content, setContent] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const lastTypingSentRef = useRef<number>(0);
 
   const isOverLimit = content.length > MAX_LENGTH;
   const trimmedContent = content.trim();
@@ -44,6 +49,17 @@ export const MessageComposer = ({
     textarea.style.height = `${next}px`;
     textarea.style.overflowY = textarea.scrollHeight > maxHeight ? 'auto' : 'hidden';
   }, [content]);
+
+  const handleChange = (value: string) => {
+    setContent(value);
+    if (connection && value.trim()) {
+      const now = Date.now();
+      if (now - lastTypingSentRef.current > TYPING_THROTTLE_MS) {
+        lastTypingSentRef.current = now;
+        connection.send('StartTypingChannel', channelId).catch(() => {});
+      }
+    }
+  };
 
   const submit = async () => {
     if (!trimmedContent || sending || isOverLimit) return;
@@ -78,7 +94,7 @@ export const MessageComposer = ({
       <div ref={wrapperRef} className="flex-1">
         <EmojiTextarea
           value={content}
-          onChange={setContent}
+          onChange={handleChange}
           placeholder={t('channel.input.placeholder')}
           disabled={sending}
           error={

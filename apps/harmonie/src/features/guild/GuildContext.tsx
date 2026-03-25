@@ -37,9 +37,7 @@ export const GuildProvider = ({ children }: { children: ReactNode }) => {
   const [guilds, setGuilds] = useState<Guild[]>([]);
   const [guildsLoading, setGuildsLoading] = useState(false);
   const [membersByGuild, setMembersByGuild] = useState<Record<string, MembersCacheEntry>>({});
-  // Ref mirror of membersByGuild so fetchGuildMembers can read it without being a dep
   const membersByGuildRef = useRef<Record<string, MembersCacheEntry>>({});
-  // Track in-flight requests to avoid duplicate fetches
   const fetchingRef = useRef<Set<string>>(new Set());
 
   membersByGuildRef.current = membersByGuild;

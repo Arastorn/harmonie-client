@@ -35,7 +35,6 @@ export const apiFetch = async (input: RequestInfo | URL, init?: RequestInit): Pr
   const res = await fetch(input, withBearer(init));
   if (res.status !== 401) return res;
 
-  // Guard: don't retry refresh calls to avoid infinite loop
   const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
   if (url.includes('/auth/refresh')) return res;
 

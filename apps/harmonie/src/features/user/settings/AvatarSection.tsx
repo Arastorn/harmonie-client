@@ -30,13 +30,11 @@ export const AvatarSection = ({ user, updateUser }: AvatarSectionProps) => {
   const initialIconColor = user?.avatar?.color ?? defaultIconColor;
   const initialIconBg = user?.avatar?.bg ?? defaultBgColor;
 
-  // Icon state — colors are always stored as resolved hex values
   const [selectedIcon, setSelectedIcon] = useState(defaultIcon);
   const [iconColor, setIconColor] = useState(initialIconColor);
   const [iconBg, setIconBg] = useState(initialIconBg);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Image state
   const [imageMarkedForDeletion, setImageMarkedForDeletion] = useState(false);
   const remoteImagePreview = useFileBlobUrl(user?.avatarFileId);
   const imagePreview = imageMarkedForDeletion
