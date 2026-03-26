@@ -13,6 +13,8 @@ import type {
   GuildBanList,
   GuildInviteList,
   GuildMemberList,
+  GuildMessageSearchParams,
+  GuildMessageSearchResponse,
   InvitePreview,
   ReorderChannelsInput,
   UpdateGuildInput,
@@ -143,3 +145,18 @@ export const updateMemberRole = (
   }).then(async (r) => {
     if (!r.ok) throw await r.json();
   });
+
+export const searchGuildMessages = (
+  guildId: string,
+  params: GuildMessageSearchParams
+): Promise<GuildMessageSearchResponse> => {
+  const url = new URL(`${API_BASE}/guilds/${guildId}/messages/search`);
+  if (params.q) url.searchParams.set('Q', params.q);
+  if (params.channelId) url.searchParams.set('ChannelId', params.channelId);
+  if (params.authorId) url.searchParams.set('AuthorId', params.authorId);
+  if (params.before) url.searchParams.set('Before', params.before);
+  if (params.after) url.searchParams.set('After', params.after);
+  if (params.cursor) url.searchParams.set('Cursor', params.cursor);
+  if (params.limit !== undefined) url.searchParams.set('Limit', String(params.limit));
+  return apiFetch(url.toString()).then((r) => parseOrThrow<GuildMessageSearchResponse>(r));
+};

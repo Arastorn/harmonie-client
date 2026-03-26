@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Avatar } from '@harmonie/ui';
 import { useTranslation } from 'react-i18next';
-import { formatRelative } from 'date-fns';
 import type { Message } from '@/types/channel';
 import type { GuildMember } from '@/types/guild';
 import { useFileBlobUrl } from '@/shared/hooks/useFileBlobUrl';
+import { formatContextualDateTime } from '@/shared/utils/date';
 import { MessageActions } from './MessageActions';
 import { MessageEmojiPicker } from './MessageEmojiPicker';
 import { MessageInlineEditor } from './MessageInlineEditor';
@@ -17,6 +17,7 @@ interface MessageListItemProps {
   isOwn?: boolean;
   isEditing?: boolean;
   isMenuOpen?: boolean;
+  isSelected?: boolean;
   onAvatarClick?: (member: GuildMember, rect: DOMRect) => void;
   onEdit?: (messageId: string) => void;
   onCancelEdit?: () => void;
@@ -37,6 +38,7 @@ export const MessageListItem = ({
   isOwn = false,
   isEditing = false,
   isMenuOpen = false,
+  isSelected = false,
   onAvatarClick,
   onEdit,
   onCancelEdit,
@@ -45,7 +47,7 @@ export const MessageListItem = ({
   onReact,
   onOpenMenu,
 }: MessageListItemProps) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [pickerAnchorRect, setPickerAnchorRect] = useState<DOMRect | null>(null);
   const avatarUrl = useFileBlobUrl(member?.avatarFileId);
   const label = member
@@ -84,6 +86,7 @@ export const MessageListItem = ({
         'group flex items-start gap-3 relative px-2 -mx-2 rounded-sm',
         'hover:bg-surface-3 transition-colors',
         isEditing || isMenuOpen || pickerAnchorRect ? 'bg-surface-3' : '',
+        isSelected ? 'bg-surface-3 ring-1 ring-primary/60' : '',
         grouped ? 'py-0.5' : 'pt-3 pb-2',
       ].join(' ')}
     >
@@ -114,7 +117,7 @@ export const MessageListItem = ({
           >
             <span className="text-sm font-semibold text-text-1">{label}</span>
             <span className="text-xs text-text-3">
-              {formatRelative(new Date(message.createdAtUtc), new Date())}
+              {formatContextualDateTime(message.createdAtUtc, i18n.language, t)}
             </span>
           </div>
         )}

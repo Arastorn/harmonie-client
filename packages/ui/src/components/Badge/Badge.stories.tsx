@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { Hash, User } from 'lucide-react';
 import { Badge } from './Badge';
 
 const meta: Meta<typeof Badge> = {
@@ -8,7 +9,7 @@ const meta: Meta<typeof Badge> = {
   argTypes: {
     variant: {
       control: 'select',
-      options: ['default', 'owner'],
+      options: ['default', 'owner', 'filter'],
     },
   },
 };
@@ -35,6 +36,26 @@ export const AllVariants: Story = {
     <div className="flex gap-2 flex-wrap">
       <Badge variant="default">member</Badge>
       <Badge variant="owner">owner</Badge>
+      <Badge variant="filter" icon={<Hash size={10} />}>
+        general
+      </Badge>
     </div>
   ),
+};
+
+export const WithIcon: Story = {
+  args: {
+    children: 'Laurine',
+    icon: <User size={10} />,
+    variant: 'default',
+  },
+};
+
+export const Removable: Story = {
+  args: {
+    children: 'general',
+    icon: <Hash size={10} />,
+    variant: 'filter',
+    onRemove: () => undefined,
+  },
 };

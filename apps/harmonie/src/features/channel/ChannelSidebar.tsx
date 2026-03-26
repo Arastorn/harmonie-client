@@ -111,7 +111,7 @@ export const ChannelSidebar = () => {
   return (
     <>
       <aside className="flex flex-col w-60 bg-surface-1 rounded-md shrink-0 overflow-hidden">
-        <header className="pl-4 pr-2 py-3 bg-surface-2 rounded-t-md flex items-center justify-between gap-2">
+        <header className="pl-4 pr-2 py-3.5 bg-surface-2 rounded-t-md flex items-center justify-between gap-2">
           <h2 className="font-semibold text-text-1 truncate">{guild?.name ?? guildId}</h2>
           {canManageGuild && guild && (
             <IconButton

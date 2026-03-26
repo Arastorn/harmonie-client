@@ -2,6 +2,9 @@ export const fr = {
   app: {
     name: 'Harmonie',
   },
+  dateTime: {
+    dateAt: '{{date}} à {{time}}',
+  },
   notifications: {
     browser: {
       title: 'Nouveau message',
@@ -119,6 +122,22 @@ export const fr = {
         bioLabel: 'À propos',
         ownerLabel: 'Fondateur',
       },
+    },
+    search: {
+      title: 'Rechercher des messages',
+      placeholder: 'Rechercher…',
+      loading: 'Recherche en cours…',
+      empty: 'Aucun résultat.',
+      error: 'Impossible de rechercher. Réessaie.',
+      hint: 'Tape pour rechercher dans cette guilde.',
+      filters: 'Filtres',
+      filterByAuthor: "D'un utilisateur spécifique",
+      filterByAuthorHint: 'de: utilisateur',
+      filterByChannel: 'Envoyé dans un salon spécifique',
+      filterByChannelHint: 'dans: salon',
+      memberPickerPlaceholder: 'Rechercher un membre…',
+      channelPickerPlaceholder: 'Rechercher un salon…',
+      noResults: 'Aucun résultat.',
     },
     invites: {
       description:

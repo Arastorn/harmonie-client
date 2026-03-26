@@ -1,19 +1,21 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Navigate, useOutletContext, useParams } from 'react-router-dom';
+import { Navigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Users } from 'lucide-react';
 import { IconButton, Separator } from '@harmonie/ui';
+import { GuildSearchBar } from '@/features/guild/search/GuildSearchBar';
 import type { GuildMember } from '@/types/guild';
 import { useCurrentGuild, useGuildMembers } from '@/features/guild/GuildContext';
 import { useChannels } from '@/features/channel/ChannelContext';
 import { useRealtime } from '@/features/realtime/RealtimeContext';
 import { useUser } from '@/features/user/UserContext';
 import { MemberPopover } from '@/features/guild/members/panel/MemberPopover';
-import type { MainLayoutOutletContext } from '@/layouts/MainLayout';
+import { useGuildWorkspace } from '@/features/guild/workspace/GuildWorkspaceProvider';
 import { MessageComposer } from './MessageComposer';
 import { MessageListItem } from './MessageListItem/MessageListItem';
 import { MessageContextMenu, type MessageMenuState } from './MessageListItem/MessageContextMenu';
 import { useChannelMessages } from './hooks/useChannelMessages';
+import { useTextChannelSearchTarget } from './hooks/useTextChannelSearchTarget';
 import { areMessagesGrouped, getDaySeparatorLabel } from './utils/messagePresentation';
 
 interface SelectedMember {
@@ -24,7 +26,15 @@ interface SelectedMember {
 export const TextChannelView = () => {
   const { t } = useTranslation();
   const { channelId, guildId } = useParams<{ channelId: string; guildId: string }>();
-  const { onToggleMembers } = useOutletContext<MainLayoutOutletContext>();
+  const {
+    toggleMembersPanel,
+    searchQuery,
+    searchAuthorId,
+    searchChannelId,
+    setSearchQuery,
+    setSearchAuthorId,
+    setSearchChannelId,
+  } = useGuildWorkspace();
   const [selected, setSelected] = useState<SelectedMember | null>(null);
   const [messageMenu, setMessageMenu] = useState<MessageMenuState | null>(null);
   const [separatorDismissed, setSeparatorDismissed] = useState(false);
@@ -55,6 +65,7 @@ export const TextChannelView = () => {
     latestOwnMessage,
     typingUserIds,
     loadMore,
+    loadUntilMessage,
     startEditing,
     cancelEditing,
     dismissNewMessagesSeparator,
@@ -66,6 +77,18 @@ export const TextChannelView = () => {
     channelReady,
     connection,
     currentUserId: user?.userId,
+  });
+
+  const { activeSearchTarget, selectedMessageId, seekingTargetRef } = useTextChannelSearchTarget({
+    channelId,
+    guildId,
+    messages,
+    loading,
+    error,
+    scrollRef,
+    previousMessageCountRef,
+    suppressNextScrollEffectsRef,
+    loadUntilMessage,
   });
 
   useEffect(() => {
@@ -83,6 +106,11 @@ export const TextChannelView = () => {
       suppressNextScrollEffectsRef.current = true;
       element.scrollTop = scrollTop + (element.scrollHeight - scrollHeight);
       scrollAnchorRef.current = null;
+      return;
+    }
+
+    if (activeSearchTarget || seekingTargetRef.current) {
+      previousMessageCountRef.current = messages.length;
       return;
     }
 
@@ -111,7 +139,7 @@ export const TextChannelView = () => {
     }
 
     previousMessageCountRef.current = messages.length;
-  }, [lastReadMessageId, messages]);
+  }, [activeSearchTarget, lastReadMessageId, messages, seekingTargetRef]);
 
   useEffect(() => {
     if (!editingMessageId) return;
@@ -133,11 +161,6 @@ export const TextChannelView = () => {
     if (!element) return;
 
     const handleScroll = async () => {
-      if (suppressNextScrollEffectsRef.current) {
-        suppressNextScrollEffectsRef.current = false;
-        return;
-      }
-
       if (lastReadMessageId !== null && !separatorDismissed) {
         setSeparatorDismissed(true);
       }
@@ -211,11 +234,21 @@ export const TextChannelView = () => {
   return (
     <>
       <div className="flex flex-col h-full bg-surface-1 rounded-md overflow-hidden">
-        <div className="flex items-center justify-between px-4 py-3 shrink-0 bg-surface-2 rounded-t-md">
+        <div className="flex items-center justify-between px-4 py-2.5 shrink-0 bg-surface-2 rounded-t-md">
           <span className="text-sm font-semibold text-text-1"># {currentChannel.name}</span>
-          <IconButton size="small" onClick={onToggleMembers}>
-            <Users size={16} />
-          </IconButton>
+          <div className="flex items-center gap-2">
+            <GuildSearchBar
+              query={searchQuery}
+              authorId={searchAuthorId}
+              channelId={searchChannelId}
+              onQueryChange={setSearchQuery}
+              onAuthorChange={setSearchAuthorId}
+              onChannelChange={setSearchChannelId}
+            />
+            <IconButton size="small" onClick={toggleMembersPanel}>
+              <Users size={16} />
+            </IconButton>
+          </div>
         </div>
 
         {loadingMore && (
@@ -259,6 +292,7 @@ export const TextChannelView = () => {
                     isOwn={message.authorUserId === user?.userId}
                     isEditing={message.messageId === editingMessageId}
                     isMenuOpen={message.messageId === messageMenu?.messageId}
+                    isSelected={message.messageId === selectedMessageId}
                     onAvatarClick={handleAvatarClick}
                     onEdit={handleStartEditing}
                     onCancelEdit={cancelEditing}
