@@ -118,7 +118,9 @@ export const GuildSettingsModal = ({
         />
       )}
 
-      {section === 'members' && canManageGuild && <GuildMembers guild={guild} />}
+      {section === 'members' && canManageGuild && (
+        <GuildMembers guild={guild} onOwnershipTransferred={onClose} />
+      )}
 
       {section === 'invites' && canManageGuild && <GuildInvites guildId={guild.guildId} />}
 

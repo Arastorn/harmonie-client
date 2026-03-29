@@ -146,6 +146,15 @@ export const updateMemberRole = (
     if (!r.ok) throw await r.json();
   });
 
+export const transferOwnership = (guildId: string, newOwnerId: string): Promise<void> =>
+  apiFetch(`${API_BASE}/guilds/${guildId}/owner/transfer`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ newOwnerId }),
+  }).then(async (r) => {
+    if (!r.ok) throw await r.json();
+  });
+
 export const searchGuildMessages = (
   guildId: string,
   params: GuildMessageSearchParams

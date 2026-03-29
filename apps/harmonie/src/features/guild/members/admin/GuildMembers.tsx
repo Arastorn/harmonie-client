@@ -8,17 +8,25 @@ import type { Guild, GuildMemberRole } from '@/types/guild';
 
 interface GuildMembersProps {
   guild: Guild;
+  onOwnershipTransferred?: () => void;
 }
 
-export const GuildMembers = ({ guild }: GuildMembersProps) => {
+export const GuildMembers = ({ guild, onOwnershipTransferred }: GuildMembersProps) => {
   const { t } = useTranslation();
   const members = useGuildMembers(guild.guildId);
-  const { fetchGuildMembers } = useGuilds();
+  const { fetchGuildMembers, fetchGuilds } = useGuilds();
   const [changingRoleId, setChangingRoleId] = useState<string | null>(null);
 
-  const { canRemoveMember, canBanMember, canEditMemberRole } = useGuildPermissions(guild);
+  const { canRemoveMember, canBanMember, canEditMemberRole, canTransferOwnership } =
+    useGuildPermissions(guild);
 
   const refresh = () => fetchGuildMembers(guild.guildId, true);
+
+  const handleOwnershipTransferred = () => {
+    fetchGuilds();
+    fetchGuildMembers(guild.guildId, true);
+    onOwnershipTransferred?.();
+  };
 
   const handleRoleChange = async (userId: string, role: GuildMemberRole) => {
     setChangingRoleId(userId);
@@ -51,10 +59,12 @@ export const GuildMembers = ({ guild }: GuildMembersProps) => {
               canRemove={canRemoveMember(member)}
               canBan={canBanMember(member)}
               canEditRole={canEditMemberRole(member)}
+              canTransferOwnership={canTransferOwnership(member)}
               isChangingRole={changingRoleId === member.userId}
               onRemoved={refresh}
               onBanned={refresh}
               onRoleChange={handleRoleChange}
+              onOwnershipTransferred={handleOwnershipTransferred}
             />
           ))}
         </ul>

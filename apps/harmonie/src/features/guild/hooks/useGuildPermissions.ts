@@ -24,6 +24,11 @@ export const useGuildPermissions = (guild: Guild | null | undefined) => {
   const canRemoveMember = canActOnMember;
   const canEditMemberRole = canActOnMember;
 
+  const canTransferOwnership = (member: GuildMember): boolean => {
+    if (!guild || !isOwner) return false;
+    return member.userId !== guild.ownerUserId;
+  };
+
   return {
     isAdmin,
     isOwner,
@@ -31,6 +36,7 @@ export const useGuildPermissions = (guild: Guild | null | undefined) => {
     canBanMember,
     canEditMemberRole,
     canRemoveMember,
+    canTransferOwnership,
     canLeaveGuild,
     canManageChannels,
     canManageGuild,
