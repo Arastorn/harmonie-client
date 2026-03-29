@@ -67,7 +67,7 @@ export const MemberPopover = ({
 
   return createPortal(
     <>
-      <div className="fixed inset-0 z-40" onClick={onClose} />
+      <div className="fixed inset-0 z-40 cursor-default" onClick={onClose} />
 
       <div
         ref={cardRef}

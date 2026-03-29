@@ -33,10 +33,15 @@ export const useChannelMessages = ({
   const [lastReadMessageId, setLastReadMessageId] = useState<string | null>(null);
   const loadingMoreRef = useRef(false);
   const messagesRef = useRef<Message[]>([]);
+  const nextCursorRef = useRef<string | null>(null);
 
   useEffect(() => {
     messagesRef.current = messages;
   }, [messages]);
+
+  useEffect(() => {
+    nextCursorRef.current = nextCursor;
+  }, [nextCursor]);
 
   const { editingMessageId, editingMessageIdRef, startEditing, cancelEditing, saveEdit } =
     useMessageEditing({ channelId, setMessages });
@@ -142,30 +147,62 @@ export const useChannelMessages = ({
     };
   }, [cancelEditing, channelId, channelReady, connection, editingMessageIdRef, markChannelAsRead]);
 
+  const loadMoreWithCursor = useCallback(
+    async (cursor: string) => {
+      if (!channelId || loadingMoreRef.current) return [];
+
+      loadingMoreRef.current = true;
+      setLoadingMore(true);
+
+      try {
+        const data = await getChannelMessages(channelId, cursor);
+        setMessages((prev) => {
+          const existingIds = new Set(prev.map((message) => message.messageId));
+          const newItems = sortMessagesAsc(data.items).filter(
+            (message) => !existingIds.has(message.messageId)
+          );
+          return [...newItems, ...prev];
+        });
+        nextCursorRef.current = data.nextCursor;
+        setNextCursor(data.nextCursor);
+        return data.items;
+      } catch {
+        return [];
+      } finally {
+        loadingMoreRef.current = false;
+        setLoadingMore(false);
+      }
+    },
+    [channelId]
+  );
+
   const loadMore = useCallback(async () => {
-    if (!channelId || !nextCursor || loadingMoreRef.current) return [];
+    if (!nextCursor) return [];
+    return loadMoreWithCursor(nextCursor);
+  }, [loadMoreWithCursor, nextCursor]);
 
-    loadingMoreRef.current = true;
-    setLoadingMore(true);
+  const loadUntilMessage = useCallback(
+    async (messageId: string) => {
+      if (!channelId) return false;
+      if (messagesRef.current.some((message) => message.messageId === messageId)) return true;
 
-    try {
-      const data = await getChannelMessages(channelId, nextCursor);
-      setMessages((prev) => {
-        const existingIds = new Set(prev.map((message) => message.messageId));
-        const newItems = sortMessagesAsc(data.items).filter(
-          (message) => !existingIds.has(message.messageId)
-        );
-        return [...newItems, ...prev];
-      });
-      setNextCursor(data.nextCursor);
-      return data.items;
-    } catch {
-      return [];
-    } finally {
-      loadingMoreRef.current = false;
-      setLoadingMore(false);
-    }
-  }, [channelId, nextCursor]);
+      while (nextCursorRef.current && !loadingMoreRef.current) {
+        const cursor = nextCursorRef.current;
+        if (!cursor) break;
+
+        const items = await loadMoreWithCursor(cursor);
+        if (items.some((message) => message.messageId === messageId)) {
+          return true;
+        }
+        if (items.length === 0) {
+          break;
+        }
+      }
+
+      return messagesRef.current.some((message) => message.messageId === messageId);
+    },
+    [channelId, loadMoreWithCursor]
+  );
 
   const removeMessage = useCallback(
     (messageId: string) => {
@@ -192,6 +229,7 @@ export const useChannelMessages = ({
     latestOwnMessage,
     typingUserIds,
     loadMore,
+    loadUntilMessage,
     startEditing,
     cancelEditing,
     dismissNewMessagesSeparator,

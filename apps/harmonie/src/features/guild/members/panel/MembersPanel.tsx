@@ -50,7 +50,7 @@ export const MembersPanel = ({ onClose }: MembersPanelProps) => {
   return (
     <>
       <div className="w-52 flex flex-col shrink-0 bg-surface-1 rounded-md overflow-hidden">
-        <div className="flex items-center justify-between px-4 py-3 shrink-0 bg-surface-2 rounded-t-md">
+        <div className="flex items-center justify-between px-4 py-3.5 shrink-0 bg-surface-2 rounded-t-md">
           <span className="text-sm font-semibold text-text-1">{t('guild.members.title')}</span>
           <IconButton size="small" onClick={onClose}>
             <X size={14} />

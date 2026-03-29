@@ -154,3 +154,43 @@ export type GuildMemberRole = 'Admin' | 'Member';
 export interface UpdateMemberRoleInput {
   role: GuildMemberRole;
 }
+
+export interface GuildMessageSearchItem {
+  messageId: string;
+  channelId: string;
+  channelName: string;
+  authorUserId: string;
+  authorUsername: string;
+  authorDisplayName: string | null;
+  authorAvatarFileId: string | null;
+  authorAvatar: {
+    color: string | null;
+    icon: string | null;
+    bg: string | null;
+  };
+  content: string;
+  attachments: {
+    fileId: string;
+    fileName: string;
+    contentType: string;
+    sizeBytes: number;
+  }[];
+  createdAtUtc: string;
+  updatedAtUtc: string | null;
+}
+
+export interface GuildMessageSearchResponse {
+  guildId: string;
+  items: GuildMessageSearchItem[];
+  nextCursor: string | null;
+}
+
+export interface GuildMessageSearchParams {
+  q?: string;
+  channelId?: string;
+  authorId?: string;
+  before?: string;
+  after?: string;
+  cursor?: string;
+  limit?: number;
+}

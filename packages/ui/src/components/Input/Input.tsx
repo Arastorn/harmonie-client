@@ -1,30 +1,54 @@
 import { forwardRef, InputHTMLAttributes, ReactNode } from 'react';
 
-export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'className'> {
+export type InputSize = 'default' | 'sm';
+
+export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
   rightElement?: ReactNode;
+  uiSize?: InputSize;
+  wrapperClassName?: string;
 }
 
+const sizeClasses: Record<InputSize, string> = {
+  default: 'px-4 py-3 text-sm rounded-sm',
+  sm: 'px-2 py-1 text-sm rounded-sm',
+};
+
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ label, error, disabled, id, rightElement, ...props }, ref) => {
+  (
+    {
+      label,
+      error,
+      disabled,
+      id,
+      rightElement,
+      uiSize = 'default',
+      className,
+      wrapperClassName,
+      ...props
+    },
+    ref
+  ) => {
     const inputId = id ?? (label ? label.toLowerCase().replace(/\s+/g, '-') : undefined);
 
     const inputClasses = [
-      'w-full px-4 py-3 rounded-sm font-body text-sm text-text-1 bg-surface-2',
+      'w-full font-body text-text-1 bg-surface-2',
       'border border-border-2 outline-none',
       'transition-[border-color,box-shadow] duration-150',
+      sizeClasses[uiSize],
       rightElement ? 'pr-10' : '',
       error
         ? 'border-error-fg shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-error-fg)_20%,transparent)]'
         : 'focus:border-secondary-fg focus:shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-secondary-fg)_20%,transparent)]',
-      disabled ? 'opacity-50 cursor-not-allowed' : '',
+      disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-text',
+      className ?? '',
     ]
       .filter(Boolean)
       .join(' ');
 
     return (
-      <div className="flex flex-col gap-1.5">
+      <div className={['flex flex-col gap-1.5', wrapperClassName ?? ''].filter(Boolean).join(' ')}>
         {label && (
           <label
             htmlFor={inputId}

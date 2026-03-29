@@ -29,7 +29,7 @@ export const Modal = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/40 backdrop-blur-[2px] flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 bg-black/40 backdrop-blur-[2px] flex items-center justify-center p-4 cursor-default"
       onClick={onClose}
       role="dialog"
       aria-modal="true"

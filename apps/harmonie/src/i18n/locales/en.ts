@@ -2,6 +2,9 @@ export const en = {
   app: {
     name: 'Harmonie',
   },
+  dateTime: {
+    dateAt: '{{date}} at {{time}}',
+  },
   notifications: {
     browser: {
       title: 'New message',
@@ -118,6 +121,22 @@ export const en = {
         bioLabel: 'About',
         ownerLabel: 'Owner',
       },
+    },
+    search: {
+      title: 'Search messages',
+      placeholder: 'Search…',
+      loading: 'Searching…',
+      empty: 'No results.',
+      error: 'Unable to search. Please try again.',
+      hint: 'Type to search in this guild.',
+      filters: 'Filters',
+      filterByAuthor: 'From a specific user',
+      filterByAuthorHint: 'from: user',
+      filterByChannel: 'Sent in a specific channel',
+      filterByChannelHint: 'in: channel',
+      memberPickerPlaceholder: 'Search a member…',
+      channelPickerPlaceholder: 'Search a channel…',
+      noResults: 'No results.',
     },
     invites: {
       description: 'Create invite links to let people join your guild.',

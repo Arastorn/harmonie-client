@@ -9,7 +9,11 @@ export type {
 } from './components/IconButton/IconButton';
 
 export { Input } from './components/Input/Input';
-export type { InputProps } from './components/Input/Input';
+export type { InputProps, InputSize } from './components/Input/Input';
+export { FilterInput } from './components/FilterInput/FilterInput';
+export type { FilterInputProps } from './components/FilterInput/FilterInput';
+export { Combobox } from './components/Combobox/Combobox';
+export type { ComboboxProps, ComboboxItem } from './components/Combobox/Combobox';
 export { Textarea } from './components/Textarea/Textarea';
 export type { TextareaProps } from './components/Textarea/Textarea';
 export { EmojiPickerBase } from './components/EmojiPickerBase/EmojiPickerBase';
