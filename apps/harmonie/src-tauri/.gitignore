@@ -1,0 +1,5 @@
+# Rust build artifacts
+/target/
+
+# Generated schemas (created at build time)
+/gen/

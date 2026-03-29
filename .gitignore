@@ -50,6 +50,8 @@ tmp/
 # App specific
 apps/harmonie/node_modules/
 apps/harmonie/dist/
+apps/harmonie/src-tauri/target/
+apps/harmonie/src-tauri/gen/
 
 # Design system
 packages/ui/dist/
