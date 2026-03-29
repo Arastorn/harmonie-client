@@ -116,7 +116,10 @@ export const fr = {
         roleError: 'Impossible de modifier le rôle. Réessaie.',
         confirmKick: 'Expulser {{name}} ?',
         confirmBan: 'Bannir {{name}} ?',
+        confirmTransferOwnership: 'Transférer la propriété à {{name}} ?',
         cancel: 'Annuler',
+        transferOwnershipAction: 'Transférer la propriété',
+        transferOwnershipError: 'Impossible de transférer la propriété. Réessaie.',
       },
       popover: {
         bioLabel: 'À propos',

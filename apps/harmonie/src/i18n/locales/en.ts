@@ -115,7 +115,10 @@ export const en = {
         roleError: 'Unable to update the role. Please try again.',
         confirmKick: 'Kick {{name}}?',
         confirmBan: 'Ban {{name}}?',
+        confirmTransferOwnership: 'Transfer ownership to {{name}}?',
         cancel: 'Cancel',
+        transferOwnershipAction: 'Transfer ownership',
+        transferOwnershipError: 'Unable to transfer ownership. Please try again.',
       },
       popover: {
         bioLabel: 'About',

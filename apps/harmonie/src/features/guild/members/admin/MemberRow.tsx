@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ShieldBan, UserMinus } from 'lucide-react';
+import { Crown, ShieldBan, UserMinus } from 'lucide-react';
 import { Badge, Button, IconButton, Input, Select } from '@harmonie/ui';
-import { banMember, removeMember } from '@/api/guilds';
+import { banMember, removeMember, transferOwnership } from '@/api/guilds';
 import { GuildMemberCard } from '@/features/guild/members/shared/GuildMemberCard';
 import { GuildMemberIdentity } from '@/features/guild/members/shared/GuildMemberIdentity';
 import type { GuildMember, GuildMemberRole } from '@/types/guild';
 
-type ConfirmMode = 'kick' | 'ban' | null;
+type ConfirmMode = 'kick' | 'ban' | 'transfer' | null;
 
 export interface MemberRowProps {
   member: GuildMember;
@@ -16,10 +16,12 @@ export interface MemberRowProps {
   canRemove: boolean;
   canBan: boolean;
   canEditRole: boolean;
+  canTransferOwnership: boolean;
   isChangingRole: boolean;
   onRemoved: (userId: string) => void;
   onBanned: (userId: string) => void;
   onRoleChange: (userId: string, role: GuildMemberRole) => void;
+  onOwnershipTransferred: () => void;
 }
 
 export const MemberRow = ({
@@ -29,10 +31,12 @@ export const MemberRow = ({
   canRemove,
   canBan,
   canEditRole,
+  canTransferOwnership,
   isChangingRole,
   onRemoved,
   onBanned,
   onRoleChange,
+  onOwnershipTransferred,
 }: MemberRowProps) => {
   const { t } = useTranslation();
   const label = member.displayName ?? member.username;
@@ -51,6 +55,19 @@ export const MemberRow = ({
     try {
       await removeMember(guildId, member.userId);
       onRemoved(member.userId);
+    } catch {
+      setIsActing(false);
+      setConfirmMode(null);
+    } finally {
+      setIsActing(false);
+    }
+  };
+
+  const handleTransferConfirm = async () => {
+    setIsActing(true);
+    try {
+      await transferOwnership(guildId, member.userId);
+      onOwnershipTransferred();
     } catch {
       setIsActing(false);
       setConfirmMode(null);
@@ -159,6 +176,17 @@ export const MemberRow = ({
                 <ShieldBan size={13} />
               </IconButton>
             )}
+            {canTransferOwnership && (
+              <IconButton
+                size="small"
+                variant="ghost"
+                onClick={() => setConfirmMode('transfer')}
+                aria-label={t('guild.members.admin.transferOwnershipAction')}
+                title={t('guild.members.admin.transferOwnershipAction')}
+              >
+                <Crown size={13} />
+              </IconButton>
+            )}
           </div>
         </>
       ) : (
@@ -166,9 +194,11 @@ export const MemberRow = ({
           <p className="flex-1 text-sm font-medium text-text-2 truncate">
             {confirmMode === 'kick'
               ? t('guild.members.admin.confirmKick', { name: label })
-              : t('guild.members.admin.confirmBan', { name: label })}
+              : confirmMode === 'transfer'
+                ? t('guild.members.admin.confirmTransferOwnership', { name: label })
+                : t('guild.members.admin.confirmBan', { name: label })}
           </p>
-          {confirmMode === 'kick' && (
+          {(confirmMode === 'kick' || confirmMode === 'transfer') && (
             <div className="flex items-center gap-2 shrink-0">
               <Button
                 variant="tertiary"
@@ -181,10 +211,12 @@ export const MemberRow = ({
               <Button
                 variant="danger"
                 isLoading={isActing}
-                onClick={handleKickConfirm}
+                onClick={confirmMode === 'kick' ? handleKickConfirm : handleTransferConfirm}
                 className="px-3 py-1.5 text-xs"
               >
-                {t('guild.members.kickAction')}
+                {confirmMode === 'kick'
+                  ? t('guild.members.kickAction')
+                  : t('guild.members.admin.transferOwnershipAction')}
               </Button>
             </div>
           )}
