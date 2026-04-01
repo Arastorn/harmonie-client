@@ -42,7 +42,7 @@ const enforceCacheLimit = () => {
   }
 };
 
-const loadBlobUrl = async (fileId: string): Promise<string | undefined> => {
+export const loadBlobUrl = async (fileId: string): Promise<string | undefined> => {
   const now = Date.now();
   purgeExpiredCacheEntries(now);
 

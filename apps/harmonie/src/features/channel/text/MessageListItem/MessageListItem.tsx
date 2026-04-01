@@ -6,6 +6,7 @@ import type { GuildMember } from '@/types/guild';
 import { useFileBlobUrl } from '@/shared/hooks/useFileBlobUrl';
 import { formatContextualDateTime } from '@/shared/utils/date';
 import { MessageActions } from './MessageActions';
+import { MessageAttachments } from './attachments/MessageAttachments';
 import { MessageEmojiPicker } from './MessageEmojiPicker';
 import { MessageInlineEditor } from './MessageInlineEditor';
 import { MessageReactions } from './MessageReactions';
@@ -23,6 +24,7 @@ interface MessageListItemProps {
   onCancelEdit?: () => void;
   onSaveEdit?: (messageId: string, content: string) => Promise<void>;
   onDelete?: (messageId: string) => void;
+  onAttachmentDeleted?: (attachmentFileId: string) => void;
   onReact?: (messageId: string, emoji: string) => void;
   onOpenMenu?: (
     event: React.MouseEvent<HTMLElement>,
@@ -44,6 +46,7 @@ export const MessageListItem = ({
   onCancelEdit,
   onSaveEdit,
   onDelete,
+  onAttachmentDeleted,
   onReact,
   onOpenMenu,
 }: MessageListItemProps) => {
@@ -130,12 +133,26 @@ export const MessageListItem = ({
           />
         ) : (
           <>
-            <p className="text-sm text-text-2 whitespace-pre-wrap wrap-break-word">
-              {message.content}
-            </p>
+            {message.content && (
+              <p className="text-sm text-text-2 whitespace-pre-wrap wrap-break-word">
+                {message.content}
+              </p>
+            )}
             {message.updatedAtUtc && (
               <span className="text-xs text-text-3">{t('channel.messages.edited')}</span>
             )}
+            <MessageAttachments
+              attachments={message.attachments}
+              isOwn={isOwn}
+              member={member}
+              messageCreatedAt={message.createdAtUtc}
+              onDelete={onAttachmentDeleted}
+              onDeleteDirect={
+                onAttachmentDeleted && !message.content && message.attachments.length === 1
+                  ? () => onDelete?.(message.messageId)
+                  : undefined
+              }
+            />
           </>
         )}
         <MessageReactions

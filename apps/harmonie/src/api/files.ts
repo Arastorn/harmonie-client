@@ -11,6 +11,10 @@ export const downloadFileBlob = async (fileId: string): Promise<Blob> => {
   return response.blob();
 };
 
+export const deleteFile = async (fileId: string): Promise<void> => {
+  await apiFetch(`${API_BASE}/files/${encodeURIComponent(fileId)}`, { method: 'DELETE' });
+};
+
 export const uploadFile = async (file: File): Promise<UploadedFile> => {
   const formData = new FormData();
   formData.append('file', file);

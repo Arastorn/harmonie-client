@@ -34,7 +34,7 @@ export const showBrowserNotification = (
   const notification = new Notification(options?.title ?? i18n.t('notifications.browser.title'), {
     body: buildNotificationBody(event),
     tag: `message-${event.messageId}`,
-    icon: '/anchor.png',
+    icon: '/harmonie.png',
   });
 
   notification.onclick = () => {

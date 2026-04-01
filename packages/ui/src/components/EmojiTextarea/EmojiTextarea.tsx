@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { Smile } from 'lucide-react';
 import type { EmojiClickData, PickerProps } from 'emoji-picker-react';
@@ -7,12 +7,14 @@ import { EmojiPickerBase } from '../EmojiPickerBase/EmojiPickerBase';
 
 export interface EmojiTextareaProps extends Omit<
   TextareaProps,
-  'value' | 'onChange' | 'bottomRightElement' | 'ref'
+  'value' | 'onChange' | 'bottomRightElement' | 'bottomRightElementWide' | 'ref' | 'topContent'
 > {
   value: string;
   onChange: (value: string) => void;
   pickerProps?: Omit<PickerProps, 'onEmojiClick' | 'categoryIcons'>;
   emojiButtonLabel?: string;
+  extraActions?: ReactNode;
+  topContent?: ReactNode;
 }
 
 const PICKER_W = 320;
@@ -24,6 +26,8 @@ export const EmojiTextarea = ({
   onChange,
   pickerProps,
   emojiButtonLabel = 'Open emoji picker',
+  extraActions,
+  topContent,
   ...textareaProps
 }: EmojiTextareaProps) => {
   const [isPickerOpen, setIsPickerOpen] = useState(false);
@@ -123,7 +127,18 @@ export const EmojiTextarea = ({
       ref={textareaRef}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      bottomRightElement={emojiButton}
+      bottomRightElement={
+        extraActions ? (
+          <div className="flex items-center gap-1">
+            {extraActions}
+            {emojiButton}
+          </div>
+        ) : (
+          emojiButton
+        )
+      }
+      bottomRightElementWide={!!extraActions}
+      topContent={topContent}
       {...textareaProps}
     />
   );

@@ -43,7 +43,10 @@ export const MessageEmojiPicker = ({ anchorRect, onSelect, onClose }: MessageEmo
   if (top + PICKER_HEIGHT > window.innerHeight - OFFSET) {
     top = anchorRect.top - PICKER_HEIGHT - OFFSET;
   }
-  const left = Math.max(OFFSET, anchorRect.right - PICKER_WIDTH);
+  const left = Math.max(
+    OFFSET,
+    Math.min(window.innerWidth - PICKER_WIDTH - OFFSET, anchorRect.right - PICKER_WIDTH)
+  );
 
   const handleEmojiClick = (data: EmojiClickData) => {
     onSelect(data.emoji);
