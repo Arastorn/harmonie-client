@@ -7,7 +7,7 @@ export interface MessageReaction {
 export interface Message {
   messageId: string;
   authorUserId: string;
-  content: string;
+  content: string | null;
   attachments: MessageAttachment[];
   reactions: MessageReaction[];
   createdAtUtc: string;

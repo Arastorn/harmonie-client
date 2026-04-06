@@ -4,11 +4,15 @@ import type { Message, MessageList, UpdateChannelInput } from '@/types/channel';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
-export const sendMessage = (channelId: string, content: string): Promise<Message> =>
+export const sendMessage = (
+  channelId: string,
+  content: string,
+  attachmentFileIds: string[] = []
+): Promise<Message> =>
   apiFetch(`${API_BASE}/channels/${channelId}/messages`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ content, attachmentFileIds: [] }),
+    body: JSON.stringify({ content: content || null, attachmentFileIds }),
   }).then((r) => parseOrThrow<Message>(r));
 
 export const getChannelMessages = (channelId: string, before?: string): Promise<MessageList> => {
@@ -64,6 +68,18 @@ export const addReaction = (channelId: string, messageId: string, emoji: string)
     { method: 'PUT' }
   ).then((r) => {
     if (!r.ok) throw new Error('Failed to add reaction');
+  });
+
+export const deleteAttachment = (
+  channelId: string,
+  messageId: string,
+  attachmentId: string
+): Promise<void> =>
+  apiFetch(
+    `${API_BASE}/channels/${channelId}/messages/${messageId}/attachments/${encodeURIComponent(attachmentId)}`,
+    { method: 'DELETE' }
+  ).then((r) => {
+    if (!r.ok) throw new Error('Failed to delete attachment');
   });
 
 export const removeReaction = (

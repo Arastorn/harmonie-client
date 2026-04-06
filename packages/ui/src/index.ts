@@ -56,6 +56,15 @@ export type { ChannelItemProps, ChannelType } from './components/ChannelItem/Cha
 export { ContextMenu } from './components/ContextMenu/ContextMenu';
 export type { ContextMenuProps, ContextMenuItem } from './components/ContextMenu/ContextMenu';
 
+export { Lightbox } from './components/Lightbox/Lightbox';
+export type { LightboxProps } from './components/Lightbox/Lightbox';
+
+export { AttachmentImage } from './components/AttachmentImage/AttachmentImage';
+export type { AttachmentImageProps } from './components/AttachmentImage/AttachmentImage';
+
+export { AttachmentFileChip } from './components/AttachmentFileChip/AttachmentFileChip';
+export type { AttachmentFileChipProps } from './components/AttachmentFileChip/AttachmentFileChip';
+
 export { Modal } from './components/Modal/Modal';
 export type { ModalProps } from './components/Modal/Modal';
 

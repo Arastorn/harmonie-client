@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ackChannel, deleteMessage, getChannelMessages } from '@/api/channels';
+import { ackChannel, deleteAttachment, deleteMessage, getChannelMessages } from '@/api/channels';
 import { sortMessagesAsc } from '@/shared/utils/message';
 import type {
   Message,
@@ -214,6 +214,24 @@ export const useChannelMessages = ({
     [cancelEditing, channelId, editingMessageIdRef]
   );
 
+  const removeAttachment = useCallback(
+    (messageId: string, attachmentFileId: string) => {
+      if (!channelId) return;
+      setMessages((prev) =>
+        prev.map((message) =>
+          message.messageId === messageId
+            ? {
+                ...message,
+                attachments: message.attachments.filter((a) => a.fileId !== attachmentFileId),
+              }
+            : message
+        )
+      );
+      deleteAttachment(channelId, messageId, attachmentFileId).catch(() => {});
+    },
+    [channelId]
+  );
+
   const latestOwnMessage = useMemo(
     () => [...messages].reverse().find((message) => message.authorUserId === currentUserId) ?? null,
     [currentUserId, messages]
@@ -235,6 +253,7 @@ export const useChannelMessages = ({
     dismissNewMessagesSeparator,
     saveEdit,
     removeMessage,
+    removeAttachment,
     toggleReaction,
   };
 };

@@ -6,7 +6,7 @@ import { EmojiTextarea, IconButton } from '@harmonie/ui';
 const MAX_LENGTH = 4000;
 
 interface MessageInlineEditorProps {
-  initialValue: string;
+  initialValue: string | null;
   onCancel: () => void;
   onSave: (content: string) => Promise<void>;
 }
@@ -17,7 +17,7 @@ export const MessageInlineEditor = ({
   onSave,
 }: MessageInlineEditorProps) => {
   const { t } = useTranslation();
-  const [content, setContent] = useState(initialValue);
+  const [content, setContent] = useState(initialValue ?? '');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -25,7 +25,7 @@ export const MessageInlineEditor = ({
   const isOverLimit = content.length > MAX_LENGTH;
 
   useEffect(() => {
-    setContent(initialValue);
+    setContent(initialValue ?? '');
     setError(undefined);
   }, [initialValue]);
 
@@ -43,7 +43,7 @@ export const MessageInlineEditor = ({
   }, [content]);
 
   const handleCancel = () => {
-    setContent(initialValue);
+    setContent(initialValue ?? '');
     setError(undefined);
     onCancel();
   };

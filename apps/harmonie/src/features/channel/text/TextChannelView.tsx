@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Navigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Users } from 'lucide-react';
-import { IconButton, Separator } from '@harmonie/ui';
+import { Button, IconButton, Modal, Separator } from '@harmonie/ui';
 import { GuildSearchBar } from '@/features/guild/search/GuildSearchBar';
 import type { GuildMember } from '@/types/guild';
 import { useCurrentGuild, useGuildMembers } from '@/features/guild/GuildContext';
@@ -37,11 +37,27 @@ export const TextChannelView = () => {
   } = useGuildWorkspace();
   const [selected, setSelected] = useState<SelectedMember | null>(null);
   const [messageMenu, setMessageMenu] = useState<MessageMenuState | null>(null);
+  const [pendingDeleteMessageId, setPendingDeleteMessageId] = useState<string | null>(null);
   const [separatorDismissed, setSeparatorDismissed] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const messagesContentRef = useRef<HTMLDivElement>(null);
   const scrollAnchorRef = useRef<{ scrollTop: number; scrollHeight: number } | null>(null);
   const previousMessageCountRef = useRef(0);
   const suppressNextScrollEffectsRef = useRef(false);
+  const shouldStickToBottomRef = useRef(false);
+
+  const scrollToBottom = useCallback(() => {
+    const scrollElement = scrollRef.current;
+    if (!scrollElement) return;
+
+    scrollElement.scrollTop = scrollElement.scrollHeight;
+
+    requestAnimationFrame(() => {
+      const nextScrollElement = scrollRef.current;
+      if (!nextScrollElement) return;
+      nextScrollElement.scrollTop = nextScrollElement.scrollHeight;
+    });
+  }, []);
 
   const members = useGuildMembers(guildId);
   const membersMap = useMemo(
@@ -71,6 +87,7 @@ export const TextChannelView = () => {
     dismissNewMessagesSeparator,
     saveEdit,
     removeMessage,
+    removeAttachment,
     toggleReaction,
   } = useChannelMessages({
     channelId,
@@ -95,6 +112,9 @@ export const TextChannelView = () => {
     setMessageMenu(null);
     setSeparatorDismissed(false);
     previousMessageCountRef.current = 0;
+    scrollAnchorRef.current = null;
+    suppressNextScrollEffectsRef.current = false;
+    shouldStickToBottomRef.current = false;
   }, [channelId]);
 
   useEffect(() => {
@@ -118,28 +138,32 @@ export const TextChannelView = () => {
     const hasNewMessages = messages.length > previousMessageCount;
     const isInitialLoad = previousMessageCount === 0 && messages.length > 0;
 
-    if (isInitialLoad && lastReadMessageId) {
-      requestAnimationFrame(() => {
-        const lastReadElement = element.querySelector<HTMLElement>(
-          `[data-message-id="${lastReadMessageId}"]`
-        );
-
-        if (!lastReadElement) {
-          suppressNextScrollEffectsRef.current = true;
-          element.scrollTop = element.scrollHeight;
-          return;
-        }
-
-        suppressNextScrollEffectsRef.current = true;
-        lastReadElement.scrollIntoView({ block: 'center' });
-      });
-    } else if (hasNewMessages || isInitialLoad) {
+    if (hasNewMessages || isInitialLoad) {
       suppressNextScrollEffectsRef.current = true;
-      element.scrollTop = element.scrollHeight;
+      shouldStickToBottomRef.current = true;
+      requestAnimationFrame(() => {
+        scrollToBottom();
+      });
     }
 
     previousMessageCountRef.current = messages.length;
-  }, [activeSearchTarget, lastReadMessageId, messages, seekingTargetRef]);
+  }, [activeSearchTarget, messages, scrollToBottom, seekingTargetRef]);
+
+  useEffect(() => {
+    const contentEl = messagesContentRef.current;
+    if (!contentEl) return;
+
+    const observer = new ResizeObserver(() => {
+      if (shouldStickToBottomRef.current) {
+        requestAnimationFrame(() => {
+          scrollToBottom();
+        });
+      }
+    });
+
+    observer.observe(contentEl);
+    return () => observer.disconnect();
+  }, [messages.length, scrollToBottom]);
 
   useEffect(() => {
     if (!editingMessageId) return;
@@ -164,6 +188,8 @@ export const TextChannelView = () => {
       if (lastReadMessageId !== null && !separatorDismissed) {
         setSeparatorDismissed(true);
       }
+      const distanceFromBottom = element.scrollHeight - element.scrollTop - element.clientHeight;
+      shouldStickToBottomRef.current = distanceFromBottom < 50;
       if (element.scrollTop >= 100) return;
       scrollAnchorRef.current = {
         scrollTop: element.scrollTop,
@@ -174,7 +200,7 @@ export const TextChannelView = () => {
 
     element.addEventListener('scroll', handleScroll);
     return () => element.removeEventListener('scroll', handleScroll);
-  }, [dismissNewMessagesSeparator, lastReadMessageId, loadMore, separatorDismissed]);
+  }, [lastReadMessageId, loadMore, separatorDismissed]);
 
   const handleAvatarClick = (member: GuildMember, rect: DOMRect) => {
     setSelected((prev) => (prev?.member.userId === member.userId ? null : { member, rect }));
@@ -198,9 +224,14 @@ export const TextChannelView = () => {
     startEditing(messageId);
   };
 
-  const handleDeleteMessage = (messageId: string) => {
+  const handleDeleteRequest = (messageId: string) => {
     setMessageMenu(null);
-    removeMessage(messageId);
+    setPendingDeleteMessageId(messageId);
+  };
+
+  const handleConfirmDelete = () => {
+    if (pendingDeleteMessageId) removeMessage(pendingDeleteMessageId);
+    setPendingDeleteMessageId(null);
   };
 
   if (!guildId || !channelId || guildsLoading || channels === null) {
@@ -263,47 +294,50 @@ export const TextChannelView = () => {
               {t('channel.messages.empty')}
             </div>
           ) : (
-            messages.map((message, index) => {
-              const previousMessage = messages[index - 1];
-              const daySeparatorLabel = getDaySeparatorLabel(previousMessage, message);
-              const grouped = daySeparatorLabel
-                ? false
-                : areMessagesGrouped(previousMessage, message);
-              const isFirstUnread =
-                lastReadMessageId !== null && previousMessage?.messageId === lastReadMessageId;
+            <div ref={messagesContentRef}>
+              {messages.map((message, index) => {
+                const previousMessage = messages[index - 1];
+                const daySeparatorLabel = getDaySeparatorLabel(previousMessage, message);
+                const grouped = daySeparatorLabel
+                  ? false
+                  : areMessagesGrouped(previousMessage, message);
+                const isFirstUnread =
+                  lastReadMessageId !== null && previousMessage?.messageId === lastReadMessageId;
 
-              return (
-                <div key={message.messageId}>
-                  {daySeparatorLabel && <Separator label={daySeparatorLabel} />}
-                  {isFirstUnread && (
-                    <div
-                      className={`transition-opacity duration-500 ${separatorDismissed ? 'opacity-0' : 'opacity-100'}`}
-                      onTransitionEnd={() => {
-                        if (separatorDismissed) dismissNewMessagesSeparator();
-                      }}
-                    >
-                      <Separator label={t('channel.messages.newMessages')} variant="accent" />
-                    </div>
-                  )}
-                  <MessageListItem
-                    message={message}
-                    member={membersMap.get(message.authorUserId)}
-                    grouped={grouped}
-                    isOwn={message.authorUserId === user?.userId}
-                    isEditing={message.messageId === editingMessageId}
-                    isMenuOpen={message.messageId === messageMenu?.messageId}
-                    isSelected={message.messageId === selectedMessageId}
-                    onAvatarClick={handleAvatarClick}
-                    onEdit={handleStartEditing}
-                    onCancelEdit={cancelEditing}
-                    onSaveEdit={saveEdit}
-                    onDelete={handleDeleteMessage}
-                    onReact={toggleReaction}
-                    onOpenMenu={handleOpenMessageMenu}
-                  />
-                </div>
-              );
-            })
+                return (
+                  <div key={message.messageId}>
+                    {daySeparatorLabel && <Separator label={daySeparatorLabel} />}
+                    {isFirstUnread && (
+                      <div
+                        className={`transition-opacity duration-500 ${separatorDismissed ? 'opacity-0' : 'opacity-100'}`}
+                        onTransitionEnd={() => {
+                          if (separatorDismissed) dismissNewMessagesSeparator();
+                        }}
+                      >
+                        <Separator label={t('channel.messages.newMessages')} variant="accent" />
+                      </div>
+                    )}
+                    <MessageListItem
+                      message={message}
+                      member={membersMap.get(message.authorUserId)}
+                      grouped={grouped}
+                      isOwn={message.authorUserId === user?.userId}
+                      isEditing={message.messageId === editingMessageId}
+                      isMenuOpen={message.messageId === messageMenu?.messageId}
+                      isSelected={message.messageId === selectedMessageId}
+                      onAvatarClick={handleAvatarClick}
+                      onEdit={handleStartEditing}
+                      onCancelEdit={cancelEditing}
+                      onSaveEdit={saveEdit}
+                      onDelete={handleDeleteRequest}
+                      onAttachmentDeleted={(fileId) => removeAttachment(message.messageId, fileId)}
+                      onReact={toggleReaction}
+                      onOpenMenu={handleOpenMessageMenu}
+                    />
+                  </div>
+                );
+              })}
+            </div>
           )}
         </div>
 
@@ -335,8 +369,22 @@ export const TextChannelView = () => {
         menu={messageMenu}
         onClose={() => setMessageMenu(null)}
         onEdit={handleStartEditing}
-        onDelete={handleDeleteMessage}
+        onDelete={handleDeleteRequest}
       />
+
+      {pendingDeleteMessageId && (
+        <Modal title={t('channel.messages.delete')} onClose={() => setPendingDeleteMessageId(null)}>
+          <p className="font-body text-sm text-text-2">{t('channel.messages.deleteConfirm')}</p>
+          <div className="flex justify-end gap-2">
+            <Button variant="tertiary" onClick={() => setPendingDeleteMessageId(null)}>
+              {t('channel.messages.deleteCancel')}
+            </Button>
+            <Button variant="danger" onClick={handleConfirmDelete}>
+              {t('channel.messages.deleteConfirmButton')}
+            </Button>
+          </div>
+        </Modal>
+      )}
 
       {selected && guildId && (
         <MemberPopover
