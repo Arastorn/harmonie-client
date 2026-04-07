@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { ShieldBan, UserMinus } from 'lucide-react';
 import { Avatar, Badge, IconButton } from '@harmonie/ui';
 import { useFileBlobUrl } from '@/shared/hooks/useFileBlobUrl';
+import { useTheme } from '@/features/user/ThemeContext';
+import { getUserGradient } from '@/shared/utils/user';
 import { useCurrentGuild, useGuilds } from '@/features/guild/GuildContext';
 import { useGuildPermissions } from '@/features/guild/hooks/useGuildPermissions';
 import { BanMemberModal } from '@/features/guild/members/modals/BanMemberModal';
@@ -33,7 +35,9 @@ export const MemberPopover = ({
   onBanned,
 }: MemberPopoverProps) => {
   const { t } = useTranslation();
+  const { theme } = useTheme();
   const avatarUrl = useFileBlobUrl(member.avatarFileId);
+  const headerGradient = getUserGradient(member.userId, theme.endsWith('obsidian'));
   const cardRef = useRef<HTMLDivElement>(null);
   const label = member.displayName ?? member.username;
 
@@ -74,13 +78,14 @@ export const MemberPopover = ({
         className="fixed z-50 w-56 rounded-md bg-surface-1 border border-border-2 shadow-lg overflow-hidden"
         style={{ top, left }}
       >
-        <div className="relative h-9 bg-primary">
+        <div className="relative h-9" style={{ background: headerGradient }}>
           {(canRemoveMember(member) || canBanMember(member)) && (
             <div className="absolute top-1.5 right-1.5 flex gap-1">
               {canRemoveMember(member) && (
                 <IconButton
                   size="small"
                   variant="overlay"
+                  className="!text-text-2 hover:!text-text-1"
                   aria-label={t('guild.members.kickAction')}
                   title={t('guild.members.kickAction')}
                   onClick={() => setShowRemoveModal(true)}
@@ -92,6 +97,7 @@ export const MemberPopover = ({
                 <IconButton
                   size="small"
                   variant="overlay"
+                  className="!text-text-2 hover:!text-text-1"
                   aria-label={t('guild.bans.banAction')}
                   title={t('guild.bans.banAction')}
                   onClick={() => setShowBanModal(true)}

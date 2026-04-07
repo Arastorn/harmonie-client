@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useState, type React
 import { useParams } from 'react-router-dom';
 import { listChannels, reorderChannels } from '@/api/guilds';
 import type { Channel } from '@/types/guild';
+import { useVoicePresence } from './voice/VoicePresenceContext';
 
 interface ChannelState {
   guildId: string;
@@ -27,6 +28,7 @@ const ChannelContext = createContext<ChannelContextValue>({
 export const ChannelProvider = ({ children }: { children: ReactNode }) => {
   const { guildId } = useParams<{ guildId: string }>();
   const [state, setState] = useState<ChannelState | null>(null);
+  const { seedFromChannelList } = useVoicePresence();
 
   const fetch = useCallback(() => {
     if (!guildId) {
@@ -35,9 +37,16 @@ export const ChannelProvider = ({ children }: { children: ReactNode }) => {
     }
     setState(null);
     listChannels(guildId)
-      .then((data) => setState({ guildId, channels: data.channels }))
+      .then((data) => {
+        setState({ guildId, channels: data.channels });
+        seedFromChannelList(
+          data.channels
+            .filter((c) => c.type === 'Voice')
+            .map((c) => ({ channelId: c.channelId, participants: c.currentParticipants }))
+        );
+      })
       .catch(() => setState({ guildId, channels: [] }));
-  }, [guildId]);
+  }, [guildId, seedFromChannelList]);
 
   useEffect(() => {
     fetch();

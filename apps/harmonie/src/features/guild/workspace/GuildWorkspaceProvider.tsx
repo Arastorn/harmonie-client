@@ -1,4 +1,13 @@
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react';
+import { useLocation } from 'react-router-dom';
 
 interface GuildWorkspaceContextValue {
   membersOpen: boolean;
@@ -21,6 +30,7 @@ interface GuildWorkspaceProviderProps {
 }
 
 export const GuildWorkspaceProvider = ({ children }: GuildWorkspaceProviderProps) => {
+  const location = useLocation();
   const [membersOpen, setMembersOpen] = useState(false);
   const [searchQuery, setSearchQueryState] = useState('');
   const [searchAuthorId, setSearchAuthorIdState] = useState<string | null>(null);
@@ -58,6 +68,12 @@ export const GuildWorkspaceProvider = ({ children }: GuildWorkspaceProviderProps
     setSearchChannelIdState(id);
     setMembersOpen(false);
   }, []);
+
+  useEffect(() => {
+    if (location.pathname.includes('/voice/')) {
+      setMembersOpen(false);
+    }
+  }, [location.pathname]);
 
   const value = useMemo<GuildWorkspaceContextValue>(
     () => ({

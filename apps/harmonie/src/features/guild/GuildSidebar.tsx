@@ -130,7 +130,10 @@ export const GuildSidebar = () => {
   return (
     <>
       <nav className="flex flex-col items-center gap-2 w-14 py-2 shrink-0">
-        <div className="flex flex-col items-center gap-2 flex-1 overflow-y-auto w-full px-2 py-1">
+        <div
+          className="flex flex-col items-center gap-2 flex-1 overflow-y-auto w-full px-2 py-1 [&::-webkit-scrollbar]:hidden"
+          style={{ scrollbarWidth: 'none' }}
+        >
           {/* List of guilds */}
           {guilds.map((guild) => {
             return (

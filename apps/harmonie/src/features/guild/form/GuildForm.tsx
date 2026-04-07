@@ -47,7 +47,7 @@ export const GuildForm = ({
   } = useGuildForm({ mode, guild, onUpdated, onSuccess });
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-3 w-full h-full">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-3 w-full">
       <EmojiInput
         label={t('guild.noGuild.nameLabel')}
         placeholder={t('guild.noGuild.namePlaceholder')}

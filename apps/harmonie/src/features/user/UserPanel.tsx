@@ -56,6 +56,7 @@ export const UserPanel = () => {
             ref={inputChevronRef}
             size="small"
             selected={inputMuted}
+            selectedVariant="danger"
             open={audioInputPopoverOpen}
             primaryLabel={inputMuted ? 'Unmute audio input' : 'Mute audio input'}
             secondaryLabel="Select audio input device"
@@ -78,6 +79,7 @@ export const UserPanel = () => {
             ref={chevronRef}
             size="small"
             selected={muted}
+            selectedVariant="danger"
             open={audioPopoverOpen}
             primaryLabel={muted ? 'Unmute audio output' : 'Mute audio output'}
             secondaryLabel="Select audio output device"

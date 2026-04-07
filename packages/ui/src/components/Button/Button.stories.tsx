@@ -37,6 +37,14 @@ export const Loading: Story = {
   args: { variant: 'primary', isLoading: true },
 };
 
+export const Small: Story = {
+  args: { variant: 'primary', size: 'small' },
+};
+
+export const SmallTertiary: Story = {
+  args: { variant: 'tertiary', size: 'small' },
+};
+
 export const AllVariants: Story = {
   render: () => (
     <div className="flex flex-col gap-6 p-6">

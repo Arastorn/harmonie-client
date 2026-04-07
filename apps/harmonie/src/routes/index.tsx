@@ -7,6 +7,7 @@ import { RegisterPage } from '@/features/auth/RegisterPage';
 import { GuildIndexPage } from '@/features/guild/GuildIndexPage';
 import { ChannelIndexPage } from '@/features/channel/ChannelIndexPage';
 import { TextChannelView } from '@/features/channel/text/TextChannelView';
+import { VoiceChannelView } from '@/features/channel/voice/VoiceChannelView';
 
 export const router = createBrowserRouter([
   {
@@ -51,7 +52,7 @@ export const router = createBrowserRouter([
               },
               {
                 path: 'voice/:channelId',
-                element: null,
+                element: <VoiceChannelView />,
               },
             ],
           },

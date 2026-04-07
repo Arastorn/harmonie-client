@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   DndContext,
@@ -10,19 +11,95 @@ import {
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { restrictToVerticalAxis, restrictToParentElement } from '@dnd-kit/modifiers';
 import { CSS } from '@dnd-kit/utilities';
-import { ChannelItem } from '@harmonie/ui';
-import type { Channel } from '@/types/guild';
+import { Avatar, ChannelItem } from '@harmonie/ui';
+import type { Channel, GuildMember } from '@/types/guild';
+import type { VoiceParticipant } from '@/types/voice';
+import { useUser } from '@/features/user/UserContext';
+import { useFileBlobUrl } from '@/shared/hooks/useFileBlobUrl';
+import { useGuildMembers } from '@/features/guild/GuildContext';
+import { MemberPopover } from '@/features/guild/members/panel/MemberPopover';
 import { useChannels } from './ChannelContext';
+import { useVoicePresence } from './voice/VoicePresenceContext';
+
+function getParticipantLabel(
+  participant: Pick<VoiceParticipant, 'userId' | 'username' | 'displayName'>
+): string {
+  const trimmedDisplay = participant.displayName?.trim();
+  if (trimmedDisplay) return trimmedDisplay;
+  const trimmedUsername = participant.username?.trim();
+  return trimmedUsername || participant.userId;
+}
+
+const VoiceParticipantListItem = ({
+  participant,
+  isSpeaking,
+  onClick,
+}: {
+  participant: VoiceParticipant;
+  isSpeaking: boolean;
+  onClick?: (userId: string, rect: DOMRect) => void;
+}) => {
+  const avatarUrl = useFileBlobUrl(participant.avatarFileId);
+  const label = getParticipantLabel(participant);
+
+  const handleClick = (e: React.MouseEvent<HTMLLIElement>) => {
+    onClick?.(participant.userId, e.currentTarget.getBoundingClientRect());
+  };
+
+  return (
+    <li
+      className={[
+        'flex items-center gap-2 px-1.5 rounded-sm transition-colors duration-100',
+        onClick ? 'cursor-pointer hover:bg-surface-hover' : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+      onClick={onClick ? handleClick : undefined}
+    >
+      <span
+        className={[
+          'shrink-0 rounded-full border-2 p-0.5 transition-all duration-150',
+          isSpeaking ? 'border-primary' : 'border-transparent',
+        ]
+          .filter(Boolean)
+          .join(' ')}
+      >
+        <Avatar
+          avatarUrl={avatarUrl}
+          icon={participant.avatarIcon ?? undefined}
+          color={participant.avatarColor ?? undefined}
+          bg={participant.avatarBg ?? undefined}
+          alt={label}
+          size={22}
+        />
+      </span>
+      <span
+        className={[
+          'text-sm truncate transition-colors duration-150',
+          isSpeaking ? 'text-primary font-medium' : 'text-text-2',
+        ]
+          .filter(Boolean)
+          .join(' ')}
+      >
+        {label}
+      </span>
+    </li>
+  );
+};
 
 interface SortableChannelItemProps {
   channel: Channel;
   active: boolean;
   unread: boolean;
   canReorder: boolean;
+  voiceActive?: boolean;
   onNavigate: () => void;
   onContextMenu?: (e: React.MouseEvent) => void;
   onMenuClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
   menuLabel?: string;
+  voiceParticipants?: VoiceParticipant[];
+  speakingUserIds?: Set<string>;
+  onParticipantClick?: (userId: string, rect: DOMRect) => void;
 }
 
 const SortableChannelItem = ({
@@ -30,10 +107,14 @@ const SortableChannelItem = ({
   active,
   unread,
   canReorder,
+  voiceActive,
   onNavigate,
   onContextMenu,
   onMenuClick,
   menuLabel,
+  voiceParticipants,
+  speakingUserIds,
+  onParticipantClick,
 }: SortableChannelItemProps) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: channel.channelId,
@@ -58,11 +139,24 @@ const SortableChannelItem = ({
         label={channel.name}
         active={active}
         unread={unread}
+        voiceActive={voiceActive}
         onClick={onNavigate}
         onContextMenu={onContextMenu}
         onMenuClick={onMenuClick}
         menuLabel={menuLabel}
       />
+      {channel.type === 'Voice' && voiceParticipants && voiceParticipants.length > 0 && (
+        <ul className="pl-7 flex flex-col gap-0.5 mt-0.5">
+          {voiceParticipants.map((p) => (
+            <VoiceParticipantListItem
+              key={p.userId}
+              participant={p}
+              isSpeaking={speakingUserIds?.has(p.userId) ?? false}
+              onClick={onParticipantClick}
+            />
+          ))}
+        </ul>
+      )}
     </div>
   );
 };
@@ -86,13 +180,22 @@ export const ChannelSection = ({
   onMenuClick,
   menuLabel,
 }: ChannelSectionProps) => {
-  const { guildId, channelId: activeChannelId } = useParams<{
+  const { guildId, channelId: activeRouteChannelId } = useParams<{
     guildId: string;
     channelId: string;
   }>();
   const navigate = useNavigate();
   const { channels, applyReorder } = useChannels();
+  const { user } = useUser();
+  const { getParticipants, activeChannelId, speakingUserIds } = useVoicePresence();
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
+  const members = useGuildMembers(guildId);
+  const [popover, setPopover] = useState<{ member: GuildMember; rect: DOMRect } | null>(null);
+
+  const handleParticipantClick = (userId: string, rect: DOMRect) => {
+    const member = members?.find((m) => m.userId === userId);
+    if (member) setPopover({ member, rect });
+  };
 
   const ids = sectionChannels.map((c) => c.channelId);
   const isTextSection = type === 'Text';
@@ -117,36 +220,75 @@ export const ChannelSection = ({
     void applyReorder(guildId, merged);
   };
 
+  const getVisibleVoiceParticipants = (voiceChannelId: string): VoiceParticipant[] => {
+    const participants = getParticipants(voiceChannelId);
+
+    if (!user || activeChannelId !== voiceChannelId) return participants;
+
+    return [
+      {
+        userId: user.userId,
+        username: user.username,
+        displayName: user.displayName ?? null,
+        avatarFileId: user.avatarFileId ?? null,
+        avatarBg: user.avatar?.bg ?? null,
+        avatarColor: user.avatar?.color ?? null,
+        avatarIcon: user.avatar?.icon ?? null,
+      },
+      ...participants.filter((p) => p.userId !== user.userId),
+    ];
+  };
+
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragEnd={handleDragEnd}
-      modifiers={[restrictToVerticalAxis, restrictToParentElement]}
-    >
-      <SortableContext items={ids} strategy={verticalListSortingStrategy}>
-        <div className="flex flex-col gap-0.5">
-          {sectionChannels.map((channel) => (
-            <SortableChannelItem
-              key={channel.channelId}
-              channel={channel}
-              active={channel.channelId === activeChannelId}
-              unread={channel.type === 'Text' ? !!hasUnread?.(channel.channelId) : false}
-              canReorder={canReorder}
-              onNavigate={() =>
-                navigate(
-                  isTextSection
-                    ? `/guilds/${guildId}/channels/${channel.channelId}`
-                    : `/guilds/${guildId}/voice/${channel.channelId}`
-                )
-              }
-              onContextMenu={onContextMenu ? (e) => onContextMenu(e, channel) : undefined}
-              onMenuClick={onMenuClick ? (e) => onMenuClick(e, channel) : undefined}
-              menuLabel={menuLabel}
-            />
-          ))}
-        </div>
-      </SortableContext>
-    </DndContext>
+    <>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+        modifiers={[restrictToVerticalAxis, restrictToParentElement]}
+      >
+        <SortableContext items={ids} strategy={verticalListSortingStrategy}>
+          <div className="flex flex-col gap-0.5">
+            {sectionChannels.map((channel) => (
+              <SortableChannelItem
+                key={channel.channelId}
+                channel={channel}
+                active={channel.channelId === activeRouteChannelId}
+                unread={channel.type === 'Text' ? !!hasUnread?.(channel.channelId) : false}
+                voiceActive={channel.type === 'Voice' && channel.channelId === activeChannelId}
+                canReorder={canReorder}
+                onNavigate={() =>
+                  navigate(
+                    isTextSection
+                      ? `/guilds/${guildId}/channels/${channel.channelId}`
+                      : `/guilds/${guildId}/voice/${channel.channelId}`
+                  )
+                }
+                onContextMenu={onContextMenu ? (e) => onContextMenu(e, channel) : undefined}
+                onMenuClick={onMenuClick ? (e) => onMenuClick(e, channel) : undefined}
+                menuLabel={menuLabel}
+                voiceParticipants={
+                  channel.type === 'Voice'
+                    ? getVisibleVoiceParticipants(channel.channelId)
+                    : undefined
+                }
+                speakingUserIds={channel.type === 'Voice' ? speakingUserIds : undefined}
+                onParticipantClick={handleParticipantClick}
+              />
+            ))}
+          </div>
+        </SortableContext>
+      </DndContext>
+
+      {popover && guildId && (
+        <MemberPopover
+          member={popover.member}
+          guildId={guildId}
+          anchorRect={popover.rect}
+          side="right"
+          onClose={() => setPopover(null)}
+        />
+      )}
+    </>
   );
 };

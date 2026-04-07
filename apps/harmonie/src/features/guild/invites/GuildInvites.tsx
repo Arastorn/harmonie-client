@@ -123,19 +123,20 @@ export const GuildInvites = ({ guildId }: GuildInvitesProps) => {
               <div className="flex-1 flex items-center justify-end gap-1">
                 <Button
                   variant="tertiary"
+                  size="small"
                   onClick={() => handleCopy(invite.code)}
                   title={t('guild.invites.copy')}
-                  className="px-3 py-1.5 text-xs whitespace-nowrap w-20 justify-center"
+                  className="whitespace-nowrap w-20"
                 >
                   <Copy size={13} />
                   {copiedCode === invite.code ? t('guild.invites.copied') : t('guild.invites.copy')}
                 </Button>
                 <Button
                   variant="tertiary"
+                  size="small"
                   isLoading={revokingCode === invite.code}
                   onClick={() => handleRevoke(invite.code)}
                   title={t('guild.invites.revoke')}
-                  className="px-3 py-1.5 text-xs"
                 >
                   <Trash2 size={13} />
                 </Button>

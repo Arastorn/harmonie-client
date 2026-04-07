@@ -12,6 +12,7 @@ interface AudioInputContextValue {
   needsPermission: boolean;
   requestPermission: () => Promise<void>;
   muted: boolean;
+  setMuted: (muted: boolean) => void;
   toggleMute: () => void;
 }
 
@@ -90,6 +91,7 @@ export const AudioInputProvider = ({ children }: { children: ReactNode }) => {
         needsPermission,
         requestPermission,
         muted,
+        setMuted,
         toggleMute,
       }}
     >

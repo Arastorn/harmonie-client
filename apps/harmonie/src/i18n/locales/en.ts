@@ -291,6 +291,22 @@ export const en = {
       'rose-obsidian': 'Blush Obsidian',
     },
   },
+  voice: {
+    join: 'Join',
+    leave: 'Leave',
+    mute: 'Mute',
+    unmute: 'Unmute',
+    joining: 'Connecting…',
+    readyToJoin: 'Do you want to join this voice channel?',
+    joinError: 'Unable to join the voice channel. Please try again.',
+    joinErrorMic: 'Unable to access your microphone. Check browser permissions and try again.',
+    joinErrorNetwork:
+      'Unable to establish the voice connection. The LiveKit server or its TURN/ICE setup appears unreachable.',
+    empty: 'No one is here yet.',
+    participants: '{{count}} participant(s)',
+    connected: 'Connected',
+    ping: '{{ms}} ms',
+  },
   audio: {
     input: {
       title: 'Audio input',
