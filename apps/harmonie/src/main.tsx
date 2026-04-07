@@ -7,6 +7,8 @@ import { AuthProvider } from './features/auth/AuthContext';
 import { UserProvider } from './features/user/UserContext';
 import { ThemeProvider } from './features/user/ThemeContext';
 import { RealtimeProvider } from './features/realtime/RealtimeContext';
+import { AudioInputProvider } from './features/user/audio/AudioInputContext';
+import { AudioOutputProvider } from './features/user/audio/AudioOutputContext';
 
 document.addEventListener('contextmenu', (e) => e.preventDefault());
 
@@ -14,9 +16,13 @@ createRoot(document.getElementById('root')!).render(
   <ThemeProvider>
     <AuthProvider>
       <UserProvider>
-        <RealtimeProvider>
-          <RouterProvider router={router} />
-        </RealtimeProvider>
+        <AudioInputProvider>
+          <AudioOutputProvider>
+            <RealtimeProvider>
+              <RouterProvider router={router} />
+            </RealtimeProvider>
+          </AudioOutputProvider>
+        </AudioInputProvider>
       </UserProvider>
     </AuthProvider>
   </ThemeProvider>

@@ -7,6 +7,8 @@ export type {
   IconButtonSize,
   IconButtonVariant,
 } from './components/IconButton/IconButton';
+export { SplitIconButton } from './components/SplitIconButton/SplitIconButton';
+export type { SplitIconButtonProps } from './components/SplitIconButton/SplitIconButton';
 
 export { Input } from './components/Input/Input';
 export type { InputProps, InputSize } from './components/Input/Input';

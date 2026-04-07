@@ -1,4 +1,4 @@
-import { ButtonHTMLAttributes, ReactNode } from 'react';
+import { ButtonHTMLAttributes, forwardRef, ReactNode } from 'react';
 
 export type IconButtonSize = 'normal' | 'small' | 'medium';
 export type IconButtonVariant = 'ghost' | 'filled' | 'overlay' | 'primary';
@@ -25,15 +25,10 @@ const variantClasses: Record<IconButtonVariant, string> = {
 
 const selectedClasses = 'bg-primary text-primary-fg hover:bg-primary';
 
-export const IconButton = ({
-  size = 'normal',
-  variant = 'ghost',
-  selected = false,
-  disabled,
-  children,
-  className,
-  ...props
-}: IconButtonProps) => {
+export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(function IconButton(
+  { size = 'normal', variant = 'ghost', selected = false, disabled, children, className, ...props },
+  ref
+) {
   const classes = [
     'inline-flex items-center justify-center',
     '[transition:transform_150ms_cubic-bezier(0.34,1.56,0.64,1),background-color_150ms_ease,opacity_150ms_ease]',
@@ -47,8 +42,8 @@ export const IconButton = ({
     .join(' ');
 
   return (
-    <button disabled={disabled} className={classes} {...props}>
+    <button ref={ref} disabled={disabled} className={classes} {...props}>
       {children}
     </button>
   );
-};
+});
