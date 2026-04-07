@@ -293,6 +293,24 @@ export const fr = {
       'rose-obsidian': 'Rose Obsidien',
     },
   },
+  audio: {
+    input: {
+      title: 'Entrée audio',
+      default: 'Entrée par défaut',
+      unknown: 'Périphérique inconnu',
+      noDevices: 'Aucun périphérique détecté',
+      grantAccess: 'Voir tous les périphériques…',
+      requesting: 'Demande en cours…',
+    },
+    output: {
+      title: 'Sortie audio',
+      default: 'Sortie par défaut',
+      unknown: 'Périphérique inconnu',
+      noDevices: 'Aucun périphérique détecté',
+      grantAccess: 'Voir tous les périphériques…',
+      requesting: 'Demande en cours…',
+    },
+  },
   user: {
     logout: 'Se déconnecter',
   },

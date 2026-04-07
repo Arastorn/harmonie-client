@@ -291,6 +291,24 @@ export const en = {
       'rose-obsidian': 'Blush Obsidian',
     },
   },
+  audio: {
+    input: {
+      title: 'Audio input',
+      default: 'Default input',
+      unknown: 'Unknown device',
+      noDevices: 'No devices detected',
+      grantAccess: 'Show all devices…',
+      requesting: 'Requesting access…',
+    },
+    output: {
+      title: 'Audio output',
+      default: 'Default output',
+      unknown: 'Unknown device',
+      noDevices: 'No devices detected',
+      grantAccess: 'Show all devices…',
+      requesting: 'Requesting access…',
+    },
+  },
   user: {
     logout: 'Log out',
   },
