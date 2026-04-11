@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { DoorOpen, Mailbox, Pencil, Plus, ShieldBan, Trash2 } from 'lucide-react';
+import { DoorOpen, House, Mailbox, Pencil, Plus, ShieldBan, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { ContextMenu, GuildAvatar } from '@harmonie/ui';
 import { useMessageActivity } from '@/features/realtime/MessageActivityContext';
 import { useFileBlobUrl } from '@/shared/hooks/useFileBlobUrl';
@@ -59,10 +59,12 @@ export const GuildSidebar = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { guildId: activeGuildId } = useParams<{ guildId: string }>();
+  const location = useLocation();
+  const isConversationsRoute = location.pathname.startsWith('/conversations');
   const { guilds, fetchGuilds } = useGuilds();
   const [addMenu, setAddMenu] = useState<{ x: number; y: number } | null>(null);
   const [createOrJoinMode, setCreateOrJoinMode] = useState<'create' | 'join' | null>(null);
-  const { hasUnreadGuild } = useMessageActivity();
+  const { hasUnreadGuild, hasAnyUnreadConversation } = useMessageActivity();
   const [contextMenu, setContextMenu] = useState<{
     guild: Guild;
     position: { x: number; y: number };
@@ -134,6 +136,25 @@ export const GuildSidebar = () => {
           className="flex flex-col items-center gap-2 flex-1 overflow-y-auto w-full px-2 py-1 [&::-webkit-scrollbar]:hidden"
           style={{ scrollbarWidth: 'none' }}
         >
+          {/* Home button for conversations */}
+          <div className="relative">
+            <button
+              onClick={() => navigate('/conversations')}
+              title={t('conversation.home')}
+              className={[
+                'w-10 h-10 rounded-xl flex items-center justify-center shrink-0 cursor-pointer transform-gpu transition-transform duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] hover:scale-[1.1] active:scale-[0.97]',
+                isConversationsRoute
+                  ? 'bg-primary text-primary-fg'
+                  : 'bg-surface-2 text-text-2 hover:bg-surface-3',
+              ].join(' ')}
+            >
+              <House size={18} />
+            </button>
+            {hasAnyUnreadConversation() && !isConversationsRoute && (
+              <span className="absolute top-1 right-0 h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-background" />
+            )}
+          </div>
+          <hr className="w-8 border-t border-border-2 my-0" />
           {/* List of guilds */}
           {guilds.map((guild) => {
             return (

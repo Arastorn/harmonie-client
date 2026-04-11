@@ -36,6 +36,13 @@ export const WithIconLarge: Story = {
   },
 };
 
+export const WithFallback: Story = {
+  args: {
+    fallback: 'Alice',
+    size: 32,
+  },
+};
+
 export const AllVariants: Story = {
   render: () => (
     <div className="flex flex-col gap-6 p-6">
@@ -62,6 +69,18 @@ export const AllVariants: Story = {
       <div className="flex items-center gap-4">
         <span className="w-32 text-text-2 text-sm">Icon – Smile</span>
         <Avatar icon="Smile" color="#3D3530" bg="#F5D9A0" size={32} />
+      </div>
+      <div className="flex items-center gap-4">
+        <span className="w-32 text-text-2 text-sm">Fallback (32px)</span>
+        <Avatar fallback="Alice" size={32} />
+      </div>
+      <div className="flex items-center gap-4">
+        <span className="w-32 text-text-2 text-sm">Fallback (24px)</span>
+        <Avatar fallback="Bob" size={24} />
+      </div>
+      <div className="flex items-center gap-4">
+        <span className="w-32 text-text-2 text-sm">Fallback (16px)</span>
+        <Avatar fallback="Charlie" size={16} />
       </div>
     </div>
   ),

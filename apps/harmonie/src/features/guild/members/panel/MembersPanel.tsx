@@ -4,10 +4,10 @@ import { useTranslation } from 'react-i18next';
 import { X } from 'lucide-react';
 import { IconButton } from '@harmonie/ui';
 import type { GuildMember } from '@/types/guild';
-import { MemberItem } from '@/features/guild/members/panel/MemberItem';
+import { MemberItem } from '@/shared/members/MemberItem';
 import { useMemberBanActions } from '@/features/guild/members/modals/useMemberBanActions';
 import { useMemberRemoveActions } from '@/features/guild/members/modals/useMemberRemoveActions';
-import { MemberPopover } from '@/features/guild/members/panel/MemberPopover';
+import { MemberPopover } from '@/shared/members/MemberPopover';
 import { useGuildMembers } from '@/features/guild/GuildContext';
 
 interface SelectedMember {

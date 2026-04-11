@@ -1,19 +1,19 @@
 import i18n from '@/i18n';
-import type { MessageCreatedEvent } from '@/types/channel';
 
 export const NOTIFICATION_NAVIGATE_EVENT = 'harmonie:notification-navigate';
 
-interface BrowserNotificationOptions {
+export interface BrowserNotificationPayload {
+  messageId: string;
+  content: string | null;
+  attachments: unknown[];
+  targetUrl: string;
   title?: string;
 }
 
-const buildNotificationTargetUrl = (event: MessageCreatedEvent) =>
-  `/guilds/${event.guildId}/channels/${event.channelId}`;
-
-const buildNotificationBody = (event: MessageCreatedEvent) => {
-  const content = event.content.trim();
+const buildNotificationBody = (payload: BrowserNotificationPayload): string => {
+  const content = payload.content?.trim() ?? '';
   if (content) return content;
-  if (event.attachments.length > 0) return i18n.t('notifications.browser.attachmentOnly');
+  if (payload.attachments.length > 0) return i18n.t('notifications.browser.attachmentOnly');
   return i18n.t('notifications.browser.fallbackBody');
 };
 
@@ -24,16 +24,13 @@ export const requestBrowserNotificationPermission = () => {
   void Notification.requestPermission().catch(() => {});
 };
 
-export const showBrowserNotification = (
-  event: MessageCreatedEvent,
-  options?: BrowserNotificationOptions
-) => {
+export const showBrowserNotification = (payload: BrowserNotificationPayload) => {
   if (typeof window === 'undefined' || !('Notification' in window)) return;
   if (Notification.permission !== 'granted') return;
 
-  const notification = new Notification(options?.title ?? i18n.t('notifications.browser.title'), {
-    body: buildNotificationBody(event),
-    tag: `message-${event.messageId}`,
+  const notification = new Notification(payload.title ?? i18n.t('notifications.browser.title'), {
+    body: buildNotificationBody(payload),
+    tag: `message-${payload.messageId}`,
     icon: '/harmonie.png',
   });
 
@@ -41,9 +38,7 @@ export const showBrowserNotification = (
     notification.close();
     window.focus();
     window.dispatchEvent(
-      new CustomEvent<string>(NOTIFICATION_NAVIGATE_EVENT, {
-        detail: buildNotificationTargetUrl(event),
-      })
+      new CustomEvent<string>(NOTIFICATION_NAVIGATE_EVENT, { detail: payload.targetUrl })
     );
   };
 

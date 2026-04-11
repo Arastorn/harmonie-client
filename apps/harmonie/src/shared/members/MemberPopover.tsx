@@ -17,7 +17,7 @@ const POPOVER_OFFSET = 8;
 
 interface MemberPopoverProps {
   member: GuildMember;
-  guildId: string;
+  guildId?: string;
   anchorRect: DOMRect;
   onClose: () => void;
   side?: 'left' | 'right';
@@ -79,7 +79,7 @@ export const MemberPopover = ({
         style={{ top, left }}
       >
         <div className="relative h-9" style={{ background: headerGradient }}>
-          {(canRemoveMember(member) || canBanMember(member)) && (
+          {guildId && (canRemoveMember(member) || canBanMember(member)) && (
             <div className="absolute top-1.5 right-1.5 flex gap-1">
               {canRemoveMember(member) && (
                 <IconButton
@@ -119,7 +119,6 @@ export const MemberPopover = ({
           </div>
         </div>
 
-        {/* Content */}
         <div className="px-4 pt-8 pb-4 flex flex-col gap-3">
           <div className="min-w-0">
             <p className="text-sm font-semibold text-text-1 truncate">{label}</p>
@@ -129,7 +128,9 @@ export const MemberPopover = ({
           </div>
           <div className="flex flex-wrap gap-1.5">
             <Badge>{member.role}</Badge>
-            {isOwner && <Badge variant="owner">{t('guild.members.popover.ownerLabel')}</Badge>}
+            {isOwner && guildId && (
+              <Badge variant="owner">{t('guild.members.popover.ownerLabel')}</Badge>
+            )}
           </div>
 
           {member.bio && (
@@ -145,7 +146,7 @@ export const MemberPopover = ({
         </div>
       </div>
 
-      {showRemoveModal && (
+      {guildId && showRemoveModal && (
         <RemoveMemberModal
           guildId={guildId}
           member={member}
@@ -159,7 +160,7 @@ export const MemberPopover = ({
         />
       )}
 
-      {showBanModal && (
+      {guildId && showBanModal && (
         <BanMemberModal
           guildId={guildId}
           member={member}

@@ -1,9 +1,11 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useMatch, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useChannels } from '@/features/channel/ChannelContext';
 import { useGuilds } from '@/features/guild/GuildContext';
 import { useRealtime } from '@/features/realtime/RealtimeContext';
 import type { MessageCreatedEvent } from '@/types/channel';
+import type { ConversationMessageCreatedEvent } from '@/types/conversation';
 import {
   requestBrowserNotificationPermission,
   showBrowserNotification,
@@ -13,23 +15,32 @@ interface MessageActivityContextValue {
   totalUnreadCount: number;
   hasUnreadChannel: (channelId: string) => boolean;
   hasUnreadGuild: (guildId: string) => boolean;
+  hasUnreadConversation: (conversationId: string) => boolean;
+  hasAnyUnreadConversation: () => boolean;
 }
 
 const MessageActivityContext = createContext<MessageActivityContextValue>({
   totalUnreadCount: 0,
   hasUnreadChannel: () => false,
   hasUnreadGuild: () => false,
+  hasUnreadConversation: () => false,
+  hasAnyUnreadConversation: () => false,
 });
 
 export const MessageActivityProvider = ({ children }: { children: ReactNode }) => {
+  const { t } = useTranslation();
   const { guilds } = useGuilds();
   const { channels } = useChannels();
   const { connection } = useRealtime();
   const { guildId: currentRouteGuildId } = useParams<{ guildId: string }>();
   const textChannelMatch = useMatch('/guilds/:guildId/channels/:channelId');
   const activeTextChannelId = textChannelMatch?.params.channelId;
+  const conversationMatch = useMatch('/conversations/:conversationId');
+  const activeConversationId = conversationMatch?.params.conversationId;
   const [unreadChannels, setUnreadChannels] = useState<Record<string, number>>({});
   const [unreadGuilds, setUnreadGuilds] = useState<Record<string, number>>({});
+  const [unreadConversations, setUnreadConversations] = useState<Record<string, number>>({});
+  const [unreadCurrentRoute, setUnreadCurrentRoute] = useState(0);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -45,6 +56,15 @@ export const MessageActivityProvider = ({ children }: { children: ReactNode }) =
     };
   }, []);
 
+  // Clear current-route unread when the tab regains focus
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const handleFocus = () => setUnreadCurrentRoute(0);
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, []);
+
+  // Guild channel messages
   useEffect(() => {
     if (!connection) return;
 
@@ -53,20 +73,25 @@ export const MessageActivityProvider = ({ children }: { children: ReactNode }) =
         guilds.find((guild) => guild.guildId === event.guildId)?.name ?? event.guildId;
       const channelName =
         channels?.find((channel) => channel.channelId === event.channelId)?.name ?? event.channelId;
-      const notificationTitle = `Harmonie | ${channelName} | ${guildName}`;
+      const targetUrl = `/guilds/${event.guildId}/channels/${event.channelId}`;
+      const title = `Harmonie | ${channelName} | ${guildName}`;
 
-      const notifyAway = () => {
-        if (typeof document === 'undefined') return;
-        if (document.visibilityState === 'visible' && document.hasFocus()) return;
-        showBrowserNotification(event, { title: notificationTitle });
-      };
+      const notify = () =>
+        showBrowserNotification({
+          messageId: event.messageId,
+          content: event.content,
+          attachments: event.attachments,
+          targetUrl,
+          title,
+        });
 
       if (event.guildId !== currentRouteGuildId) {
-        setUnreadGuilds((prev) => ({
+        setUnreadGuilds((prev) => ({ ...prev, [event.guildId]: (prev[event.guildId] ?? 0) + 1 }));
+        setUnreadChannels((prev) => ({
           ...prev,
-          [event.guildId]: (prev[event.guildId] ?? 0) + 1,
+          [event.channelId]: (prev[event.channelId] ?? 0) + 1,
         }));
-        notifyAway();
+        notify();
         return;
       }
 
@@ -75,21 +100,56 @@ export const MessageActivityProvider = ({ children }: { children: ReactNode }) =
           ...prev,
           [event.channelId]: (prev[event.channelId] ?? 0) + 1,
         }));
-        notifyAway();
+        notify();
         return;
       }
 
-      notifyAway();
+      // Same channel but tab not focused: notify and increment title counter
+      if (!document.hasFocus()) setUnreadCurrentRoute((n) => n + 1);
+      notify();
     };
 
     connection.on('MessageCreated', handleMessageCreated);
-
     return () => connection.off('MessageCreated', handleMessageCreated);
   }, [channels, connection, currentRouteGuildId, activeTextChannelId, guilds]);
 
+  // Conversation messages
+  useEffect(() => {
+    if (!connection) return;
+
+    const handleConversationMessageCreated = (event: ConversationMessageCreatedEvent) => {
+      const targetUrl = `/conversations/${event.conversationId}`;
+      const title = `Harmonie | ${t('conversation.home')}`;
+
+      const notify = () =>
+        showBrowserNotification({
+          messageId: event.messageId,
+          content: event.content,
+          attachments: event.attachments ?? [],
+          targetUrl,
+          title,
+        });
+
+      if (event.conversationId !== activeConversationId) {
+        setUnreadConversations((prev) => ({
+          ...prev,
+          [event.conversationId]: (prev[event.conversationId] ?? 0) + 1,
+        }));
+        notify();
+        return;
+      }
+
+      // Same conversation but tab not focused: notify and increment title counter
+      if (!document.hasFocus()) setUnreadCurrentRoute((n) => n + 1);
+      notify();
+    };
+
+    connection.on('ConversationMessageCreated', handleConversationMessageCreated);
+    return () => connection.off('ConversationMessageCreated', handleConversationMessageCreated);
+  }, [connection, activeConversationId, t]);
+
   useEffect(() => {
     if (!activeTextChannelId) return;
-
     setUnreadChannels((prev) => {
       if (!(activeTextChannelId in prev)) return prev;
       const next = { ...prev };
@@ -100,7 +160,6 @@ export const MessageActivityProvider = ({ children }: { children: ReactNode }) =
 
   useEffect(() => {
     if (!currentRouteGuildId) return;
-
     setUnreadGuilds((prev) => {
       if (!(currentRouteGuildId in prev)) return prev;
       const next = { ...prev };
@@ -109,15 +168,30 @@ export const MessageActivityProvider = ({ children }: { children: ReactNode }) =
     });
   }, [currentRouteGuildId]);
 
+  useEffect(() => {
+    if (!activeConversationId) return;
+    setUnreadConversations((prev) => {
+      if (!(activeConversationId in prev)) return prev;
+      const next = { ...prev };
+      delete next[activeConversationId];
+      return next;
+    });
+  }, [activeConversationId]);
+
   const value = useMemo<MessageActivityContextValue>(
     () => ({
       totalUnreadCount:
         Object.values(unreadChannels).reduce((sum, count) => sum + count, 0) +
-        Object.values(unreadGuilds).reduce((sum, count) => sum + count, 0),
+        Object.values(unreadGuilds).reduce((sum, count) => sum + count, 0) +
+        Object.values(unreadConversations).reduce((sum, count) => sum + count, 0) +
+        unreadCurrentRoute,
       hasUnreadChannel: (channelId: string) => (unreadChannels[channelId] ?? 0) > 0,
       hasUnreadGuild: (guildId: string) => (unreadGuilds[guildId] ?? 0) > 0,
+      hasUnreadConversation: (conversationId: string) =>
+        (unreadConversations[conversationId] ?? 0) > 0,
+      hasAnyUnreadConversation: () => Object.values(unreadConversations).some((c) => c > 0),
     }),
-    [unreadChannels, unreadGuilds]
+    [unreadChannels, unreadGuilds, unreadConversations, unreadCurrentRoute]
   );
 
   return (
