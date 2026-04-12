@@ -8,6 +8,7 @@ export interface ChannelItemProps {
   label: string;
   active?: boolean;
   unread?: boolean;
+  voiceActive?: boolean;
   onClick: () => void;
   onContextMenu?: (e: React.MouseEvent) => void;
   onMenuClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
@@ -19,6 +20,7 @@ export const ChannelItem = ({
   label,
   active = false,
   unread = false,
+  voiceActive = false,
   onClick,
   onContextMenu,
   onMenuClick,
@@ -40,9 +42,18 @@ export const ChannelItem = ({
       <button
         onClick={onClick}
         onContextMenu={onContextMenu}
-        className="flex min-w-0 flex-1 items-center gap-2 text-sm font-body transition-colors text-left cursor-pointer h-9"
+        className={[
+          'flex min-w-0 flex-1 items-center gap-2 text-sm font-body transition-colors text-left cursor-pointer h-9',
+          voiceActive && 'font-medium',
+        ]
+          .filter(Boolean)
+          .join(' ')}
       >
-        <Icon size={16} className="shrink-0 text-text-3" />
+        <Icon
+          size={16}
+          className={['shrink-0', voiceActive ? 'text-primary' : 'text-text-3'].join(' ')}
+          fill={voiceActive ? 'currentColor' : 'none'}
+        />
         <span className="truncate">{label}</span>
         {unread && <span className="ml-auto h-2 w-2 rounded-full bg-primary shrink-0" />}
       </button>

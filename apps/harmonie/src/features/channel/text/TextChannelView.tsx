@@ -265,7 +265,7 @@ export const TextChannelView = () => {
   return (
     <>
       <div className="flex flex-col h-full bg-surface-1 rounded-md overflow-hidden">
-        <div className="flex items-center justify-between px-4 py-2.5 shrink-0 bg-surface-2 rounded-t-md">
+        <div className="flex items-center justify-between px-4 h-14 shrink-0 bg-surface-2 rounded-t-md">
           <span className="text-sm font-semibold text-text-1"># {currentChannel.name}</span>
           <div className="flex items-center gap-2">
             <GuildSearchBar

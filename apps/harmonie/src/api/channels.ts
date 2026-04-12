@@ -1,6 +1,7 @@
 import { apiFetch, parseOrThrow } from '@/api/client';
 import type { Channel } from '@/types/guild';
 import type { Message, MessageList, UpdateChannelInput } from '@/types/channel';
+import type { JoinVoiceResponse } from '@/types/voice';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
@@ -93,3 +94,8 @@ export const removeReaction = (
   ).then((r) => {
     if (!r.ok) throw new Error('Failed to remove reaction');
   });
+
+export const joinVoiceChannel = (channelId: string): Promise<JoinVoiceResponse> =>
+  apiFetch(`${API_BASE}/channels/${channelId}/voice/join`, {
+    method: 'POST',
+  }).then((r) => parseOrThrow<JoinVoiceResponse>(r));

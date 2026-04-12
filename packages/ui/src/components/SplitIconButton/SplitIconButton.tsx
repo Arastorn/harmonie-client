@@ -4,6 +4,7 @@ import type { IconButtonSize } from '../IconButton/IconButton';
 export interface SplitIconButtonProps {
   size?: IconButtonSize;
   selected?: boolean;
+  selectedVariant?: 'primary' | 'danger';
   open?: boolean;
   disabled?: boolean;
   primaryLabel: string;
@@ -16,28 +17,34 @@ export interface SplitIconButtonProps {
 }
 
 const containerSizeClasses: Record<IconButtonSize, string> = {
-  normal: 'h-[30px]',
-  small: 'h-[25px]',
-  medium: 'h-[36px]',
+  normal: 'h-[36px]',
+  small: 'h-[28px]',
+  medium: 'h-[40px]',
 };
 
 const primarySizeClasses: Record<IconButtonSize, string> = {
-  normal: 'w-[30px]',
-  small: 'w-[25px]',
-  medium: 'w-[36px]',
+  normal: 'w-[36px]',
+  small: 'w-[28px]',
+  medium: 'w-[40px]',
 };
 
 const secondarySizeClasses: Record<IconButtonSize, string> = {
-  normal: 'w-5',
+  normal: 'w-6',
   small: 'w-5',
-  medium: 'w-6',
+  medium: 'w-7',
 };
+
+const selectedVariantClasses = {
+  primary: 'bg-primary text-primary-fg',
+  danger: 'bg-error text-error-fg',
+} as const;
 
 export const SplitIconButton = forwardRef<HTMLButtonElement, SplitIconButtonProps>(
   function SplitIconButton(
     {
       size = 'small',
       selected = false,
+      selectedVariant = 'primary',
       open = false,
       disabled = false,
       primaryLabel,
@@ -55,7 +62,7 @@ export const SplitIconButton = forwardRef<HTMLButtonElement, SplitIconButtonProp
     return (
       <div
         className={[
-          'inline-flex items-center overflow-hidden rounded-sm bg-transparent',
+          'inline-flex items-center overflow-hidden rounded-full bg-transparent',
           containerSizeClasses[size],
           disabledClasses,
           className ?? '',
@@ -69,13 +76,13 @@ export const SplitIconButton = forwardRef<HTMLButtonElement, SplitIconButtonProp
           aria-label={primaryLabel}
           onClick={onPrimaryClick}
           className={[
-            'flex items-center justify-center cursor-pointer rounded-l-sm',
+            'flex items-center justify-center cursor-pointer rounded-l-full',
             '[transition:transform_150ms_cubic-bezier(0.34,1.56,0.64,1),background-color_150ms_ease,opacity_150ms_ease]',
             'hover:scale-[1.04]',
             containerSizeClasses[size],
             primarySizeClasses[size],
             selected
-              ? 'bg-primary text-primary-fg'
+              ? selectedVariantClasses[selectedVariant]
               : 'bg-transparent text-tertiary-fg hover:bg-surface-3',
           ].join(' ')}
         >
@@ -88,7 +95,7 @@ export const SplitIconButton = forwardRef<HTMLButtonElement, SplitIconButtonProp
           aria-label={secondaryLabel}
           onClick={onSecondaryClick}
           className={[
-            'flex items-center justify-center cursor-pointer rounded-r-sm',
+            'flex items-center justify-center cursor-pointer rounded-r-full',
             '[transition:transform_150ms_cubic-bezier(0.34,1.56,0.64,1),background-color_150ms_ease,opacity_150ms_ease,color_150ms_ease]',
             'hover:scale-[1.04]',
             containerSizeClasses[size],

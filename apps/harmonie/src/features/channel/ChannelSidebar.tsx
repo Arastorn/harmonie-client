@@ -8,7 +8,6 @@ import { useGuildPermissions } from '@/features/guild/hooks/useGuildPermissions'
 import type { Channel, Guild } from '@/types/guild';
 import { useCurrentGuild, useGuilds } from '@/features/guild/GuildContext';
 import { useMessageActivity } from '@/features/realtime/MessageActivityContext';
-import { UserPanel } from '@/features/user/UserPanel';
 import { useChannels } from './ChannelContext';
 import { CreateChannelModal } from './create-edit/CreateChannelModal';
 import { EditChannelModal, type EditChannelSection } from './create-edit/EditChannelModal';
@@ -110,8 +109,8 @@ export const ChannelSidebar = () => {
 
   return (
     <>
-      <aside className="flex flex-col w-60 bg-surface-1 rounded-md shrink-0 overflow-hidden">
-        <header className="pl-4 pr-2 py-3.5 bg-surface-2 rounded-t-md flex items-center justify-between gap-2">
+      <aside className="flex flex-col w-60 bg-surface-1 rounded-md shrink-0 overflow-hidden min-h-0">
+        <header className="pl-4 pr-2 h-14 bg-surface-2 rounded-t-md flex items-center justify-between gap-2">
           <h2 className="font-semibold text-text-1 truncate">{guild?.name ?? guildId}</h2>
           {canManageGuild && guild && (
             <IconButton
@@ -198,10 +197,6 @@ export const ChannelSidebar = () => {
               </section>
             </>
           )}
-        </div>
-
-        <div className="bg-surface-2 rounded-b-md">
-          <UserPanel />
         </div>
       </aside>
 

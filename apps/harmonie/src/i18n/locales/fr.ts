@@ -293,6 +293,23 @@ export const fr = {
       'rose-obsidian': 'Rose Obsidien',
     },
   },
+  voice: {
+    join: 'Rejoindre',
+    leave: 'Quitter',
+    mute: 'Couper le micro',
+    unmute: 'Réactiver le micro',
+    joining: 'Connexion…',
+    readyToJoin: 'Voulez-vous rejoindre ce salon vocal ?',
+    joinError: 'Impossible de rejoindre le canal vocal. Réessaie.',
+    joinErrorMic:
+      "Impossible d'activer le micro. Vérifie les autorisations du navigateur puis réessaie.",
+    joinErrorNetwork:
+      'Connexion vocale impossible. Le serveur LiveKit ou sa configuration TURN/ICE semble inaccessible.',
+    empty: 'Personne ici pour le moment.',
+    participants: '{{count}} participant(s)',
+    connected: 'Connecté',
+    ping: '{{ms}} ms',
+  },
   audio: {
     input: {
       title: 'Entrée audio',

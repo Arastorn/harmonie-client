@@ -1,4 +1,5 @@
 import type { AvatarAppearance } from '@/types/user';
+import type { VoiceParticipantInit } from '@/types/voice';
 
 export interface Guild {
   guildId: string;
@@ -28,6 +29,7 @@ export interface Channel {
   type: 'Text' | 'Voice';
   isDefault: boolean;
   position: number;
+  currentParticipants?: VoiceParticipantInit[] | null;
 }
 
 export interface ChannelList {
