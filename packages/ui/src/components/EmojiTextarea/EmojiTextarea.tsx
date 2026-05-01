@@ -1,9 +1,12 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useRef, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { Smile } from 'lucide-react';
 import type { EmojiClickData, PickerProps } from 'emoji-picker-react';
 import { Textarea, type TextareaProps } from '../Textarea/Textarea';
 import { EmojiPickerBase } from '../EmojiPickerBase/EmojiPickerBase';
+import { EmojiAutocomplete } from './EmojiAutocomplete';
+import { useEmojiAutocomplete } from './useEmojiAutocomplete';
+import { useEmojiPicker } from './useEmojiPicker';
 
 export interface EmojiTextareaProps extends Omit<
   TextareaProps,
@@ -17,103 +20,50 @@ export interface EmojiTextareaProps extends Omit<
   topContent?: ReactNode;
 }
 
-const PICKER_W = 320;
-const PICKER_H = 380;
-const OFFSET = 8;
-
 export const EmojiTextarea = ({
   value,
   onChange,
+  onKeyDown: parentOnKeyDown,
   pickerProps,
   emojiButtonLabel = 'Open emoji picker',
   extraActions,
   topContent,
   ...textareaProps
 }: EmojiTextareaProps) => {
-  const [isPickerOpen, setIsPickerOpen] = useState(false);
-  const [pickerPos, setPickerPos] = useState({ top: 0, left: 0 });
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const buttonRef = useRef<HTMLButtonElement>(null);
-  const pickerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!isPickerOpen) return;
-
-    const handleOutsideClick = (event: MouseEvent) => {
-      const target = event.target as Node;
-      if (!buttonRef.current?.contains(target) && !pickerRef.current?.contains(target)) {
-        setIsPickerOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleOutsideClick);
-    return () => document.removeEventListener('mousedown', handleOutsideClick);
-  }, [isPickerOpen]);
-
-  const openPicker = () => {
-    if (!buttonRef.current) return;
-    const rect = buttonRef.current.getBoundingClientRect();
-
-    // Prefer opening downward; fall back to upward if not enough room
-    const topDownward = rect.bottom + OFFSET;
-    const top =
-      topDownward + PICKER_H <= window.innerHeight - OFFSET
-        ? topDownward
-        : rect.top - PICKER_H - OFFSET;
-
-    // Align right edge with button, clamped to viewport
-    const left = Math.max(OFFSET, rect.right - PICKER_W);
-
-    setPickerPos({ top, left });
-    setIsPickerOpen(true);
-  };
-
-  const insertEmoji = (emoji: string) => {
-    const textarea = textareaRef.current;
-    if (!textarea) {
-      onChange(`${value}${emoji}`);
-      setIsPickerOpen(false);
-      return;
-    }
-
-    const start = textarea.selectionStart ?? value.length;
-    const end = textarea.selectionEnd ?? value.length;
-    onChange(`${value.slice(0, start)}${emoji}${value.slice(end)}`);
-    setIsPickerOpen(false);
-
-    requestAnimationFrame(() => {
-      textarea.focus();
-      const nextCursorPosition = start + emoji.length;
-      textarea.setSelectionRange(nextCursorPosition, nextCursorPosition);
+  const { autocomplete, autocompleteRef, handleChange, handleKeyDown, selectAutocomplete } =
+    useEmojiAutocomplete({
+      value,
+      onChange,
+      textareaRef,
+      parentOnKeyDown,
     });
-  };
-
-  const handleEmojiClick = (emojiData: EmojiClickData) => {
-    insertEmoji(emojiData.emoji);
-  };
+  const { pickerOpen, pickerPos, buttonRef, pickerRef, togglePicker, insertEmoji } = useEmojiPicker(
+    {
+      value,
+      onChange,
+      textareaRef,
+    }
+  );
 
   const emojiButton = (
     <>
       <button
         ref={buttonRef}
         type="button"
-        onClick={() => (isPickerOpen ? setIsPickerOpen(false) : openPicker())}
-        className="flex h-6 w-6 items-center justify-center cursor-pointer rounded text-text-3 transition-colors hover:text-text-1"
+        onClick={togglePicker}
+        className="flex h-6 w-6 cursor-pointer items-center justify-center rounded text-text-3 transition-colors hover:text-text-1"
         aria-label={emojiButtonLabel}
       >
         <Smile size={16} />
       </button>
-      {isPickerOpen &&
+      {pickerOpen &&
         createPortal(
-          <div
-            ref={pickerRef}
-            className="fixed z-50 shadow-lg"
-            style={{ top: pickerPos.top, left: pickerPos.left }}
-          >
+          <div ref={pickerRef} className="fixed z-50 shadow-lg" style={pickerPos}>
             <EmojiPickerBase
-              onEmojiClick={handleEmojiClick}
-              width={PICKER_W}
-              height={PICKER_H}
+              onEmojiClick={(d: EmojiClickData) => insertEmoji(d.emoji)}
+              width={320}
+              height={380}
               {...(pickerProps ?? {})}
             />
           </div>,
@@ -123,23 +73,35 @@ export const EmojiTextarea = ({
   );
 
   return (
-    <Textarea
-      ref={textareaRef}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      bottomRightElement={
-        extraActions ? (
-          <div className="flex items-center gap-1">
-            {extraActions}
-            {emojiButton}
-          </div>
-        ) : (
-          emojiButton
-        )
-      }
-      bottomRightElementWide={!!extraActions}
-      topContent={topContent}
-      {...textareaProps}
-    />
+    <>
+      <Textarea
+        ref={textareaRef}
+        value={value}
+        onChange={handleChange}
+        onKeyDown={handleKeyDown}
+        bottomRightElement={
+          extraActions ? (
+            <div className="flex items-center gap-1">
+              {extraActions}
+              {emojiButton}
+            </div>
+          ) : (
+            emojiButton
+          )
+        }
+        bottomRightElementWide={!!extraActions}
+        topContent={topContent}
+        {...textareaProps}
+      />
+      {autocomplete && (
+        <EmojiAutocomplete
+          results={autocomplete.results}
+          selectedIndex={autocomplete.selectedIndex}
+          pos={autocomplete.pos}
+          onSelect={selectAutocomplete}
+          containerRef={autocompleteRef}
+        />
+      )}
+    </>
   );
 };

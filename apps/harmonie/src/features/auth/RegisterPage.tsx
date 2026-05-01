@@ -4,6 +4,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Button, Input } from '@harmonie/ui';
 import { Eye, EyeOff } from 'lucide-react';
 import { isValidEmail, isValidPassword } from '@/shared/utils/user';
+import { resolveColor } from '@/shared/utils/colors';
+import { BG_COLORS, ICON_COLORS } from '@/shared/consts/constants';
 import { register } from '@/api/auth';
 import { storeTokens } from '@/api/authStorage';
 import type { ApiError } from '@/types/error';
@@ -48,7 +50,17 @@ export const RegisterPage = () => {
     setUsernameErrorKey(undefined);
 
     try {
-      const response = await register({ email, username, password });
+      const response = await register({
+        email,
+        username,
+        password,
+        avatar: {
+          icon: 'PawPrint',
+          color: resolveColor(ICON_COLORS[0] ?? ''),
+          bg: resolveColor(BG_COLORS[0] ?? ''),
+        },
+        theme: 'default',
+      });
       storeTokens(response);
       setIsAuthenticated(true);
       navigate('/');
