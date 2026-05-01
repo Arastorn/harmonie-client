@@ -17,7 +17,7 @@ import type { VoiceParticipant } from '@/types/voice';
 import { useUser } from '@/features/user/UserContext';
 import { useFileBlobUrl } from '@/shared/hooks/useFileBlobUrl';
 import { useGuildMembers } from '@/features/guild/GuildContext';
-import { MemberPopover } from '@/features/guild/members/panel/MemberPopover';
+import { MemberPopover } from '@/shared/members/MemberPopover';
 import { useChannels } from './ChannelContext';
 import { useVoicePresence } from './voice/VoicePresenceContext';
 

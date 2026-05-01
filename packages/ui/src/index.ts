@@ -37,6 +37,9 @@ export type {
 export { Avatar } from './components/Avatar/Avatar';
 export type { AvatarProps } from './components/Avatar/Avatar';
 
+export { AvatarGroup } from './components/AvatarGroup/AvatarGroup';
+export type { AvatarGroupProps } from './components/AvatarGroup/AvatarGroup';
+
 export { GuildAvatar } from './components/GuildAvatar/GuildAvatar';
 export type { GuildAvatarProps } from './components/GuildAvatar/GuildAvatar';
 
@@ -54,6 +57,9 @@ export type { NavListProps, NavListItemProps } from './components/NavList/NavLis
 
 export { ChannelItem } from './components/ChannelItem/ChannelItem';
 export type { ChannelItemProps, ChannelType } from './components/ChannelItem/ChannelItem';
+
+export { ConversationItem } from './components/ConversationItem/ConversationItem';
+export type { ConversationItemProps } from './components/ConversationItem/ConversationItem';
 
 export { ContextMenu } from './components/ContextMenu/ContextMenu';
 export type { ContextMenuProps, ContextMenuItem } from './components/ContextMenu/ContextMenu';

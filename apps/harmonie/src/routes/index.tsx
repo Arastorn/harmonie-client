@@ -1,13 +1,16 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { MainLayout } from '@/layouts/MainLayout';
+import { ConversationsLayout } from '@/layouts/ConversationsLayout';
+import { GuildLayout } from '@/layouts/GuildLayout';
 import { AuthGuard } from '@/routes/AuthGuard';
 import { GuestGuard } from '@/routes/GuestGuard';
 import { ConnectPage } from '@/features/auth/ConnectPage';
 import { RegisterPage } from '@/features/auth/RegisterPage';
-import { GuildIndexPage } from '@/features/guild/GuildIndexPage';
 import { ChannelIndexPage } from '@/features/channel/ChannelIndexPage';
 import { TextChannelView } from '@/features/channel/text/TextChannelView';
 import { VoiceChannelView } from '@/features/channel/voice/VoiceChannelView';
+import { ConversationIndexPage } from '@/features/conversation/ConversationIndexPage';
+import { ConversationView } from '@/features/conversation/view/ConversationView';
 
 export const router = createBrowserRouter([
   {
@@ -37,22 +40,45 @@ export const router = createBrowserRouter([
         children: [
           {
             index: true,
-            element: <GuildIndexPage />,
+            element: <Navigate to="/conversations" replace />,
           },
           {
-            path: 'guilds/:guildId',
+            element: <ConversationsLayout />,
             children: [
               {
-                index: true,
-                element: <ChannelIndexPage />,
+                path: 'conversations',
+                children: [
+                  {
+                    index: true,
+                    element: <ConversationIndexPage />,
+                  },
+                  {
+                    path: ':conversationId',
+                    element: <ConversationView />,
+                  },
+                ],
               },
+            ],
+          },
+          {
+            element: <GuildLayout />,
+            children: [
               {
-                path: 'channels/:channelId',
-                element: <TextChannelView />,
-              },
-              {
-                path: 'voice/:channelId',
-                element: <VoiceChannelView />,
+                path: 'guilds/:guildId',
+                children: [
+                  {
+                    index: true,
+                    element: <ChannelIndexPage />,
+                  },
+                  {
+                    path: 'channels/:channelId',
+                    element: <TextChannelView />,
+                  },
+                  {
+                    path: 'voice/:channelId',
+                    element: <VoiceChannelView />,
+                  },
+                ],
               },
             ],
           },

@@ -8,9 +8,18 @@ export interface AvatarProps {
   color?: string;
   bg?: string;
   size?: number;
+  fallback?: string;
 }
 
-export const Avatar = ({ avatarUrl, alt = '', icon, color, bg, size = 32 }: AvatarProps) => {
+export const Avatar = ({
+  avatarUrl,
+  alt = '',
+  icon,
+  color,
+  bg,
+  size = 32,
+  fallback,
+}: AvatarProps) => {
   const dimension = `${size}px`;
   const iconSize = Math.round(size * 0.7);
 
@@ -47,6 +56,24 @@ export const Avatar = ({ avatarUrl, alt = '', icon, color, bg, size = 32 }: Avat
         }}
       >
         <Icon size={iconSize} color={color} />
+      </div>
+    );
+  }
+
+  if (fallback) {
+    const fontSize = Math.max(8, Math.round(size * 0.4));
+    return (
+      <div
+        style={{
+          width: dimension,
+          height: dimension,
+          borderRadius: '50%',
+          fontSize: `${fontSize}px`,
+          flexShrink: 0,
+        }}
+        className="bg-surface-3 flex items-center justify-center font-semibold text-text-2"
+      >
+        {fallback[0]?.toUpperCase()}
       </div>
     );
   }

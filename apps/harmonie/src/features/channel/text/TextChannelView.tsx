@@ -9,14 +9,21 @@ import { useCurrentGuild, useGuildMembers } from '@/features/guild/GuildContext'
 import { useChannels } from '@/features/channel/ChannelContext';
 import { useRealtime } from '@/features/realtime/RealtimeContext';
 import { useUser } from '@/features/user/UserContext';
-import { MemberPopover } from '@/features/guild/members/panel/MemberPopover';
+import { MemberPopover } from '@/shared/members/MemberPopover';
 import { useGuildWorkspace } from '@/features/guild/workspace/GuildWorkspaceProvider';
-import { MessageComposer } from './MessageComposer';
-import { MessageListItem } from './MessageListItem/MessageListItem';
-import { MessageContextMenu, type MessageMenuState } from './MessageListItem/MessageContextMenu';
+import { MessageComposer } from '@/shared/message/MessageComposer';
+import { MessageListItem } from '@/shared/message/MessageListItem/MessageListItem';
+import {
+  MessageContextMenu,
+  type MessageMenuState,
+} from '@/shared/message/MessageListItem/MessageContextMenu';
+import {
+  areMessagesGrouped,
+  getDaySeparatorLabel,
+} from '@/shared/message/utils/messagePresentation';
+import { sendMessage } from '@/api/channels';
 import { useChannelMessages } from './hooks/useChannelMessages';
 import { useTextChannelSearchTarget } from './hooks/useTextChannelSearchTarget';
-import { areMessagesGrouped, getDaySeparatorLabel } from './utils/messagePresentation';
 
 interface SelectedMember {
   member: GuildMember;
@@ -179,6 +186,16 @@ export const TextChannelView = () => {
       messageElement?.scrollIntoView({ block: 'nearest' });
     });
   }, [editingMessageId]);
+
+  useEffect(() => {
+    if (lastReadMessageId === null || separatorDismissed) return;
+    const el = scrollRef.current;
+    if (!el) return;
+    const rafId = requestAnimationFrame(() => {
+      if (el.scrollHeight <= el.clientHeight) setSeparatorDismissed(true);
+    });
+    return () => cancelAnimationFrame(rafId);
+  }, [lastReadMessageId, separatorDismissed]);
 
   useEffect(() => {
     const element = scrollRef.current;
@@ -357,10 +374,11 @@ export const TextChannelView = () => {
 
         <div className="mt-auto flex items-end px-4 pb-4">
           <MessageComposer
-            channelId={channelId}
+            key={channelId}
+            sendFn={(content, fileIds) => sendMessage(channelId!, content, fileIds)}
+            onTypingStart={() => connection?.send('StartTypingChannel', channelId).catch(() => {})}
             latestEditableMessage={latestOwnMessage}
             onEditingRequested={handleStartEditing}
-            connection={connection}
           />
         </div>
       </div>

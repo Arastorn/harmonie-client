@@ -2,10 +2,8 @@ import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from 're
 import { useTranslation } from 'react-i18next';
 import { Paperclip, SendHorizonal, X } from 'lucide-react';
 import { EmojiTextarea, IconButton } from '@harmonie/ui';
-import { sendMessage } from '@/api/channels';
 import { deleteFile, uploadFile } from '@/api/files';
 import type { Message } from '@/types/channel';
-import type { HubConnection } from '@microsoft/signalr';
 
 const MAX_LENGTH = 4000;
 const TYPING_THROTTLE_MS = 4000;
@@ -28,17 +26,17 @@ interface PendingAttachment {
 }
 
 interface MessageComposerProps {
-  channelId: string;
+  sendFn: (content: string, attachmentFileIds: string[]) => Promise<unknown>;
+  onTypingStart?: () => void;
   latestEditableMessage?: Message | null;
   onEditingRequested?: (messageId: string) => void;
-  connection?: HubConnection | null;
 }
 
 export const MessageComposer = ({
-  channelId,
+  sendFn,
+  onTypingStart,
   latestEditableMessage = null,
   onEditingRequested,
-  connection,
 }: MessageComposerProps) => {
   const { t } = useTranslation();
   const [content, setContent] = useState('');
@@ -59,7 +57,7 @@ export const MessageComposer = ({
 
   useEffect(() => {
     wrapperRef.current?.querySelector('textarea')?.focus();
-  }, [channelId]);
+  }, []);
 
   useEffect(() => {
     if (!sending) wrapperRef.current?.querySelector('textarea')?.focus();
@@ -86,11 +84,11 @@ export const MessageComposer = ({
 
   const handleChange = (value: string) => {
     setContent(value);
-    if (connection && value.trim()) {
+    if (onTypingStart && value.trim()) {
       const now = Date.now();
       if (now - lastTypingSentRef.current > TYPING_THROTTLE_MS) {
         lastTypingSentRef.current = now;
-        connection.send('StartTypingChannel', channelId).catch(() => {});
+        onTypingStart();
       }
     }
   };
@@ -179,7 +177,7 @@ export const MessageComposer = ({
     const attachmentFileIds = doneAttachments.map((a) => a.fileId!);
 
     try {
-      await sendMessage(channelId, trimmedContent, attachmentFileIds);
+      await sendFn(trimmedContent, attachmentFileIds);
       setContent('');
       setPendingAttachments((prev) => {
         prev.forEach((a) => {
