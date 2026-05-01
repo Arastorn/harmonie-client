@@ -2,6 +2,12 @@ export interface RegisterRequest {
   email: string;
   username: string;
   password: string;
+  avatar: {
+    color: string | null;
+    icon: string | null;
+    bg: string | null;
+  };
+  theme: string | null;
 }
 
 export interface RegisterResponse {
