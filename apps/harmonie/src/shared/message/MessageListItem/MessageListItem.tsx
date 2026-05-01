@@ -88,7 +88,7 @@ export const MessageListItem = ({
       onContextMenu={handleContextMenu}
       className={[
         'group flex items-start gap-3 relative px-2 -mx-2 rounded-sm',
-        'hover:bg-surface-3 transition-colors',
+        'hover:bg-surface-2 transition-colors',
         isEditing || isMenuOpen || pickerAnchorRect ? 'bg-surface-3' : '',
         isSelected ? 'bg-surface-3 ring-1 ring-primary/60' : '',
         grouped ? 'py-0.5' : 'pt-3 pb-2',

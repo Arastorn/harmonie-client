@@ -1,0 +1,74 @@
+import Quill from 'quill';
+import { type ActiveFormats } from '../types';
+
+const HTML_TAG_PATTERN = /<\/?[a-z][\s\S]*>/i;
+
+export const escapeHtml = (value: string) =>
+  value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
+export const isHtmlMessage = (content: string) => HTML_TAG_PATTERN.test(content);
+
+export const toEditorHtml = (content: string) => {
+  if (!content) return '<p><br></p>';
+  if (isHtmlMessage(content)) return content;
+
+  const escaped = content
+    .split('\n')
+    .map((line) => (line ? escapeHtml(line) : '<br>'))
+    .join('<br>');
+
+  return `<p>${escaped}</p>`;
+};
+
+export const getEditorHtml = (quill: Quill) => {
+  if (quill.getText().trim().length === 0) return '';
+  return quill.getSemanticHTML().trim();
+};
+
+export const getPlainText = (quill: Quill) => quill.getText().trim();
+
+export const normalizeHtml = (value: string) => value.replace(/\s+/g, ' ').trim();
+
+export const applyInlineFormatWithHistory = (
+  quill: Quill,
+  format: 'bold' | 'italic' | 'underline',
+  active: boolean
+) => {
+  quill.history.cutoff();
+  quill.format(format, !active, 'user');
+  quill.history.cutoff();
+};
+
+export const registerQuillKeyboardBindings = (quill: Quill) => {
+  quill.keyboard.addBinding(
+    { key: 'b', shortKey: true },
+    { format: ['bold'] },
+    (_range: unknown, context: { format: ActiveFormats }) => {
+      applyInlineFormatWithHistory(quill, 'bold', !!context.format.bold);
+      return false;
+    }
+  );
+
+  quill.keyboard.addBinding(
+    { key: 'i', shortKey: true },
+    { format: ['italic'] },
+    (_range: unknown, context: { format: ActiveFormats }) => {
+      applyInlineFormatWithHistory(quill, 'italic', !!context.format.italic);
+      return false;
+    }
+  );
+
+  quill.keyboard.addBinding(
+    { key: 'u', shortKey: true },
+    { format: ['underline'] },
+    (_range: unknown, context: { format: ActiveFormats }) => {
+      applyInlineFormatWithHistory(quill, 'underline', !!context.format.underline);
+      return false;
+    }
+  );
+};

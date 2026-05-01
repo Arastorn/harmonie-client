@@ -33,7 +33,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     const inputId = id ?? (label ? label.toLowerCase().replace(/\s+/g, '-') : undefined);
 
     const inputClasses = [
-      'w-full font-body text-text-1 bg-surface-2',
+      'w-full font-body text-text-2 caret-primary bg-surface-2',
       'border border-border-2 outline-none',
       'transition-[border-color,box-shadow] duration-150',
       sizeClasses[uiSize],

@@ -21,7 +21,7 @@ export const MessageReactions = ({ reactions, onToggle }: MessageReactionsProps)
               : 'bg-surface-2 border-border-2 text-text-2 hover:bg-surface-hover',
           ].join(' ')}
         >
-          <span>{reaction.emoji}</span>
+          <span className="text-base leading-none">{reaction.emoji}</span>
           <span className="font-medium">{reaction.count}</span>
         </button>
       ))}

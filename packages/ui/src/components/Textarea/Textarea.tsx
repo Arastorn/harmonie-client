@@ -34,7 +34,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
         : 'focus:border-secondary-fg focus:shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-secondary-fg)_20%,transparent)]';
 
     const textareaClasses = [
-      'w-full px-4 py-3 font-body text-sm text-text-1 outline-none resize-none',
+      'w-full px-4 py-3 font-body text-sm text-text-2 caret-primary outline-none resize-none',
       'transition-[border-color,box-shadow] duration-150',
       'placeholder:text-text-3',
       bottomRightElement && !bottomRightElementWide ? 'pb-9 pr-10' : '',

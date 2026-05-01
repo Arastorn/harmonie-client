@@ -5,9 +5,19 @@ aside.EmojiPickerReact {
   --epr-picker-border-color: var(--color-border-2);
   --epr-text-color: var(--color-text-3);
   --epr-category-label-bg-color: var(--color-surface-1);
+  --epr-header-padding: 8px var(--epr-horizontal-padding);
   --epr-category-navigation-button-size: 25px;
   --epr-category-label-height: 20px;
   --epr-emoji-size: 25px;
+  --epr-search-input-bg-color: var(--color-surface-2);
+  --epr-search-input-bg-color-active: var(--color-surface-2);
+  --epr-search-input-text-color: var(--color-text-1);
+  --epr-search-input-placeholder-color: var(--color-text-3);
+  --epr-search-border-color: var(--color-border-2);
+  --epr-search-border-color-active: var(--color-primary);
+  --epr-search-input-border-radius: 6px;
+  --epr-search-icon-color: var(--color-text-3);
+  --epr-search-input-height: 34px;
 }
 
 aside.EmojiPickerReact .epr-cat-btn svg {
@@ -22,6 +32,10 @@ aside.EmojiPickerReact .epr-cat-btn.epr-active svg {
 
 aside.EmojiPickerReact .epr-cat-btn.epr-active {
   border-radius: 999px;
+}
+
+aside.EmojiPickerReact .epr-category-nav {
+  padding-top: 0;
 }
 
 aside.EmojiPickerReact .epr-cat-btn-custom-icon {

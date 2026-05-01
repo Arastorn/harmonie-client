@@ -22,8 +22,11 @@ export { EmojiPickerBase } from './components/EmojiPickerBase/EmojiPickerBase';
 export type { EmojiPickerBaseProps } from './components/EmojiPickerBase/EmojiPickerBase';
 export { EmojiInput } from './components/EmojiInput/EmojiInput';
 export type { EmojiInputProps } from './components/EmojiInput/EmojiInput';
-export { EmojiTextarea } from './components/EmojiTextarea/EmojiTextarea';
-export type { EmojiTextareaProps } from './components/EmojiTextarea/EmojiTextarea';
+export { PlainEmojiTextarea } from './components/EmojiTextarea/EmojiTextarea';
+export type { PlainEmojiTextareaProps } from './components/EmojiTextarea/EmojiTextarea';
+export { RichTextMessageInput } from './components/RichTextMessageInput/RichTextMessageInput';
+export type { RichTextMessageInputProps } from './components/RichTextMessageInput/RichTextMessageInput';
+export type { RichTextMessageInputLabels } from './components/RichTextMessageInput/types';
 
 export { Separator } from './components/Separator/Separator';
 export type { SeparatorProps } from './components/Separator/Separator';
