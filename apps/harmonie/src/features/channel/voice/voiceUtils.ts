@@ -1,10 +1,10 @@
-export function hasRelayServer(iceServers: RTCIceServer[]): boolean {
+export const hasRelayServer = (iceServers: RTCIceServer[]): boolean => {
   return iceServers
     .flatMap((s) => (Array.isArray(s.urls) ? s.urls : [s.urls]))
     .some((url) => url.startsWith('turn:') || url.startsWith('turns:'));
-}
+};
 
-export function getJoinErrorKey(error: unknown): string {
+export const getJoinErrorKey = (error: unknown): string => {
   const message =
     error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
 
@@ -26,9 +26,9 @@ export function getJoinErrorKey(error: unknown): string {
   }
 
   return 'voice.joinError';
-}
+};
 
-export function buildIceServers(serverIceServers?: RTCIceServer[]): RTCIceServer[] | undefined {
+export const buildIceServers = (serverIceServers?: RTCIceServer[]): RTCIceServer[] | undefined => {
   if (serverIceServers && serverIceServers.length > 0) return serverIceServers;
 
   const turnUrls = import.meta.env.VITE_TURN_URLS as string | undefined;
@@ -43,4 +43,4 @@ export function buildIceServers(serverIceServers?: RTCIceServer[]): RTCIceServer
       ...(turnCredential ? { credential: turnCredential } : {}),
     },
   ];
-}
+};
