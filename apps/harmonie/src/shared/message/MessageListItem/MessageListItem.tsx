@@ -7,6 +7,7 @@ import { useFileBlobUrl } from '@/shared/hooks/useFileBlobUrl';
 import { formatContextualDateTime } from '@/shared/utils/date';
 import { MessageActions } from './MessageActions';
 import { MessageAttachments } from './attachments/MessageAttachments';
+import { MessageContent } from './MessageContent';
 import { MessageEmojiPicker } from './MessageEmojiPicker';
 import { MessageInlineEditor } from './MessageInlineEditor';
 import { MessageReactions } from './MessageReactions';
@@ -133,11 +134,7 @@ export const MessageListItem = ({
           />
         ) : (
           <>
-            {message.content && (
-              <p className="text-sm text-text-2 whitespace-pre-wrap wrap-break-word">
-                {message.content}
-              </p>
-            )}
+            {message.content && <MessageContent content={message.content} />}
             {message.updatedAtUtc && (
               <span className="text-xs text-text-3">{t('channel.messages.edited')}</span>
             )}
