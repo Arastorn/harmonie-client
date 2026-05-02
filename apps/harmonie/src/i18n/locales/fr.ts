@@ -198,6 +198,7 @@ export const fr = {
       error: 'Impossible de charger les messages. Réessaie.',
       memberNotFound: 'Membre non trouvé',
       newMessages: 'Nouveaux messages',
+      scrollToBottom: 'Aller en bas',
       edit: 'Modifier le message',
       edited: '(modifié)',
       delete: 'Supprimer le message',
