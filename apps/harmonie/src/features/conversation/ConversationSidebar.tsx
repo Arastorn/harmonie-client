@@ -1,39 +1,117 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ConversationItem, IconButton } from '@harmonie/ui';
-import { Plus } from 'lucide-react';
-import { deleteConversation } from '@/api/conversations';
+import { ContextMenu, ConversationItem, IconButton } from '@harmonie/ui';
+import { Pencil, Plus, X } from 'lucide-react';
+import { deleteConversation, updateConversationName } from '@/api/conversations';
 import { useMessageActivity } from '@/features/realtime/MessageActivityContext';
 import { useUser } from '@/features/user/UserContext';
+import type { Conversation } from '@/types/conversation';
 import { useConversations } from './ConversationContext';
 import { ConversationAvatar } from './avatar/ConversationAvatar';
 import { NewConversationModal } from './create/NewConversationModal';
+import { LeaveConversationModal } from './LeaveConversationModal';
+import { RenameConversationModal } from './RenameConversationModal';
 import { getConversationLabel } from './conversationUtils';
+
+type ContextMenuState = {
+  conversation: Conversation;
+  position: { x: number; y: number };
+} | null;
 
 export const ConversationSidebar = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { conversationId: activeConversationId } = useParams<{ conversationId: string }>();
-  const { conversations, fetchConversations, removeConversation } = useConversations();
+  const { conversations, fetchConversations, removeConversation, updateConversation } =
+    useConversations();
   const { hasUnreadConversation } = useMessageActivity();
   const { user } = useUser();
   const [showNewConversation, setShowNewConversation] = useState(false);
+  const [contextMenu, setContextMenu] = useState<ContextMenuState>(null);
+  const [renamingConversation, setRenamingConversation] = useState<Conversation | null>(null);
+  const [leavingConversation, setLeavingConversation] = useState<Conversation | null>(null);
+  const [isSavingName, setIsSavingName] = useState(false);
+  const [nameError, setNameError] = useState(false);
+  const [isLeaving, setIsLeaving] = useState(false);
+  const [leaveError, setLeaveError] = useState(false);
 
   useEffect(() => {
     fetchConversations();
   }, [fetchConversations]);
 
-  const handleDelete = (conversationId: string) => {
+  const handleLeaveRequest = (conversation: Conversation) => {
+    setContextMenu(null);
+    setLeavingConversation(conversation);
+    setLeaveError(false);
+  };
+
+  const handleConfirmLeave = () => {
+    if (!leavingConversation) return;
+
+    const conversationId = leavingConversation.conversationId;
+    setIsLeaving(true);
+    setLeaveError(false);
     deleteConversation(conversationId)
       .then(() => {
         removeConversation(conversationId);
+        setLeavingConversation(null);
         if (activeConversationId === conversationId) {
           navigate('/conversations');
         }
       })
-      .catch(() => {});
+      .catch(() => setLeaveError(true))
+      .finally(() => setIsLeaving(false));
   };
+
+  const handleContextMenu = (e: React.MouseEvent, conversation: Conversation) => {
+    e.preventDefault();
+    setContextMenu({ conversation, position: { x: e.clientX, y: e.clientY } });
+  };
+
+  const openRename = (conversation: Conversation) => {
+    setContextMenu(null);
+    setRenamingConversation(conversation);
+    setNameError(false);
+  };
+
+  const handleSaveName = async (nextName: string | null) => {
+    if (!renamingConversation) return;
+
+    if (nextName !== null && nextName === renamingConversation.name) {
+      setRenamingConversation(null);
+      return;
+    }
+
+    setIsSavingName(true);
+    setNameError(false);
+    try {
+      await updateConversationName(renamingConversation.conversationId, nextName);
+      updateConversation({ ...renamingConversation, name: nextName });
+      setRenamingConversation(null);
+    } catch {
+      setNameError(true);
+    } finally {
+      setIsSavingName(false);
+    }
+  };
+
+  const buildContextMenuItems = (conversation: Conversation) => [
+    ...(conversation.type === 'Group'
+      ? [
+          {
+            label: t('conversation.rename'),
+            icon: <Pencil size={14} />,
+            onClick: () => openRename(conversation),
+          },
+        ]
+      : []),
+    {
+      label: t('conversation.delete'),
+      icon: <X size={14} />,
+      onClick: () => handleLeaveRequest(conversation),
+    },
+  ];
 
   const isLoading = conversations === null || user === null;
 
@@ -79,7 +157,8 @@ export const ConversationSidebar = () => {
                   active={conv.conversationId === activeConversationId}
                   unread={hasUnreadConversation(conv.conversationId)}
                   onClick={() => navigate(`/conversations/${conv.conversationId}`)}
-                  onDeleteClick={() => handleDelete(conv.conversationId)}
+                  onContextMenu={(e) => handleContextMenu(e, conv)}
+                  onDeleteClick={() => handleLeaveRequest(conv)}
                   deleteLabel={t('conversation.delete')}
                 />
               );
@@ -90,6 +169,34 @@ export const ConversationSidebar = () => {
 
       {showNewConversation && (
         <NewConversationModal onClose={() => setShowNewConversation(false)} />
+      )}
+
+      {contextMenu && (
+        <ContextMenu
+          position={contextMenu.position}
+          onClose={() => setContextMenu(null)}
+          items={buildContextMenuItems(contextMenu.conversation)}
+        />
+      )}
+
+      {renamingConversation && (
+        <RenameConversationModal
+          conversation={renamingConversation}
+          isSaving={isSavingName}
+          error={nameError}
+          onClose={() => setRenamingConversation(null)}
+          onSave={handleSaveName}
+          onChange={() => setNameError(false)}
+        />
+      )}
+
+      {leavingConversation && (
+        <LeaveConversationModal
+          isLeaving={isLeaving}
+          error={leaveError}
+          onClose={() => setLeavingConversation(null)}
+          onConfirm={handleConfirmLeave}
+        />
       )}
     </>
   );

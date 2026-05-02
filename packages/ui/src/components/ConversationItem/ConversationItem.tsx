@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Trash2 } from 'lucide-react';
+import { X } from 'lucide-react';
 import { IconButton } from '../IconButton/IconButton';
 
 export interface ConversationItemProps {
@@ -8,6 +8,7 @@ export interface ConversationItemProps {
   active?: boolean;
   unread?: boolean;
   onClick: () => void;
+  onContextMenu?: (e: React.MouseEvent<HTMLDivElement>) => void;
   onDeleteClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
   deleteLabel?: string;
 }
@@ -18,6 +19,7 @@ export const ConversationItem = ({
   active = false,
   unread = false,
   onClick,
+  onContextMenu,
   onDeleteClick,
   deleteLabel,
 }: ConversationItemProps) => {
@@ -32,6 +34,7 @@ export const ConversationItem = ({
       className={['group flex items-center gap-1 rounded-sm px-1.5 h-9', baseStateClasses].join(
         ' '
       )}
+      onContextMenu={onContextMenu}
     >
       <button
         type="button"
@@ -60,7 +63,7 @@ export const ConversationItem = ({
             active ? 'text-secondary-fg hover:bg-secondary' : 'text-text-2',
           ].join(' ')}
         >
-          <Trash2 size={14} className="shrink-0" />
+          <X size={14} className="shrink-0" />
         </IconButton>
       )}
     </div>

@@ -254,7 +254,7 @@ export const ConversationView = () => {
       <div className="flex h-full gap-2">
         <div className="flex flex-col flex-1 min-w-0 h-full bg-surface-1 rounded-md overflow-hidden">
           <div className="flex items-center justify-between px-4 h-14 shrink-0 bg-surface-2 rounded-t-md">
-            <span className="text-sm font-semibold text-text-1">{conversationTitle}</span>
+            <span className="text-sm font-semibold text-text-1 truncate">{conversationTitle}</span>
             {isGroup && (
               <div className="flex items-center gap-2">
                 <IconButton

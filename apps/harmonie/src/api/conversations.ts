@@ -28,6 +28,22 @@ export const createGroupConversation = (
     body: JSON.stringify({ name: name || null, participantUserIds }),
   }).then((r) => parseOrThrow<ConversationCreateResponse>(r));
 
+export const updateConversationName = (
+  conversationId: string,
+  name: string | null
+): Promise<void> => {
+  const trimmedName = name?.trim();
+  const body = trimmedName ? JSON.stringify({ name: trimmedName }) : '{"name":null}';
+
+  return apiFetch(`${API_BASE}/conversations/${conversationId}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body,
+  }).then((r) => {
+    if (!r.ok) throw new Error('Failed to update conversation');
+  });
+};
+
 export const getConversationMessages = (
   conversationId: string,
   before?: string
