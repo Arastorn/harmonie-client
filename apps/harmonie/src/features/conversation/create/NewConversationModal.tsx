@@ -8,6 +8,7 @@ import type { Conversation, SearchUser } from '@/types/conversation';
 import { useFileBlobUrl } from '@/shared/hooks/useFileBlobUrl';
 import { useUser } from '@/features/user/UserContext';
 import { useConversations } from '../ConversationContext';
+import { userToConversationParticipant } from '../conversationUtils';
 
 const MAX_PARTICIPANTS = 9;
 
@@ -120,17 +121,17 @@ export const NewConversationModal = ({ onClose }: NewConversationModalProps) => 
               ...(user?.userId ? [user.userId] : []),
             ]);
 
+      const currentUserParticipant = user ? userToConversationParticipant(user) : null;
+      const participants = [
+        ...selected.map(userToConversationParticipant),
+        ...(currentUserParticipant ? [currentUserParticipant] : []),
+      ];
+
       const conversation: Conversation = {
         conversationId: response.conversationId,
         type: response.type === 'direct' ? 'Direct' : 'Group',
         name: response.name ?? null,
-        participants: selected.map((u) => ({
-          userId: u.userId,
-          username: u.username,
-          displayName: u.displayName,
-          avatarFileId: u.avatarFileId,
-          avatar: u.avatar,
-        })),
+        participants,
         createdAtUtc: response.createdAtUtc,
       };
 

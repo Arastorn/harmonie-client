@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { Avatar } from '@harmonie/ui';
 import { useTranslation } from 'react-i18next';
 import type { Message } from '@/types/channel';
-import type { GuildMember } from '@/types/guild';
 import { useFileBlobUrl } from '@/shared/hooks/useFileBlobUrl';
 import { formatContextualDateTime } from '@/shared/utils/date';
+import type { MessageAuthor } from '@/shared/message/types';
 import { MessageActions } from './MessageActions';
 import { MessageAttachments } from './attachments/MessageAttachments';
 import { MessageContent } from './MessageContent';
@@ -12,15 +12,15 @@ import { MessageEmojiPicker } from './MessageEmojiPicker';
 import { MessageInlineEditor } from './MessageInlineEditor';
 import { MessageReactions } from './MessageReactions';
 
-interface MessageListItemProps {
+interface MessageListItemProps<TAuthor extends MessageAuthor = MessageAuthor> {
   message: Message;
-  member?: GuildMember;
+  member?: TAuthor;
   grouped?: boolean;
   isOwn?: boolean;
   isEditing?: boolean;
   isMenuOpen?: boolean;
   isSelected?: boolean;
-  onAvatarClick?: (member: GuildMember, rect: DOMRect) => void;
+  onAvatarClick?: (member: TAuthor, rect: DOMRect) => void;
   onEdit?: (messageId: string) => void;
   onCancelEdit?: () => void;
   onSaveEdit?: (messageId: string, content: string) => Promise<void>;
@@ -34,7 +34,7 @@ interface MessageListItemProps {
   ) => void;
 }
 
-export const MessageListItem = ({
+export const MessageListItem = <TAuthor extends MessageAuthor = MessageAuthor>({
   message,
   member,
   grouped = false,
@@ -50,7 +50,7 @@ export const MessageListItem = ({
   onAttachmentDeleted,
   onReact,
   onOpenMenu,
-}: MessageListItemProps) => {
+}: MessageListItemProps<TAuthor>) => {
   const { t, i18n } = useTranslation();
   const [pickerAnchorRect, setPickerAnchorRect] = useState<DOMRect | null>(null);
   const avatarUrl = useFileBlobUrl(member?.avatarFileId);

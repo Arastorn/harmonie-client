@@ -4,12 +4,12 @@ import { Avatar, Lightbox } from '@harmonie/ui';
 import { useFileDownload } from '@/shared/hooks/useFileDownload';
 import { useFileBlobUrl } from '@/shared/hooks/useFileBlobUrl';
 import { formatContextualDateTime } from '@/shared/utils/date';
-import type { GuildMember } from '@/types/guild';
+import type { MessageAuthor } from '@/shared/message/types';
 
 export interface MessageAttachmentLightboxProps {
   fileId: string;
   fileName: string;
-  member?: GuildMember;
+  member?: MessageAuthor;
   createdAtUtc: string;
   onClose: () => void;
 }
