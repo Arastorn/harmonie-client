@@ -2,6 +2,21 @@ export interface MessageReaction {
   emoji: string;
   count: number;
   reactedByMe: boolean;
+  users?: MessageReactionUser[];
+}
+
+export interface MessageReactionUser {
+  userId: string;
+  username: string;
+  displayName?: string | null;
+}
+
+export interface MessageReactionUsersList {
+  messageId: string;
+  emoji: string;
+  totalCount: number | string;
+  users: MessageReactionUser[];
+  nextCursor: string | null;
 }
 
 export interface Message {

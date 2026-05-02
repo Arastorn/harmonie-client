@@ -2,15 +2,16 @@ import { useState } from 'react';
 import { Avatar } from '@harmonie/ui';
 import { useTranslation } from 'react-i18next';
 import type { Message } from '@/types/channel';
+import type { UserProfile } from '@/types/user';
 import { useFileBlobUrl } from '@/shared/hooks/useFileBlobUrl';
 import { formatContextualDateTime } from '@/shared/utils/date';
 import type { MessageAuthor } from '@/shared/message/types';
+import { MessageAttachments } from '@/shared/message/attachments/MessageAttachments';
+import { MessageReactions } from '@/shared/message/reactions/MessageReactions';
 import { MessageActions } from './MessageActions';
-import { MessageAttachments } from './attachments/MessageAttachments';
 import { MessageContent } from './MessageContent';
 import { MessageEmojiPicker } from './MessageEmojiPicker';
 import { MessageInlineEditor } from './MessageInlineEditor';
-import { MessageReactions } from './MessageReactions';
 
 interface MessageListItemProps<TAuthor extends MessageAuthor = MessageAuthor> {
   message: Message;
@@ -27,6 +28,12 @@ interface MessageListItemProps<TAuthor extends MessageAuthor = MessageAuthor> {
   onDelete?: (messageId: string) => void;
   onAttachmentDeleted?: (attachmentFileId: string) => void;
   onReact?: (messageId: string, emoji: string) => void;
+  reactionSource?: {
+    type: 'channel' | 'conversation';
+    entityId: string;
+  };
+  reactionUserMap?: ReadonlyMap<string, MessageAuthor>;
+  currentUser?: UserProfile | null;
   onOpenMenu?: (
     event: React.MouseEvent<HTMLElement>,
     messageId: string,
@@ -49,6 +56,9 @@ export const MessageListItem = <TAuthor extends MessageAuthor = MessageAuthor>({
   onDelete,
   onAttachmentDeleted,
   onReact,
+  reactionSource,
+  reactionUserMap,
+  currentUser,
   onOpenMenu,
 }: MessageListItemProps<TAuthor>) => {
   const { t, i18n } = useTranslation();
@@ -153,7 +163,11 @@ export const MessageListItem = <TAuthor extends MessageAuthor = MessageAuthor>({
           </>
         )}
         <MessageReactions
+          messageId={message.messageId}
           reactions={message.reactions}
+          reactionSource={reactionSource}
+          reactionUserMap={reactionUserMap}
+          currentUser={currentUser}
           onToggle={(emoji) => onReact?.(message.messageId, emoji)}
         />
       </div>

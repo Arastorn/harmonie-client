@@ -28,6 +28,8 @@ interface WsReactionEvent {
   messageId: string;
   emoji: string;
   userId: string;
+  reactorUsername?: string;
+  reactorDisplayName?: string | null;
   [key: string]: unknown;
 }
 
@@ -191,6 +193,14 @@ export const useMessages = ({
     const handleReactionAdded = (event: WsReactionEvent) => {
       if (getEntityId(event as Record<string, string>) !== entityId) return;
       if (event.userId === currentUserId) return;
+      const reactor =
+        event.reactorUsername || event.reactorDisplayName
+          ? {
+              userId: event.userId,
+              username: event.reactorUsername ?? '',
+              displayName: event.reactorDisplayName ?? null,
+            }
+          : null;
       setMessages((prev) =>
         prev.map((m) => {
           if (m.messageId !== event.messageId) return m;
@@ -198,8 +208,29 @@ export const useMessages = ({
           return {
             ...m,
             reactions: exists
-              ? m.reactions.map((r) => (r.emoji === event.emoji ? { ...r, count: r.count + 1 } : r))
-              : [...m.reactions, { emoji: event.emoji, count: 1, reactedByMe: false }],
+              ? m.reactions.map((r) =>
+                  r.emoji === event.emoji
+                    ? {
+                        ...r,
+                        count: r.count + 1,
+                        users: reactor
+                          ? [
+                              reactor,
+                              ...(r.users ?? []).filter((user) => user.userId !== reactor.userId),
+                            ].slice(0, 5)
+                          : r.users,
+                      }
+                    : r
+                )
+              : [
+                  ...m.reactions,
+                  {
+                    emoji: event.emoji,
+                    count: 1,
+                    reactedByMe: false,
+                    users: reactor ? [reactor] : [],
+                  },
+                ],
           };
         })
       );
@@ -343,7 +374,7 @@ export const useMessages = ({
           ? reactions.map((r) =>
               r.emoji === emoji ? { ...r, count: r.count + 1, reactedByMe: true } : r
             )
-          : [...reactions, { emoji, count: 1, reactedByMe: true }]
+          : [...reactions, { emoji, count: 1, reactedByMe: true, users: [] }]
         : reactions
             .map((r) => (r.emoji === emoji ? { ...r, count: r.count - 1, reactedByMe: false } : r))
             .filter((r) => r.count > 0);
