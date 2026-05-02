@@ -84,6 +84,6 @@ export const WithDelete: Story = {
     unread: false,
     onClick: () => {},
     onDeleteClick: () => {},
-    deleteLabel: 'Delete conversation',
+    deleteLabel: 'Leave conversation',
   },
 };
