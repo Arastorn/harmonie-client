@@ -1,43 +1,41 @@
-import { useRef, type ReactNode } from 'react';
+import { useRef, type ChangeEvent, type ReactNode, type RefObject } from 'react';
 import { createPortal } from 'react-dom';
 import { Smile } from 'lucide-react';
 import type { EmojiClickData, PickerProps } from 'emoji-picker-react';
 import { Textarea, type TextareaProps } from '../Textarea/Textarea';
 import { EmojiPickerBase } from '../EmojiPickerBase/EmojiPickerBase';
-import { EmojiAutocomplete } from './EmojiAutocomplete';
-import { useEmojiAutocomplete } from './useEmojiAutocomplete';
 import { useEmojiPicker } from './useEmojiPicker';
 
-export interface EmojiTextareaProps extends Omit<
+export interface PlainEmojiTextareaProps extends Omit<
   TextareaProps,
   'value' | 'onChange' | 'bottomRightElement' | 'bottomRightElementWide' | 'ref' | 'topContent'
 > {
   value: string;
   onChange: (value: string) => void;
+  textareaRef?: RefObject<HTMLTextAreaElement>;
   pickerProps?: Omit<PickerProps, 'onEmojiClick' | 'categoryIcons'>;
   emojiButtonLabel?: string;
+  emojiButtonClassName?: string;
+  controlsPlacement?: 'inside' | 'below';
   extraActions?: ReactNode;
   topContent?: ReactNode;
 }
 
-export const EmojiTextarea = ({
+export const PlainEmojiTextarea = ({
   value,
   onChange,
-  onKeyDown: parentOnKeyDown,
+  onKeyDown,
+  textareaRef: forwardedTextareaRef,
   pickerProps,
   emojiButtonLabel = 'Open emoji picker',
+  emojiButtonClassName,
+  controlsPlacement = 'inside',
   extraActions,
   topContent,
   ...textareaProps
-}: EmojiTextareaProps) => {
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const { autocomplete, autocompleteRef, handleChange, handleKeyDown, selectAutocomplete } =
-    useEmojiAutocomplete({
-      value,
-      onChange,
-      textareaRef,
-      parentOnKeyDown,
-    });
+}: PlainEmojiTextareaProps) => {
+  const internalTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const textareaRef = forwardedTextareaRef ?? internalTextareaRef;
   const { pickerOpen, pickerPos, buttonRef, pickerRef, togglePicker, insertEmoji } = useEmojiPicker(
     {
       value,
@@ -46,13 +44,22 @@ export const EmojiTextarea = ({
     }
   );
 
+  const handleChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
+    onChange(event.target.value);
+  };
+
   const emojiButton = (
     <>
       <button
         ref={buttonRef}
         type="button"
         onClick={togglePicker}
-        className="flex h-6 w-6 cursor-pointer items-center justify-center rounded text-text-3 transition-colors hover:text-text-1"
+        className={[
+          'flex h-6 w-6 cursor-pointer items-center justify-center rounded text-text-3 transition-colors hover:text-text-1',
+          emojiButtonClassName ?? '',
+        ]
+          .filter(Boolean)
+          .join(' ')}
         aria-label={emojiButtonLabel}
       >
         <Smile size={16} />
@@ -61,7 +68,7 @@ export const EmojiTextarea = ({
         createPortal(
           <div ref={pickerRef} className="fixed z-50 shadow-lg" style={pickerPos}>
             <EmojiPickerBase
-              onEmojiClick={(d: EmojiClickData) => insertEmoji(d.emoji)}
+              onEmojiClick={(data: EmojiClickData) => insertEmoji(data.emoji)}
               width={320}
               height={380}
               {...(pickerProps ?? {})}
@@ -78,29 +85,28 @@ export const EmojiTextarea = ({
         ref={textareaRef}
         value={value}
         onChange={handleChange}
-        onKeyDown={handleKeyDown}
+        onKeyDown={onKeyDown}
         bottomRightElement={
-          extraActions ? (
-            <div className="flex items-center gap-1">
-              {extraActions}
-              {emojiButton}
-            </div>
-          ) : (
-            emojiButton
-          )
+          controlsPlacement === 'inside' ? (
+            extraActions ? (
+              <div className="flex items-center gap-1">
+                {extraActions}
+                {emojiButton}
+              </div>
+            ) : (
+              emojiButton
+            )
+          ) : undefined
         }
-        bottomRightElementWide={!!extraActions}
+        bottomRightElementWide={controlsPlacement === 'inside' && !!extraActions}
         topContent={topContent}
         {...textareaProps}
       />
-      {autocomplete && (
-        <EmojiAutocomplete
-          results={autocomplete.results}
-          selectedIndex={autocomplete.selectedIndex}
-          pos={autocomplete.pos}
-          onSelect={selectAutocomplete}
-          containerRef={autocompleteRef}
-        />
+      {controlsPlacement === 'below' && (
+        <div className="mt-2 flex items-center gap-1 text-text-3">
+          {extraActions}
+          {emojiButton}
+        </div>
       )}
     </>
   );

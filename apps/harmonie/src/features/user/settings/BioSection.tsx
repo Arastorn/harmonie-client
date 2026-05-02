@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, EmojiTextarea } from '@harmonie/ui';
+import { Button, PlainEmojiTextarea } from '@harmonie/ui';
 import type { UserProfile } from '@/types/user';
 import { patchMe } from '@/api/users';
 
@@ -43,7 +43,7 @@ export const BioSection = ({ user, updateUser }: BioSectionProps) => {
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-col gap-1.5">
-        <EmojiTextarea
+        <PlainEmojiTextarea
           label={t('settings.bio.label')}
           value={draft}
           onChange={setDraft}

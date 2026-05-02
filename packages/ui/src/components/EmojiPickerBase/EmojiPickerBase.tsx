@@ -37,22 +37,29 @@ export type EmojiPickerBaseProps = Omit<PickerProps, 'categoryIcons'>;
 
 export const EmojiPickerBase = ({
   emojiData,
+  searchPlaceholder,
+  searchPlaceHolder,
   width = 320,
   height = 380,
   ...props
-}: EmojiPickerBaseProps) => (
-  <EmojiPicker
-    className="channel-emoji-picker"
-    emojiData={emojiData ?? getLocaleEmojiData()}
-    searchDisabled
-    autoFocusSearch={false}
-    lazyLoadEmojis
-    skinTonesDisabled
-    suggestedEmojisMode={SuggestionMode.RECENT}
-    previewConfig={{ showPreview: false }}
-    categoryIcons={categoryIcons}
-    width={width}
-    height={height}
-    {...props}
-  />
-);
+}: EmojiPickerBaseProps) => {
+  const resolvedSearchPlaceholder = searchPlaceholder ?? searchPlaceHolder ?? 'Search';
+
+  return (
+    <EmojiPicker
+      key={resolvedSearchPlaceholder}
+      className="channel-emoji-picker"
+      emojiData={emojiData ?? getLocaleEmojiData()}
+      autoFocusSearch={false}
+      searchPlaceholder={resolvedSearchPlaceholder}
+      lazyLoadEmojis
+      skinTonesDisabled
+      suggestedEmojisMode={SuggestionMode.RECENT}
+      previewConfig={{ showPreview: false }}
+      categoryIcons={categoryIcons}
+      width={width}
+      height={height}
+      {...props}
+    />
+  );
+};

@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslation } from 'react-i18next';
 import type { EmojiClickData } from 'emoji-picker-react';
 import { EmojiPickerBase } from '@harmonie/ui';
 
@@ -14,6 +15,7 @@ interface MessageEmojiPickerProps {
 }
 
 export const MessageEmojiPicker = ({ anchorRect, onSelect, onClose }: MessageEmojiPickerProps) => {
+  const { t } = useTranslation();
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -57,6 +59,7 @@ export const MessageEmojiPicker = ({ anchorRect, onSelect, onClose }: MessageEmo
     <div ref={ref} className="fixed z-50 shadow-lg" style={{ top, left }}>
       <EmojiPickerBase
         onEmojiClick={handleEmojiClick}
+        searchPlaceholder={t('channel.input.emojiSearchPlaceholder')}
         width={PICKER_WIDTH}
         height={PICKER_HEIGHT}
       />

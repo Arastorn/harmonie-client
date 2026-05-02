@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
-import { EmojiTextarea } from './EmojiTextarea';
+import { PlainEmojiTextarea } from './EmojiTextarea';
 
-const meta: Meta<typeof EmojiTextarea> = {
-  title: 'Forms/Fields/EmojiTextarea',
-  component: EmojiTextarea,
+const meta: Meta<typeof PlainEmojiTextarea> = {
+  title: 'Forms/Fields/PlainEmojiTextarea',
+  component: PlainEmojiTextarea,
   tags: ['autodocs'],
   parameters: {
     layout: 'centered',
@@ -19,11 +19,11 @@ const meta: Meta<typeof EmojiTextarea> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof EmojiTextarea>;
+type Story = StoryObj<typeof PlainEmojiTextarea>;
 
-const InteractiveTemplate = (args: React.ComponentProps<typeof EmojiTextarea>) => {
+const InteractiveTemplate = (args: React.ComponentProps<typeof PlainEmojiTextarea>) => {
   const [value, setValue] = useState(args.value ?? '');
-  return <EmojiTextarea {...args} value={value} onChange={setValue} />;
+  return <PlainEmojiTextarea {...args} value={value} onChange={setValue} />;
 };
 
 export const Default: Story = {
@@ -84,7 +84,7 @@ const WithCharCounterTemplate = () => {
 
   return (
     <div className="flex flex-col gap-1.5">
-      <EmojiTextarea
+      <PlainEmojiTextarea
         label="Bio"
         placeholder="Tell something about yourself…"
         rows={5}

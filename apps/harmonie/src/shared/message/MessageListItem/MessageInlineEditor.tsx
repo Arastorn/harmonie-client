@@ -1,7 +1,10 @@
-import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Check, X } from 'lucide-react';
-import { EmojiTextarea, IconButton } from '@harmonie/ui';
+import { IconButton, RichTextMessageInput } from '@harmonie/ui';
+import { useMessageFormattingPreference } from '../hooks/useMessageFormattingPreference';
+import { getMessagePayloadContent, stripHtmlToText } from '../utils/messageHtml';
+import { getRichTextMessageInputLabels } from '../utils/richTextMessageInputLabels';
 
 const MAX_LENGTH = 4000;
 
@@ -20,28 +23,17 @@ export const MessageInlineEditor = ({
   const [content, setContent] = useState(initialValue ?? '');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
-  const wrapperRef = useRef<HTMLDivElement>(null);
-  const trimmedContent = content.trim();
-  const isOverLimit = content.length > MAX_LENGTH;
+  const { formattingOpen, toggleFormattingOpen } = useMessageFormattingPreference();
+  const inputLabels = getRichTextMessageInputLabels(t);
+  const textContent = stripHtmlToText(content);
+  const payloadContent = getMessagePayloadContent(content);
+  const trimmedContent = textContent.trim();
+  const isOverLimit = payloadContent.length > MAX_LENGTH;
 
   useEffect(() => {
     setContent(initialValue ?? '');
     setError(undefined);
   }, [initialValue]);
-
-  useEffect(() => {
-    const textarea = wrapperRef.current?.querySelector('textarea');
-    if (!textarea) return;
-    textarea.focus();
-    const cursorPosition = textarea.value.length;
-    textarea.setSelectionRange(cursorPosition, cursorPosition);
-    textarea.style.height = 'auto';
-    const maxHeight = Math.floor(window.innerHeight / 2);
-    const next = Math.min(textarea.scrollHeight, maxHeight);
-    textarea.style.height = `${next}px`;
-    textarea.style.overflowY = textarea.scrollHeight > maxHeight ? 'auto' : 'hidden';
-  }, [content]);
-
   const handleCancel = () => {
     setContent(initialValue ?? '');
     setError(undefined);
@@ -54,7 +46,7 @@ export const MessageInlineEditor = ({
     setSaving(true);
     setError(undefined);
     try {
-      await onSave(trimmedContent);
+      await onSave(payloadContent);
     } catch {
       setError(t('channel.input.updateError'));
     } finally {
@@ -62,35 +54,24 @@ export const MessageInlineEditor = ({
     }
   };
 
-  const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
-    if (event.key === 'Escape') {
-      event.preventDefault();
-      handleCancel();
-      return;
-    }
-
-    if (event.key === 'Enter' && !event.shiftKey) {
-      event.preventDefault();
-      void handleSave();
-    }
-  };
-
   return (
-    <div ref={wrapperRef} className="flex items-end gap-2">
+    <div className="flex items-end gap-2">
       <div className="flex-1">
-        <EmojiTextarea
+        <RichTextMessageInput
           value={content}
           onChange={setContent}
           placeholder={t('channel.input.editPlaceholder')}
           disabled={saving}
           error={
             isOverLimit
-              ? t('channel.input.tooLong', { max: MAX_LENGTH, count: content.length })
+              ? t('channel.input.tooLong', { max: MAX_LENGTH, count: payloadContent.length })
               : error
           }
-          rows={1}
-          onKeyDown={handleKeyDown}
-          style={{ paddingBottom: '12px' }}
+          onSubmit={() => void handleSave()}
+          showSubmitButton={false}
+          showFormattingTools={formattingOpen}
+          onToggleFormattingTools={toggleFormattingOpen}
+          labels={inputLabels}
         />
       </div>
       <div className="flex flex-col items-end gap-1">

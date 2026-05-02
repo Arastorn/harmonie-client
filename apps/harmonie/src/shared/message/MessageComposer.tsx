@@ -1,9 +1,12 @@
-import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Paperclip, SendHorizonal, X } from 'lucide-react';
-import { EmojiTextarea, IconButton } from '@harmonie/ui';
+import { X } from 'lucide-react';
+import { RichTextMessageInput } from '@harmonie/ui';
 import { deleteFile, uploadFile } from '@/api/files';
 import type { Message } from '@/types/channel';
+import { useMessageFormattingPreference } from './hooks/useMessageFormattingPreference';
+import { getMessagePayloadContent, stripHtmlToText } from './utils/messageHtml';
+import { getRichTextMessageInputLabels } from './utils/richTextMessageInputLabels';
 
 const MAX_LENGTH = 4000;
 const TYPING_THROTTLE_MS = 4000;
@@ -44,34 +47,19 @@ export const MessageComposer = ({
   const [error, setError] = useState<string | undefined>(undefined);
   const [pendingAttachments, setPendingAttachments] = useState<PendingAttachment[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
-  const wrapperRef = useRef<HTMLDivElement>(null);
+  const { formattingOpen, toggleFormattingOpen } = useMessageFormattingPreference();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const lastTypingSentRef = useRef<number>(0);
+  const inputLabels = getRichTextMessageInputLabels(t);
 
-  const isOverLimit = content.length > MAX_LENGTH;
-  const trimmedContent = content.trim();
+  const textContent = stripHtmlToText(content);
+  const payloadContent = getMessagePayloadContent(content);
+  const isOverLimit = payloadContent.length > MAX_LENGTH;
+  const trimmedContent = textContent.trim();
   const isUploading = pendingAttachments.some((a) => a.status === 'uploading');
   const doneAttachments = pendingAttachments.filter((a) => a.status === 'done');
   const canSend =
     !sending && !isOverLimit && (!!trimmedContent || (doneAttachments.length > 0 && !isUploading));
-
-  useEffect(() => {
-    wrapperRef.current?.querySelector('textarea')?.focus();
-  }, []);
-
-  useEffect(() => {
-    if (!sending) wrapperRef.current?.querySelector('textarea')?.focus();
-  }, [sending]);
-
-  useEffect(() => {
-    const textarea = wrapperRef.current?.querySelector('textarea');
-    if (!textarea) return;
-    textarea.style.height = 'auto';
-    const maxHeight = Math.floor(window.innerHeight / 2);
-    const next = Math.min(textarea.scrollHeight, maxHeight);
-    textarea.style.height = `${next}px`;
-    textarea.style.overflowY = textarea.scrollHeight > maxHeight ? 'auto' : 'hidden';
-  }, [content]);
 
   useEffect(() => {
     return () => {
@@ -84,7 +72,7 @@ export const MessageComposer = ({
 
   const handleChange = (value: string) => {
     setContent(value);
-    if (onTypingStart && value.trim()) {
+    if (onTypingStart && stripHtmlToText(value)) {
       const now = Date.now();
       if (now - lastTypingSentRef.current > TYPING_THROTTLE_MS) {
         lastTypingSentRef.current = now;
@@ -152,13 +140,6 @@ export const MessageComposer = ({
     addFiles(Array.from(e.dataTransfer.files));
   };
 
-  const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
-    const files = Array.from(e.clipboardData.files);
-    if (!files.length) return;
-    e.preventDefault();
-    addFiles(files);
-  };
-
   const removeAttachment = (localId: string) => {
     setPendingAttachments((prev) => {
       const attachment = prev.find((a) => a.localId === localId);
@@ -177,7 +158,7 @@ export const MessageComposer = ({
     const attachmentFileIds = doneAttachments.map((a) => a.fileId!);
 
     try {
-      await sendFn(trimmedContent, attachmentFileIds);
+      await sendFn(payloadContent, attachmentFileIds);
       setContent('');
       setPendingAttachments((prev) => {
         prev.forEach((a) => {
@@ -189,18 +170,6 @@ export const MessageComposer = ({
       setError(t('channel.input.error'));
     } finally {
       setSending(false);
-    }
-  };
-
-  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'ArrowUp' && !content && latestEditableMessage) {
-      e.preventDefault();
-      onEditingRequested?.(latestEditableMessage.messageId);
-      return;
-    }
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      void submit();
     }
   };
 
@@ -247,7 +216,7 @@ export const MessageComposer = ({
     ) : undefined;
 
   return (
-    <div className="flex w-full items-end gap-2 pt-2 self-end">
+    <div className="flex w-full pt-2 self-end">
       <input
         ref={fileInputRef}
         type="file"
@@ -258,53 +227,35 @@ export const MessageComposer = ({
       />
 
       <div
-        ref={wrapperRef}
         className={`flex-1 rounded-md transition-colors ${isDragOver ? 'ring-2 ring-primary' : ''}`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
       >
-        <EmojiTextarea
+        {attachmentsPreview && <div className="mb-2">{attachmentsPreview}</div>}
+        <RichTextMessageInput
           value={content}
           onChange={handleChange}
           placeholder={t('channel.input.placeholder')}
           disabled={sending}
           error={
             isOverLimit
-              ? t('channel.input.tooLong', { max: MAX_LENGTH, count: content.length })
+              ? t('channel.input.tooLong', { max: MAX_LENGTH, count: payloadContent.length })
               : error
           }
-          rows={1}
-          onKeyDown={handleKeyDown}
-          onPaste={handlePaste}
-          style={{ paddingBottom: '12px' }}
-          topContent={attachmentsPreview}
-          extraActions={
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={sending}
-              className="flex h-6 w-6 items-center justify-center cursor-pointer rounded text-text-3 transition-colors hover:text-text-1 disabled:opacity-50"
-              aria-label={t('channel.input.attachFile')}
-              title={t('channel.input.attachFile')}
-            >
-              <Paperclip size={16} />
-            </button>
+          onSubmit={() => void submit()}
+          onArrowUpWhenEmpty={
+            latestEditableMessage
+              ? () => onEditingRequested?.(latestEditableMessage.messageId)
+              : undefined
           }
+          onPasteFiles={addFiles}
+          onAttachClick={() => fileInputRef.current?.click()}
+          showFormattingTools={formattingOpen}
+          onToggleFormattingTools={toggleFormattingOpen}
+          submitDisabled={!canSend}
+          labels={inputLabels}
         />
-      </div>
-
-      <div className="h-11.5 flex items-center shrink-0">
-        <IconButton
-          variant="primary"
-          size="medium"
-          onClick={() => void submit()}
-          disabled={!canSend}
-          aria-label={t('channel.input.send')}
-          title={t('channel.input.send')}
-        >
-          <SendHorizonal size={16} />
-        </IconButton>
       </div>
     </div>
   );

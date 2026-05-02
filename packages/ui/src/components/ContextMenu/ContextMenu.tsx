@@ -62,14 +62,14 @@ export const ContextMenu = ({
     <div
       ref={ref}
       role="menu"
-      className="fixed z-50 min-w-44 bg-surface-1 border border-border-2 rounded-sm shadow-lg py-1 px-1"
+      className="fixed z-50 min-w-44 bg-surface-1 border border-border-2 rounded-md shadow-lg py-1.5 px-1.5"
       style={menuStyle}
     >
       {items.map((item, i) => (
         <button
           key={i}
           role="menuitem"
-          className="flex items-center gap-2 w-full px-3 py-1.5 text-sm font-body text-text-2 hover:bg-surface-2 hover:text-text-1 cursor-pointer transition-colors text-left"
+          className="flex items-center gap-2 w-full rounded-sm px-3 py-1.5 text-sm font-body text-text-2 hover:bg-surface-2 hover:text-text-1 cursor-pointer transition-colors text-left"
           onClick={() => {
             item.onClick();
             onClose();
