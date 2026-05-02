@@ -8,6 +8,7 @@ export const fr = {
   notifications: {
     browser: {
       title: 'Nouveau message',
+      titleFrom: '{{senderName}} - {{title}}',
       attachmentOnly: 'Nouveau message avec piece jointe.',
       fallbackBody: 'Harmonie - Nouveau message.',
     },
