@@ -13,6 +13,7 @@ import { MemberPopover } from '@/shared/members/MemberPopover';
 import { useGuildWorkspace } from '@/features/guild/workspace/GuildWorkspaceProvider';
 import { MessageComposer } from '@/shared/message/MessageComposer';
 import { MessageListItem } from '@/shared/message/MessageListItem/MessageListItem';
+import { ScrollToBottomButton } from '@/shared/message/ScrollToBottomButton';
 import {
   MessageContextMenu,
   type MessageMenuState,
@@ -46,6 +47,7 @@ export const TextChannelView = () => {
   const [messageMenu, setMessageMenu] = useState<MessageMenuState | null>(null);
   const [pendingDeleteMessageId, setPendingDeleteMessageId] = useState<string | null>(null);
   const [separatorDismissed, setSeparatorDismissed] = useState(false);
+  const [showScrollToBottom, setShowScrollToBottom] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const messagesContentRef = useRef<HTMLDivElement>(null);
   const scrollAnchorRef = useRef<{ scrollTop: number; scrollHeight: number } | null>(null);
@@ -53,9 +55,16 @@ export const TextChannelView = () => {
   const suppressNextScrollEffectsRef = useRef(false);
   const shouldStickToBottomRef = useRef(false);
 
-  const scrollToBottom = useCallback(() => {
+  const scrollToBottom = useCallback((behavior: ScrollBehavior = 'auto') => {
     const scrollElement = scrollRef.current;
     if (!scrollElement) return;
+
+    setShowScrollToBottom(false);
+
+    if (behavior === 'smooth') {
+      scrollElement.scrollTo({ top: scrollElement.scrollHeight, behavior });
+      return;
+    }
 
     scrollElement.scrollTop = scrollElement.scrollHeight;
 
@@ -118,6 +127,7 @@ export const TextChannelView = () => {
   useEffect(() => {
     setMessageMenu(null);
     setSeparatorDismissed(false);
+    setShowScrollToBottom(false);
     previousMessageCountRef.current = 0;
     scrollAnchorRef.current = null;
     suppressNextScrollEffectsRef.current = false;
@@ -158,7 +168,8 @@ export const TextChannelView = () => {
 
   useEffect(() => {
     const contentEl = messagesContentRef.current;
-    if (!contentEl) return;
+    const scrollEl = scrollRef.current;
+    if (!contentEl || !scrollEl) return;
 
     const observer = new ResizeObserver(() => {
       if (shouldStickToBottomRef.current) {
@@ -169,6 +180,7 @@ export const TextChannelView = () => {
     });
 
     observer.observe(contentEl);
+    observer.observe(scrollEl);
     return () => observer.disconnect();
   }, [messages.length, scrollToBottom]);
 
@@ -197,26 +209,22 @@ export const TextChannelView = () => {
     return () => cancelAnimationFrame(rafId);
   }, [lastReadMessageId, separatorDismissed]);
 
-  useEffect(() => {
+  const handleMessagesScroll = useCallback(() => {
     const element = scrollRef.current;
     if (!element) return;
 
-    const handleScroll = async () => {
-      if (lastReadMessageId !== null && !separatorDismissed) {
-        setSeparatorDismissed(true);
-      }
-      const distanceFromBottom = element.scrollHeight - element.scrollTop - element.clientHeight;
-      shouldStickToBottomRef.current = distanceFromBottom < 50;
-      if (element.scrollTop >= 100) return;
-      scrollAnchorRef.current = {
-        scrollTop: element.scrollTop,
-        scrollHeight: element.scrollHeight,
-      };
-      await loadMore();
+    if (lastReadMessageId !== null && !separatorDismissed) {
+      setSeparatorDismissed(true);
+    }
+    const distanceFromBottom = element.scrollHeight - element.scrollTop - element.clientHeight;
+    shouldStickToBottomRef.current = distanceFromBottom < 50;
+    setShowScrollToBottom(distanceFromBottom > 160);
+    if (element.scrollTop >= 100) return;
+    scrollAnchorRef.current = {
+      scrollTop: element.scrollTop,
+      scrollHeight: element.scrollHeight,
     };
-
-    element.addEventListener('scroll', handleScroll);
-    return () => element.removeEventListener('scroll', handleScroll);
+    void loadMore();
   }, [lastReadMessageId, loadMore, separatorDismissed]);
 
   const handleAvatarClick = (member: GuildMember, rect: DOMRect) => {
@@ -305,56 +313,71 @@ export const TextChannelView = () => {
           </div>
         )}
 
-        <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 gap-0">
-          {messages.length === 0 ? (
-            <div className="flex h-full items-center justify-center text-text-3 text-sm">
-              {t('channel.messages.empty')}
-            </div>
-          ) : (
-            <div ref={messagesContentRef}>
-              {messages.map((message, index) => {
-                const previousMessage = messages[index - 1];
-                const daySeparatorLabel = getDaySeparatorLabel(previousMessage, message);
-                const grouped = daySeparatorLabel
-                  ? false
-                  : areMessagesGrouped(previousMessage, message);
-                const isFirstUnread =
-                  lastReadMessageId !== null && previousMessage?.messageId === lastReadMessageId;
+        <div className="relative flex-1 min-h-0">
+          <div
+            ref={scrollRef}
+            className="h-full overflow-y-auto px-4 py-4 gap-0"
+            onScroll={handleMessagesScroll}
+          >
+            {messages.length === 0 ? (
+              <div className="flex h-full items-center justify-center text-text-3 text-sm">
+                {t('channel.messages.empty')}
+              </div>
+            ) : (
+              <div ref={messagesContentRef}>
+                {messages.map((message, index) => {
+                  const previousMessage = messages[index - 1];
+                  const daySeparatorLabel = getDaySeparatorLabel(previousMessage, message);
+                  const grouped = daySeparatorLabel
+                    ? false
+                    : areMessagesGrouped(previousMessage, message);
+                  const isFirstUnread =
+                    lastReadMessageId !== null && previousMessage?.messageId === lastReadMessageId;
 
-                return (
-                  <div key={message.messageId}>
-                    {daySeparatorLabel && <Separator label={daySeparatorLabel} />}
-                    {isFirstUnread && (
-                      <div
-                        className={`transition-opacity duration-500 ${separatorDismissed ? 'opacity-0' : 'opacity-100'}`}
-                        onTransitionEnd={() => {
-                          if (separatorDismissed) dismissNewMessagesSeparator();
-                        }}
-                      >
-                        <Separator label={t('channel.messages.newMessages')} variant="accent" />
-                      </div>
-                    )}
-                    <MessageListItem
-                      message={message}
-                      member={membersMap.get(message.authorUserId)}
-                      grouped={grouped}
-                      isOwn={message.authorUserId === user?.userId}
-                      isEditing={message.messageId === editingMessageId}
-                      isMenuOpen={message.messageId === messageMenu?.messageId}
-                      isSelected={message.messageId === selectedMessageId}
-                      onAvatarClick={handleAvatarClick}
-                      onEdit={handleStartEditing}
-                      onCancelEdit={cancelEditing}
-                      onSaveEdit={saveEdit}
-                      onDelete={handleDeleteRequest}
-                      onAttachmentDeleted={(fileId) => removeAttachment(message.messageId, fileId)}
-                      onReact={toggleReaction}
-                      onOpenMenu={handleOpenMessageMenu}
-                    />
-                  </div>
-                );
-              })}
-            </div>
+                  return (
+                    <div key={message.messageId}>
+                      {daySeparatorLabel && <Separator label={daySeparatorLabel} />}
+                      {isFirstUnread && (
+                        <div
+                          className={`transition-opacity duration-500 ${separatorDismissed ? 'opacity-0' : 'opacity-100'}`}
+                          onTransitionEnd={() => {
+                            if (separatorDismissed) dismissNewMessagesSeparator();
+                          }}
+                        >
+                          <Separator label={t('channel.messages.newMessages')} variant="accent" />
+                        </div>
+                      )}
+                      <MessageListItem
+                        message={message}
+                        member={membersMap.get(message.authorUserId)}
+                        grouped={grouped}
+                        isOwn={message.authorUserId === user?.userId}
+                        isEditing={message.messageId === editingMessageId}
+                        isMenuOpen={message.messageId === messageMenu?.messageId}
+                        isSelected={message.messageId === selectedMessageId}
+                        onAvatarClick={handleAvatarClick}
+                        onEdit={handleStartEditing}
+                        onCancelEdit={cancelEditing}
+                        onSaveEdit={saveEdit}
+                        onDelete={handleDeleteRequest}
+                        onAttachmentDeleted={(fileId) =>
+                          removeAttachment(message.messageId, fileId)
+                        }
+                        onReact={toggleReaction}
+                        onOpenMenu={handleOpenMessageMenu}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {showScrollToBottom && (
+            <ScrollToBottomButton
+              label={t('channel.messages.scrollToBottom')}
+              onClick={() => scrollToBottom()}
+            />
           )}
         </div>
 
