@@ -260,6 +260,12 @@ export const useRichTextMessageInput = ({
     const quill = quillRef.current;
     if (!quill) return;
 
+    if (event.key === 'Enter' && (event.ctrlKey || event.metaKey) && onSubmit) {
+      event.preventDefault();
+      onSubmit();
+      return;
+    }
+
     if (autocompleteResults.length > 0) {
       if (event.key === 'ArrowDown') {
         event.preventDefault();
