@@ -22,6 +22,7 @@ import {
   areMessagesGrouped,
   getDaySeparatorLabel,
 } from '@/shared/message/utils/messagePresentation';
+import { scheduleCenterMessageIfOutsideView } from '@/shared/message/utils/scrollMessageIntoView';
 import { sendMessage } from '@/api/channels';
 import { useChannelMessages } from './hooks/useChannelMessages';
 import { useTextChannelSearchTarget } from './hooks/useTextChannelSearchTarget';
@@ -190,13 +191,14 @@ export const TextChannelView = () => {
     const element = scrollRef.current;
     if (!element) return;
 
-    requestAnimationFrame(() => {
-      const messageElement = element.querySelector<HTMLElement>(
-        `[data-message-id="${editingMessageId}"]`
-      );
-      suppressNextScrollEffectsRef.current = true;
-      messageElement?.scrollIntoView({ block: 'nearest' });
-    });
+    const messageElement = element.querySelector<HTMLElement>(
+      `[data-message-id="${editingMessageId}"]`
+    );
+    if (!messageElement) return;
+
+    suppressNextScrollEffectsRef.current = true;
+    shouldStickToBottomRef.current = false;
+    return scheduleCenterMessageIfOutsideView(element, messageElement);
   }, [editingMessageId]);
 
   useEffect(() => {

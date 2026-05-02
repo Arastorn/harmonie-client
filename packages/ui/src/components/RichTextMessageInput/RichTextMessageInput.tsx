@@ -22,7 +22,10 @@ export interface RichTextMessageInputProps {
   pickerProps?: Omit<PickerProps, 'onEmojiClick' | 'categoryIcons'>;
   showFormattingTools?: boolean;
   onToggleFormattingTools?: () => void;
+  autoFocus?: boolean;
+  autoFocusPlacement?: 'start' | 'end';
   onSubmit?: () => void;
+  onEscape?: () => void;
   submitDisabled?: boolean;
   showSubmitButton?: boolean;
   onArrowUpWhenEmpty?: () => void;
@@ -40,7 +43,10 @@ export const RichTextMessageInput = ({
   pickerProps,
   showFormattingTools = false,
   onToggleFormattingTools,
+  autoFocus = false,
+  autoFocusPlacement = 'start',
   onSubmit,
+  onEscape,
   submitDisabled = false,
   showSubmitButton = true,
   onArrowUpWhenEmpty,
@@ -87,7 +93,10 @@ export const RichTextMessageInput = ({
     placeholder,
     disabled,
     showFormattingTools,
+    autoFocus,
+    autoFocusPlacement,
     onSubmit,
+    onEscape,
     onArrowUpWhenEmpty,
     onPasteFiles,
   });
