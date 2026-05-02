@@ -68,6 +68,9 @@ export const MessageInlineEditor = ({
               : error
           }
           onSubmit={() => void handleSave()}
+          onEscape={handleCancel}
+          autoFocus
+          autoFocusPlacement="end"
           showSubmitButton={false}
           showFormattingTools={formattingOpen}
           onToggleFormattingTools={toggleFormattingOpen}

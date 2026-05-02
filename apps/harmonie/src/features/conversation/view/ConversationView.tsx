@@ -17,6 +17,7 @@ import {
   areMessagesGrouped,
   getDaySeparatorLabel,
 } from '@/shared/message/utils/messagePresentation';
+import { scheduleCenterMessageIfOutsideView } from '@/shared/message/utils/scrollMessageIntoView';
 import type { ConversationParticipant } from '@/types/conversation';
 import { useConversation } from '../ConversationContext';
 import { getConversationLabel } from '../conversationUtils';
@@ -163,11 +164,12 @@ export const ConversationView = () => {
     if (!editingMessageId) return;
     const el = scrollRef.current;
     if (!el) return;
-    requestAnimationFrame(() => {
-      const msgEl = el.querySelector<HTMLElement>(`[data-message-id="${editingMessageId}"]`);
-      suppressNextScrollEffectsRef.current = true;
-      msgEl?.scrollIntoView({ block: 'nearest' });
-    });
+    const msgEl = el.querySelector<HTMLElement>(`[data-message-id="${editingMessageId}"]`);
+    if (!msgEl) return;
+
+    suppressNextScrollEffectsRef.current = true;
+    shouldStickToBottomRef.current = false;
+    return scheduleCenterMessageIfOutsideView(el, msgEl);
   }, [editingMessageId]);
 
   useEffect(() => {

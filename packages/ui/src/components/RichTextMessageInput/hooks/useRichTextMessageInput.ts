@@ -28,7 +28,10 @@ interface UseRichTextMessageInputParams {
   placeholder: string;
   disabled: boolean;
   showFormattingTools: boolean;
+  autoFocus?: boolean;
+  autoFocusPlacement?: 'start' | 'end';
   onSubmit?: () => void;
+  onEscape?: () => void;
   onArrowUpWhenEmpty?: () => void;
   onPasteFiles?: (files: File[]) => void;
 }
@@ -39,7 +42,10 @@ export const useRichTextMessageInput = ({
   placeholder,
   disabled,
   showFormattingTools,
+  autoFocus = false,
+  autoFocusPlacement = 'start',
   onSubmit,
+  onEscape,
   onArrowUpWhenEmpty,
   onPasteFiles,
 }: UseRichTextMessageInputParams) => {
@@ -53,8 +59,11 @@ export const useRichTextMessageInput = ({
   const initialValueRef = useRef(value);
   const initialPlaceholderRef = useRef(placeholder);
   const initialDisabledRef = useRef(disabled);
+  const initialAutoFocusRef = useRef(autoFocus);
+  const initialAutoFocusPlacementRef = useRef(autoFocusPlacement);
   const lastKnownValueRef = useRef(value);
   const onChangeRef = useRef(onChange);
+  const onEscapeRef = useRef(onEscape);
   const emojiButtonRef = useRef<HTMLButtonElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
 
@@ -87,6 +96,10 @@ export const useRichTextMessageInput = ({
   useEffect(() => {
     onChangeRef.current = onChange;
   }, [onChange]);
+
+  useEffect(() => {
+    onEscapeRef.current = onEscape;
+  }, [onEscape]);
 
   const syncFromEditor = (quill: Quill) => {
     const nextValue = getEditorHtml(quill);
@@ -123,6 +136,14 @@ export const useRichTextMessageInput = ({
     registerQuillKeyboardBindings(quill);
     quillRef.current = quill;
     quill.clipboard.dangerouslyPasteHTML(toEditorHtml(initialValueRef.current), 'silent');
+    if (initialAutoFocusRef.current) {
+      const index =
+        initialAutoFocusPlacementRef.current === 'end' ? Math.max(quill.getLength() - 1, 0) : 0;
+      window.setTimeout(() => {
+        quill.focus();
+        quill.setSelection(index, 0, 'silent');
+      }, 0);
+    }
 
     const handleTextChange = (_delta: unknown, _oldDelta: unknown, source: string) => {
       const currentRange = quill.getSelection();
@@ -259,6 +280,12 @@ export const useRichTextMessageInput = ({
   const handleEditorKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
     const quill = quillRef.current;
     if (!quill) return;
+
+    if (event.key === 'Escape' && onEscapeRef.current) {
+      event.preventDefault();
+      onEscapeRef.current();
+      return;
+    }
 
     if (event.key === 'Enter' && (event.ctrlKey || event.metaKey) && onSubmit) {
       event.preventDefault();
