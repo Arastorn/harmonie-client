@@ -1,5 +1,5 @@
 import { apiFetch, parseOrThrow } from '@/api/client';
-import type { Message, MessageList } from '@/types/channel';
+import type { Message, MessageList, MessageReactionUsersList } from '@/types/channel';
 import type {
   ConversationCreateResponse,
   ConversationList,
@@ -129,6 +129,19 @@ export const removeConversationReaction = (
   ).then((r) => {
     if (!r.ok) throw new Error('Failed to remove conversation reaction');
   });
+
+export const getConversationReactionUsers = (
+  conversationId: string,
+  messageId: string,
+  emoji: string,
+  cursor?: string | null
+): Promise<MessageReactionUsersList> => {
+  const url = new URL(
+    `${API_BASE}/conversations/${conversationId}/messages/${messageId}/reactions/${encodeURIComponent(emoji)}/users`
+  );
+  if (cursor) url.searchParams.set('Cursor', cursor);
+  return apiFetch(url.toString()).then((r) => parseOrThrow<MessageReactionUsersList>(r));
+};
 
 export const deleteConversation = (conversationId: string): Promise<void> =>
   apiFetch(`${API_BASE}/conversations/${conversationId}`, { method: 'DELETE' }).then((r) => {

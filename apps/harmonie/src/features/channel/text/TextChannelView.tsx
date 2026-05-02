@@ -364,6 +364,9 @@ export const TextChannelView = () => {
                           removeAttachment(message.messageId, fileId)
                         }
                         onReact={toggleReaction}
+                        reactionSource={{ type: 'channel', entityId: channelId }}
+                        reactionUserMap={membersMap}
+                        currentUser={user}
                         onOpenMenu={handleOpenMessageMenu}
                       />
                     </div>

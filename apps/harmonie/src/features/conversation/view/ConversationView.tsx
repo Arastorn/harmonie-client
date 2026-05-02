@@ -326,6 +326,9 @@ export const ConversationView = () => {
                             removeAttachment(message.messageId, fileId)
                           }
                           onReact={toggleReaction}
+                          reactionSource={{ type: 'conversation', entityId: conversationId }}
+                          reactionUserMap={membersMap}
+                          currentUser={user}
                           onOpenMenu={handleOpenMessageMenu}
                         />
                       </div>
