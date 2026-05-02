@@ -1,15 +1,17 @@
 import type { Conversation, ConversationParticipant } from '@/types/conversation';
-import type { GuildMember } from '@/types/guild';
 
-export const participantToMember = (p: ConversationParticipant): GuildMember => ({
-  userId: p.userId,
-  username: p.username,
-  displayName: p.displayName ?? null,
-  avatarFileId: p.avatarFileId ?? null,
-  avatar: p.avatar ?? undefined,
-  isActive: true,
-  role: 'Member',
-  joinedAtUtc: '',
+type ConversationParticipantSource = Pick<ConversationParticipant, 'userId' | 'username'> &
+  Partial<Pick<ConversationParticipant, 'displayName' | 'bio' | 'avatarFileId' | 'avatar'>>;
+
+export const userToConversationParticipant = (
+  user: ConversationParticipantSource
+): ConversationParticipant => ({
+  userId: user.userId,
+  username: user.username,
+  displayName: user.displayName ?? null,
+  bio: user.bio ?? null,
+  avatarFileId: user.avatarFileId ?? null,
+  avatar: user.avatar ?? null,
 });
 
 export const getConversationLabel = (

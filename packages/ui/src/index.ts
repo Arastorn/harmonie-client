@@ -93,6 +93,14 @@ export type { BadgeProps, BadgeVariant } from './components/Badge/Badge';
 
 export { RowCard } from './components/RowCard/RowCard';
 export type { RowCardProps } from './components/RowCard/RowCard';
+export { UserListItem } from './components/UserListItem/UserListItem';
+export type { UserListItemProps } from './components/UserListItem/UserListItem';
+export { UserPopover } from './components/UserPopover/UserPopover';
+export type {
+  UserPopoverAction,
+  UserPopoverBadge,
+  UserPopoverProps,
+} from './components/UserPopover/UserPopover';
 export { VoiceParticipantCard } from './components/VoiceParticipantCard/VoiceParticipantCard';
 export type { VoiceParticipantCardProps } from './components/VoiceParticipantCard/VoiceParticipantCard';
 

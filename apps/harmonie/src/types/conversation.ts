@@ -11,6 +11,7 @@ export interface ConversationParticipant {
   userId: string;
   username: string;
   displayName?: string | null;
+  bio?: string | null;
   avatarFileId?: string | null;
   avatar?: AvatarAppearance | null;
 }
@@ -82,6 +83,7 @@ export interface SearchUser {
   userId: string;
   username: string;
   displayName: string | null;
+  bio?: string | null;
   avatarFileId?: string | null;
   avatar?: AvatarAppearance | null;
 }

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { MessageAttachment } from '@/types/channel';
-import type { GuildMember } from '@/types/guild';
+import type { MessageAuthor } from '@/shared/message/types';
 import { MessageAttachmentDeleteModal } from './MessageAttachmentDeleteModal';
 import { MessageAttachmentFileChip } from './MessageAttachmentFileChip';
 import { MessageAttachmentImage } from './MessageAttachmentImage';
@@ -9,14 +9,14 @@ import { MessageAttachmentLightbox } from './MessageAttachmentLightbox';
 export interface LightboxState {
   fileId: string;
   fileName: string;
-  member?: GuildMember;
+  member?: MessageAuthor;
   createdAtUtc: string;
 }
 
 export interface MessageAttachmentsProps {
   attachments: MessageAttachment[];
   isOwn?: boolean;
-  member?: GuildMember;
+  member?: MessageAuthor;
   messageCreatedAt: string;
   onDelete?: (attachmentFileId: string) => void;
   onDeleteDirect?: (attachmentFileId: string) => void;

@@ -16,11 +16,19 @@ import {
   areMessagesGrouped,
   getDaySeparatorLabel,
 } from '@/shared/message/utils/messagePresentation';
-import type { GuildMember } from '@/types/guild';
+import type { ConversationParticipant } from '@/types/conversation';
 import { useConversation } from '../ConversationContext';
-import { getConversationLabel, participantToMember } from '../conversationUtils';
+import { getConversationLabel } from '../conversationUtils';
 import { useConversationMessages } from './hooks/useConversationMessages';
-import { ConversationParticipantsPanel } from './ConversationParticipantsPanel';
+import {
+  ConversationParticipantPopover,
+  ConversationParticipantsPanel,
+} from './ConversationParticipantsPanel';
+
+interface SelectedParticipant {
+  participant: ConversationParticipant;
+  rect: DOMRect;
+}
 
 export const ConversationView = () => {
   const { t } = useTranslation();
@@ -33,6 +41,7 @@ export const ConversationView = () => {
   const [pendingDeleteMessageId, setPendingDeleteMessageId] = useState<string | null>(null);
   const [separatorDismissed, setSeparatorDismissed] = useState(false);
   const [membersOpen, setMembersOpen] = useState(false);
+  const [selectedParticipant, setSelectedParticipant] = useState<SelectedParticipant | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const messagesContentRef = useRef<HTMLDivElement>(null);
   const scrollAnchorRef = useRef<{ scrollTop: number; scrollHeight: number } | null>(null);
@@ -75,10 +84,10 @@ export const ConversationView = () => {
   });
 
   const membersMap = useMemo(() => {
-    const map = new Map<string, GuildMember>();
+    const map = new Map<string, ConversationParticipant>();
     if (conversation?.participants) {
       for (const p of conversation.participants) {
-        map.set(p.userId, participantToMember(p));
+        map.set(p.userId, p);
       }
     }
     return map;
@@ -93,6 +102,7 @@ export const ConversationView = () => {
     setMessageMenu(null);
     setSeparatorDismissed(false);
     setMembersOpen(false);
+    setSelectedParticipant(null);
     previousMessageCountRef.current = 0;
     scrollAnchorRef.current = null;
     suppressNextScrollEffectsRef.current = false;
@@ -187,6 +197,12 @@ export const ConversationView = () => {
       position: { x: event.clientX, y: event.clientY },
       horizontalAnchor,
     });
+  };
+
+  const handleAvatarClick = (participant: ConversationParticipant, rect: DOMRect) => {
+    setSelectedParticipant((prev) =>
+      prev?.participant.userId === participant.userId ? null : { participant, rect }
+    );
   };
 
   const handleStartEditing = (messageId: string) => {
@@ -286,6 +302,7 @@ export const ConversationView = () => {
                         isOwn={message.authorUserId === user?.userId}
                         isEditing={message.messageId === editingMessageId}
                         isMenuOpen={message.messageId === messageMenu?.messageId}
+                        onAvatarClick={handleAvatarClick}
                         onEdit={handleStartEditing}
                         onCancelEdit={cancelEditing}
                         onSaveEdit={saveEdit}
@@ -359,6 +376,15 @@ export const ConversationView = () => {
             </Button>
           </div>
         </Modal>
+      )}
+
+      {selectedParticipant && (
+        <ConversationParticipantPopover
+          participant={selectedParticipant.participant}
+          anchorRect={selectedParticipant.rect}
+          onClose={() => setSelectedParticipant(null)}
+          side="right"
+        />
       )}
     </>
   );

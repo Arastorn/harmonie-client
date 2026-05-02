@@ -3,13 +3,13 @@ import { useTranslation } from 'react-i18next';
 import { AttachmentImage } from '@harmonie/ui';
 import { useFileBlobUrl } from '@/shared/hooks/useFileBlobUrl';
 import type { MessageAttachment } from '@/types/channel';
-import type { GuildMember } from '@/types/guild';
+import type { MessageAuthor } from '@/shared/message/types';
 import type { LightboxState } from './MessageAttachments';
 
 interface MessageAttachmentImageProps {
   attachment: MessageAttachment;
   isOwn: boolean;
-  member?: GuildMember;
+  member?: MessageAuthor;
   createdAtUtc: string;
   onOpenLightbox: (state: LightboxState) => void;
   onDeleteRequest?: (attachment: MessageAttachment) => void;
