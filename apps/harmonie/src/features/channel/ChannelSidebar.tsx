@@ -240,12 +240,12 @@ export const ChannelSidebar = () => {
           onDeleted={() => {
             setSettingsGuild(null);
             fetchGuilds();
-            navigate('/');
+            navigate('/conversations');
           }}
           onLeave={() => {
             setSettingsGuild(null);
             fetchGuilds();
-            navigate('/');
+            navigate('/conversations');
           }}
         />
       )}

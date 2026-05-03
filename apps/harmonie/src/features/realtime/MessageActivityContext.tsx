@@ -4,12 +4,14 @@ import { useTranslation } from 'react-i18next';
 import { useChannels } from '@/features/channel/ChannelContext';
 import { useGuilds } from '@/features/guild/GuildContext';
 import { useRealtime } from '@/features/realtime/RealtimeContext';
+import { useUser } from '@/features/user/UserContext';
 import type { MessageCreatedEvent } from '@/types/channel';
 import type { ConversationMessageCreatedEvent } from '@/types/conversation';
 import {
   requestBrowserNotificationPermission,
   showBrowserNotification,
 } from '@/shared/notifications/browserNotification';
+import { REALTIME_SERVER_EVENTS } from './constants';
 
 interface MessageActivityContextValue {
   totalUnreadCount: number;
@@ -32,6 +34,7 @@ export const MessageActivityProvider = ({ children }: { children: ReactNode }) =
   const { guilds } = useGuilds();
   const { channels } = useChannels();
   const { connection } = useRealtime();
+  const { user } = useUser();
   const { guildId: currentRouteGuildId } = useParams<{ guildId: string }>();
   const textChannelMatch = useMatch('/guilds/:guildId/channels/:channelId');
   const activeTextChannelId = textChannelMatch?.params.channelId;
@@ -69,6 +72,8 @@ export const MessageActivityProvider = ({ children }: { children: ReactNode }) =
     if (!connection) return;
 
     const handleMessageCreated = (event: MessageCreatedEvent) => {
+      if (event.authorUserId === user?.userId) return;
+
       const guildName =
         guilds.find((guild) => guild.guildId === event.guildId)?.name ?? event.guildId;
       const channelName =
@@ -109,15 +114,17 @@ export const MessageActivityProvider = ({ children }: { children: ReactNode }) =
       notify();
     };
 
-    connection.on('MessageCreated', handleMessageCreated);
-    return () => connection.off('MessageCreated', handleMessageCreated);
-  }, [channels, connection, currentRouteGuildId, activeTextChannelId, guilds]);
+    connection.on(REALTIME_SERVER_EVENTS.messageCreated, handleMessageCreated);
+    return () => connection.off(REALTIME_SERVER_EVENTS.messageCreated, handleMessageCreated);
+  }, [channels, connection, currentRouteGuildId, activeTextChannelId, guilds, user?.userId]);
 
   // Conversation messages
   useEffect(() => {
     if (!connection) return;
 
     const handleConversationMessageCreated = (event: ConversationMessageCreatedEvent) => {
+      if (event.authorUserId === user?.userId) return;
+
       const targetUrl = `/conversations/${event.conversationId}`;
       const title = `Harmonie | ${t('conversation.home')}`;
 
@@ -144,9 +151,16 @@ export const MessageActivityProvider = ({ children }: { children: ReactNode }) =
       notify();
     };
 
-    connection.on('ConversationMessageCreated', handleConversationMessageCreated);
-    return () => connection.off('ConversationMessageCreated', handleConversationMessageCreated);
-  }, [connection, activeConversationId, t]);
+    connection.on(
+      REALTIME_SERVER_EVENTS.conversationMessageCreated,
+      handleConversationMessageCreated
+    );
+    return () =>
+      connection.off(
+        REALTIME_SERVER_EVENTS.conversationMessageCreated,
+        handleConversationMessageCreated
+      );
+  }, [connection, activeConversationId, t, user?.userId]);
 
   useEffect(() => {
     if (!activeTextChannelId) return;

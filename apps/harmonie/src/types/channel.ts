@@ -19,12 +19,21 @@ export interface MessageReactionUsersList {
   nextCursor: string | null;
 }
 
+export interface LinkPreview {
+  url: string;
+  title: string | null;
+  description: string | null;
+  imageUrl: string | null;
+  siteName: string | null;
+}
+
 export interface Message {
   messageId: string;
   authorUserId: string;
   content: string | null;
   attachments: MessageAttachment[];
   reactions: MessageReaction[];
+  previews?: LinkPreview[];
   createdAtUtc: string;
   updatedAtUtc: string | null;
 }
@@ -89,6 +98,16 @@ export interface ReactionRemovedEvent {
 
 export interface UserTypingEvent {
   userId: string;
+  username?: string;
+  displayName?: string | null;
   channelId: string;
   timestamp: string;
+}
+
+export interface MessagePreviewUpdatedEvent {
+  messageId: string;
+  channelId?: string | null;
+  conversationId?: string | null;
+  guildId?: string | null;
+  previews: LinkPreview[];
 }

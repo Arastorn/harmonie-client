@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { Room } from 'livekit-client';
 import { useRealtime } from '@/features/realtime/RealtimeContext';
+import { REALTIME_SERVER_EVENTS } from '@/features/realtime/constants';
 import type {
   VoiceParticipant,
   VoiceParticipantInit,
@@ -113,12 +114,12 @@ export const useVoiceParticipants = () => {
       });
     };
 
-    connection.on('VoiceParticipantJoined', handleJoined);
-    connection.on('VoiceParticipantLeft', handleLeft);
+    connection.on(REALTIME_SERVER_EVENTS.voiceParticipantJoined, handleJoined);
+    connection.on(REALTIME_SERVER_EVENTS.voiceParticipantLeft, handleLeft);
 
     return () => {
-      connection.off('VoiceParticipantJoined', handleJoined);
-      connection.off('VoiceParticipantLeft', handleLeft);
+      connection.off(REALTIME_SERVER_EVENTS.voiceParticipantJoined, handleJoined);
+      connection.off(REALTIME_SERVER_EVENTS.voiceParticipantLeft, handleLeft);
     };
   }, [connection]);
 

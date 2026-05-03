@@ -7,22 +7,26 @@ import {
 } from '@microsoft/signalr';
 import { getAccessToken } from '@/api/authStorage';
 import { useAuth } from '@/features/auth/AuthContext';
+import { REALTIME_SERVER_EVENTS } from './constants';
 
 const HUB_URL = import.meta.env.VITE_WS_BASE_URL as string;
 
 interface RealtimeContextValue {
   connection: HubConnection | null;
+  isReady: boolean;
 }
 
-const RealtimeContext = createContext<RealtimeContextValue>({ connection: null });
+const RealtimeContext = createContext<RealtimeContextValue>({ connection: null, isReady: false });
 
 export const RealtimeProvider = ({ children }: { children: ReactNode }) => {
   const { isAuthenticated } = useAuth();
   const [connection, setConnection] = useState<HubConnection | null>(null);
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) {
       setConnection(null);
+      setIsReady(false);
       return;
     }
 
@@ -35,6 +39,11 @@ export const RealtimeProvider = ({ children }: { children: ReactNode }) => {
       .build();
 
     let cancelled = false;
+    const handleReady = () => {
+      if (!cancelled) setIsReady(true);
+    };
+
+    hub.on(REALTIME_SERVER_EVENTS.ready, handleReady);
 
     hub
       .start()
@@ -48,13 +57,17 @@ export const RealtimeProvider = ({ children }: { children: ReactNode }) => {
     return () => {
       cancelled = true;
       setConnection(null);
+      setIsReady(false);
+      hub.off(REALTIME_SERVER_EVENTS.ready, handleReady);
       if (hub.state !== HubConnectionState.Disconnected) {
         hub.stop();
       }
     };
   }, [isAuthenticated]);
 
-  return <RealtimeContext.Provider value={{ connection }}>{children}</RealtimeContext.Provider>;
+  return (
+    <RealtimeContext.Provider value={{ connection, isReady }}>{children}</RealtimeContext.Provider>
+  );
 };
 
 export const useRealtime = () => useContext(RealtimeContext);

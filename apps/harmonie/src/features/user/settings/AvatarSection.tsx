@@ -61,7 +61,7 @@ export const AvatarSection = ({ user, updateUser }: AvatarSectionProps) => {
       return undefined;
     }
 
-    return user?.avatarFileId;
+    return user?.avatarFileId ?? undefined;
   };
 
   const handleSave = async () => {

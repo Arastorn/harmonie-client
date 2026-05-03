@@ -9,6 +9,7 @@ import {
 } from '@/api/channels';
 import { useMessages } from '@/shared/message/hooks/useMessages';
 import { useTyping } from '@/shared/message/hooks/useTyping';
+import { REALTIME_SERVER_EVENTS } from '@/features/realtime/constants';
 import type { HubConnection } from '@microsoft/signalr';
 
 interface UseChannelMessagesParams {
@@ -29,7 +30,7 @@ export const useChannelMessages = ({
     ready: channelReady,
     connection,
     currentUserId,
-    eventName: 'UserTyping',
+    eventName: REALTIME_SERVER_EVENTS.userTyping,
     entityIdField: 'channelId',
   });
 
@@ -48,9 +49,9 @@ export const useChannelMessages = ({
       removeReaction,
     },
     ws: {
-      created: 'MessageCreated',
-      updated: 'MessageUpdated',
-      deleted: 'MessageDeleted',
+      created: REALTIME_SERVER_EVENTS.messageCreated,
+      updated: REALTIME_SERVER_EVENTS.messageUpdated,
+      deleted: REALTIME_SERVER_EVENTS.messageDeleted,
       entityIdField: 'channelId',
     },
     typingUserIds,

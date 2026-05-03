@@ -196,3 +196,63 @@ export interface GuildMessageSearchParams {
   cursor?: string;
   limit?: number;
 }
+
+export interface GuildDeletedEvent {
+  guildId: string;
+}
+
+export interface GuildOwnershipTransferredEvent {
+  guildId: string;
+  newOwnerUserId: string;
+  newOwnerUsername: string;
+  newOwnerDisplayName: string | null;
+}
+
+export interface GuildUpdatedEvent {
+  guildId: string;
+  name: string;
+  iconFileId: string | null;
+}
+
+export interface ChannelCreatedEvent {
+  guildId: string;
+  channelId: string;
+  name: string;
+  type: Channel['type'] | string;
+  isDefault: boolean;
+  position: number;
+}
+
+export interface ChannelUpdatedEvent {
+  guildId: string;
+  channelId: string;
+  name: string;
+  position: number;
+}
+
+export interface ChannelDeletedEvent {
+  guildId: string;
+  channelId: string;
+}
+
+export interface ChannelsReorderedEvent {
+  guildId: string;
+  channels: ReorderChannelEntry[];
+}
+
+export interface MemberEvent {
+  guildId: string;
+  userId: string;
+  username: string;
+  displayName: string | null;
+  avatarFileId?: string | null;
+}
+
+export interface MemberRoleUpdatedEvent extends MemberEvent {
+  newRole: GuildMemberRole | string;
+}
+
+export interface UserPresenceChangedEvent {
+  userId: string;
+  status: string;
+}

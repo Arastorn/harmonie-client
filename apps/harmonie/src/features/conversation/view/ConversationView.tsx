@@ -5,6 +5,7 @@ import { Button, IconButton, Modal, Separator } from '@harmonie/ui';
 import { Users } from 'lucide-react';
 import { sendConversationMessage } from '@/api/conversations';
 import { useRealtime } from '@/features/realtime/RealtimeContext';
+import { REALTIME_CLIENT_METHODS } from '@/features/realtime/constants';
 import { useUser } from '@/features/user/UserContext';
 import { MessageComposer } from '@/shared/message/MessageComposer';
 import { MessageListItem } from '@/shared/message/MessageListItem/MessageListItem';
@@ -369,7 +370,9 @@ export const ConversationView = () => {
                 sendConversationMessage(conversationId, content, fileIds)
               }
               onTypingStart={() =>
-                connection?.send('StartTypingConversation', conversationId).catch(() => {})
+                connection
+                  ?.send(REALTIME_CLIENT_METHODS.startTypingConversation, conversationId)
+                  .catch(() => {})
               }
               latestEditableMessage={latestOwnMessage}
               onEditingRequested={handleStartEditing}

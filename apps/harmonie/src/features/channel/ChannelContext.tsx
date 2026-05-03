@@ -1,7 +1,15 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { listChannels, reorderChannels } from '@/api/guilds';
-import type { Channel } from '@/types/guild';
+import { useRealtime } from '@/features/realtime/RealtimeContext';
+import { REALTIME_SERVER_EVENTS } from '@/features/realtime/constants';
+import type {
+  Channel,
+  ChannelCreatedEvent,
+  ChannelDeletedEvent,
+  ChannelsReorderedEvent,
+  ChannelUpdatedEvent,
+} from '@/types/guild';
 import { useVoicePresence } from './voice/VoicePresenceContext';
 
 interface ChannelState {
@@ -26,8 +34,10 @@ const ChannelContext = createContext<ChannelContextValue>({
 });
 
 export const ChannelProvider = ({ children }: { children: ReactNode }) => {
-  const { guildId } = useParams<{ guildId: string }>();
+  const navigate = useNavigate();
+  const { guildId, channelId } = useParams<{ guildId: string; channelId: string }>();
   const [state, setState] = useState<ChannelState | null>(null);
+  const { connection } = useRealtime();
   const { seedFromChannelList } = useVoicePresence();
 
   const fetch = useCallback(() => {
@@ -52,8 +62,111 @@ export const ChannelProvider = ({ children }: { children: ReactNode }) => {
     fetch();
   }, [fetch]);
 
+  useEffect(() => {
+    if (!connection || !guildId) return;
+
+    const sortChannels = (channels: Channel[]) =>
+      [...channels].sort((a, b) => a.position - b.position);
+
+    const normalizeChannelType = (type: string): Channel['type'] =>
+      type.toLowerCase() === 'voice' ? 'Voice' : 'Text';
+
+    const handleChannelCreated = (event: ChannelCreatedEvent) => {
+      if (event.guildId !== guildId) return;
+      setState((prev) => {
+        if (!prev || prev.guildId !== event.guildId) return prev;
+        if (prev.channels.some((channel) => channel.channelId === event.channelId)) return prev;
+        return {
+          ...prev,
+          channels: sortChannels([
+            ...prev.channels,
+            {
+              channelId: event.channelId,
+              name: event.name,
+              type: normalizeChannelType(event.type),
+              isDefault: event.isDefault,
+              position: event.position,
+              currentParticipants: null,
+            },
+          ]),
+        };
+      });
+    };
+
+    const handleChannelUpdated = (event: ChannelUpdatedEvent) => {
+      if (event.guildId !== guildId) return;
+      setState((prev) =>
+        prev && prev.guildId === event.guildId
+          ? {
+              ...prev,
+              channels: sortChannels(
+                prev.channels.map((channel) =>
+                  channel.channelId === event.channelId
+                    ? { ...channel, name: event.name, position: event.position }
+                    : channel
+                )
+              ),
+            }
+          : prev
+      );
+    };
+
+    const handleChannelDeleted = (event: ChannelDeletedEvent) => {
+      if (event.guildId !== guildId) return;
+      setState((prev) =>
+        prev && prev.guildId === event.guildId
+          ? {
+              ...prev,
+              channels: prev.channels.filter((channel) => channel.channelId !== event.channelId),
+            }
+          : prev
+      );
+      if (event.channelId === channelId) navigate(`/guilds/${event.guildId}`, { replace: true });
+    };
+
+    const handleChannelsReordered = (event: ChannelsReorderedEvent) => {
+      if (event.guildId !== guildId) return;
+      const positions = new Map(
+        event.channels.map((channel) => [channel.channelId, channel.position])
+      );
+      setState((prev) =>
+        prev && prev.guildId === event.guildId
+          ? {
+              ...prev,
+              channels: sortChannels(
+                prev.channels.map((channel) => ({
+                  ...channel,
+                  position: positions.get(channel.channelId) ?? channel.position,
+                }))
+              ),
+            }
+          : prev
+      );
+    };
+
+    connection.on(REALTIME_SERVER_EVENTS.channelCreated, handleChannelCreated);
+    connection.on(REALTIME_SERVER_EVENTS.channelUpdated, handleChannelUpdated);
+    connection.on(REALTIME_SERVER_EVENTS.channelDeleted, handleChannelDeleted);
+    connection.on(REALTIME_SERVER_EVENTS.channelsReordered, handleChannelsReordered);
+
+    return () => {
+      connection.off(REALTIME_SERVER_EVENTS.channelCreated, handleChannelCreated);
+      connection.off(REALTIME_SERVER_EVENTS.channelUpdated, handleChannelUpdated);
+      connection.off(REALTIME_SERVER_EVENTS.channelDeleted, handleChannelDeleted);
+      connection.off(REALTIME_SERVER_EVENTS.channelsReordered, handleChannelsReordered);
+    };
+  }, [channelId, connection, guildId, navigate]);
+
   const addChannel = (channel: Channel) =>
-    setState((prev) => (prev ? { ...prev, channels: [...prev.channels, channel] } : null));
+    setState((prev) => {
+      if (!prev) return null;
+
+      const channels = prev.channels.some((c) => c.channelId === channel.channelId)
+        ? prev.channels.map((c) => (c.channelId === channel.channelId ? { ...c, ...channel } : c))
+        : [...prev.channels, channel];
+
+      return { ...prev, channels: [...channels].sort((a, b) => a.position - b.position) };
+    });
 
   const updateChannel = (updated: Channel) =>
     setState((prev) =>

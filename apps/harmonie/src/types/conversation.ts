@@ -76,7 +76,27 @@ export interface ConversationCreateResponse {
 export interface ConversationUserTypingEvent {
   conversationId: string;
   userId: string;
+  username?: string;
+  displayName?: string | null;
   timestamp: string;
+}
+
+export interface ConversationCreatedEvent {
+  conversationId: string;
+  name: string | null;
+  participants: ConversationParticipant[];
+}
+
+export interface ConversationParticipantLeftEvent {
+  conversationId: string;
+  userId: string;
+  username: string;
+  displayName: string | null;
+}
+
+export interface ConversationUpdatedEvent {
+  conversationId: string;
+  name: string | null;
 }
 
 export interface SearchUser {

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { sortMessagesAsc } from '@/shared/utils/message';
-import type { Message, MessageList } from '@/types/channel';
+import { REALTIME_SERVER_EVENTS } from '@/features/realtime/constants';
+import type { Message, MessageList, MessagePreviewUpdatedEvent } from '@/types/channel';
 import type { HubConnection } from '@microsoft/signalr';
 
 interface WsMessageCreatedEvent {
@@ -149,6 +150,7 @@ export const useMessages = ({
           content: event.content,
           attachments: event.attachments ?? [],
           reactions: [],
+          previews: [],
           createdAtUtc: event.createdAtUtc,
           updatedAtUtc: null,
         },
@@ -253,14 +255,34 @@ export const useMessages = ({
       );
     };
 
-    connection.on('ReactionAdded', handleReactionAdded);
-    connection.on('ReactionRemoved', handleReactionRemoved);
+    connection.on(REALTIME_SERVER_EVENTS.reactionAdded, handleReactionAdded);
+    connection.on(REALTIME_SERVER_EVENTS.reactionRemoved, handleReactionRemoved);
 
     return () => {
-      connection.off('ReactionAdded', handleReactionAdded);
-      connection.off('ReactionRemoved', handleReactionRemoved);
+      connection.off(REALTIME_SERVER_EVENTS.reactionAdded, handleReactionAdded);
+      connection.off(REALTIME_SERVER_EVENTS.reactionRemoved, handleReactionRemoved);
     };
   }, [connection, entityId, ready, currentUserId]);
+
+  useEffect(() => {
+    if (!connection || !entityId || !ready) return;
+
+    const handleMessagePreviewUpdated = (event: MessagePreviewUpdatedEvent) => {
+      const eventEntityId = event[wsRef.current.entityIdField as keyof MessagePreviewUpdatedEvent];
+      if (eventEntityId !== entityId) return;
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.messageId === event.messageId ? { ...m, previews: event.previews ?? [] } : m
+        )
+      );
+    };
+
+    connection.on(REALTIME_SERVER_EVENTS.messagePreviewUpdated, handleMessagePreviewUpdated);
+
+    return () => {
+      connection.off(REALTIME_SERVER_EVENTS.messagePreviewUpdated, handleMessagePreviewUpdated);
+    };
+  }, [connection, entityId, ready]);
 
   const loadMoreWithCursor = useCallback(
     async (cursor: string) => {
