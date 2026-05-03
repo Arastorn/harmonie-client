@@ -5,6 +5,7 @@ export const LIGHT_THEMES = ['default', 'azure-linen', 'rose-linen', 'mint-linen
 export const DARK_THEMES = [
   'forest-obsidian',
   'midnight-obsidian',
+  'emerald-obsidian',
   'crimson-obsidian',
   'amethyst-obsidian',
   'rose-obsidian',

@@ -320,6 +320,7 @@ export const en = {
       'mint-linen': 'Mint Linen',
       'forest-obsidian': 'Forest Obsidian',
       'midnight-obsidian': 'Midnight Obsidian',
+      'emerald-obsidian': 'Emerald Obsidian',
       'crimson-obsidian': 'Crimson Obsidian',
       'amethyst-obsidian': 'Amethyst Obsidian',
       'rose-obsidian': 'Blush Obsidian',
