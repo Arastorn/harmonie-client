@@ -1,11 +1,13 @@
 import { useRef } from 'react';
 import { Pipette } from 'lucide-react';
+import { Tooltip } from '../Tooltip/Tooltip';
 
 export interface ColorSwatchesProps {
   colors: string[];
   selected: string;
   onSelect: (color: string) => void;
   showCustomPicker?: boolean;
+  customColorLabel?: string;
 }
 
 export const ColorSwatches = ({
@@ -13,6 +15,7 @@ export const ColorSwatches = ({
   selected,
   onSelect,
   showCustomPicker = false,
+  customColorLabel = 'Custom color',
 }: ColorSwatchesProps) => {
   const pickerRef = useRef<HTMLInputElement>(null);
 
@@ -38,27 +41,28 @@ export const ColorSwatches = ({
 
       {showCustomPicker && (
         <>
-          <button
-            type="button"
-            onClick={() => pickerRef.current?.click()}
-            className="relative w-7 h-7 rounded-full border-2 shrink-0 cursor-pointer flex items-center justify-center overflow-hidden transition-all"
-            style={{
-              backgroundColor: isCustomSelected ? selected : 'var(--color-surface-hover)',
-              borderColor: isCustomSelected ? 'var(--color-text-1)' : 'var(--color-border-2)',
-              outline: isCustomSelected ? '2px solid var(--color-primary)' : 'none',
-              outlineOffset: '1px',
-            }}
-            title="Custom color"
-          >
-            <Pipette
-              size={12}
+          <Tooltip content={customColorLabel}>
+            <button
+              type="button"
+              onClick={() => pickerRef.current?.click()}
+              className="relative w-7 h-7 rounded-full border-2 shrink-0 cursor-pointer flex items-center justify-center overflow-hidden transition-all"
               style={{
-                color: isCustomSelected
-                  ? 'color-mix(in srgb, var(--color-text-1) 70%, transparent)'
-                  : 'var(--color-text-3)',
+                backgroundColor: isCustomSelected ? selected : 'var(--color-surface-hover)',
+                borderColor: isCustomSelected ? 'var(--color-text-1)' : 'var(--color-border-2)',
+                outline: isCustomSelected ? '2px solid var(--color-primary)' : 'none',
+                outlineOffset: '1px',
               }}
-            />
-          </button>
+            >
+              <Pipette
+                size={12}
+                style={{
+                  color: isCustomSelected
+                    ? 'color-mix(in srgb, var(--color-text-1) 70%, transparent)'
+                    : 'var(--color-text-3)',
+                }}
+              />
+            </button>
+          </Tooltip>
           <input
             ref={pickerRef}
             type="color"

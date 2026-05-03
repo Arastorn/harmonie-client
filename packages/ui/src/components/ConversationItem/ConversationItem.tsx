@@ -52,6 +52,7 @@ export const ConversationItem = ({
           variant="overlay"
           aria-label={deleteLabel}
           title={deleteLabel}
+          tooltipSide="right"
           onClick={(e) => {
             e.stopPropagation();
             onDeleteClick(e);

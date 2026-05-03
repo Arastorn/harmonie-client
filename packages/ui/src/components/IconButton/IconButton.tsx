@@ -1,4 +1,5 @@
-import { ButtonHTMLAttributes, forwardRef, ReactNode } from 'react';
+import { ButtonHTMLAttributes, forwardRef, ReactNode, useId } from 'react';
+import { Tooltip, TooltipSide } from '../Tooltip/Tooltip';
 
 export type IconButtonSize = 'normal' | 'small' | 'medium';
 export type IconButtonVariant = 'ghost' | 'filled' | 'overlay' | 'primary' | 'danger';
@@ -7,6 +8,7 @@ export interface IconButtonProps extends ButtonHTMLAttributes<HTMLButtonElement>
   size?: IconButtonSize;
   variant?: IconButtonVariant;
   selected?: boolean;
+  tooltipSide?: TooltipSide;
   children: ReactNode;
 }
 
@@ -27,9 +29,23 @@ const variantClasses: Record<IconButtonVariant, string> = {
 const selectedClasses = 'bg-primary text-primary-fg hover:bg-primary';
 
 export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(function IconButton(
-  { size = 'normal', variant = 'ghost', selected = false, disabled, children, className, ...props },
+  {
+    size = 'normal',
+    variant = 'ghost',
+    selected = false,
+    disabled,
+    children,
+    className,
+    tooltipSide,
+    title,
+    'aria-label': ariaLabel,
+    'aria-describedby': ariaDescribedBy,
+    ...props
+  },
   ref
 ) {
+  const generatedTooltipId = useId();
+  const tooltipId = typeof title === 'string' && title.length > 0 ? generatedTooltipId : undefined;
   const classes = [
     'inline-flex items-center justify-center',
     '[transition:transform_150ms_cubic-bezier(0.34,1.56,0.64,1),background-color_150ms_ease,opacity_150ms_ease]',
@@ -42,9 +58,24 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(functio
     .filter(Boolean)
     .join(' ');
 
-  return (
-    <button ref={ref} disabled={disabled} className={classes} {...props}>
+  const button = (
+    <button
+      ref={ref}
+      disabled={disabled}
+      className={classes}
+      aria-label={ariaLabel ?? (typeof title === 'string' ? title : undefined)}
+      aria-describedby={[ariaDescribedBy, tooltipId].filter(Boolean).join(' ') || undefined}
+      {...props}
+    >
       {children}
     </button>
+  );
+
+  if (typeof title !== 'string' || title.length === 0) return button;
+
+  return (
+    <Tooltip content={title} id={tooltipId} side={tooltipSide}>
+      {button}
+    </Tooltip>
   );
 });

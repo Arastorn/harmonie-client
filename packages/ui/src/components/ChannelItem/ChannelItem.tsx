@@ -64,6 +64,7 @@ export const ChannelItem = ({
           variant="overlay"
           aria-label={menuLabel}
           title={menuLabel}
+          tooltipSide="right"
           onClick={(e) => {
             e.stopPropagation();
             onMenuClick(e);

@@ -12,6 +12,7 @@ const meta: Meta<typeof ColorSwatches> = {
     colors: PRESET_COLORS,
     selected: PRESET_COLORS[0],
     onSelect: () => {},
+    customColorLabel: 'Custom color',
   },
 };
 

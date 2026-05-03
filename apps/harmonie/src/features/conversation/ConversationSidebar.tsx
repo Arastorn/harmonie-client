@@ -126,6 +126,7 @@ export const ConversationSidebar = () => {
             onClick={() => setShowNewConversation(true)}
             aria-label={t('conversation.newConversation')}
             title={t('conversation.newConversation')}
+            tooltipSide="right"
           >
             <Plus size={14} />
           </IconButton>
