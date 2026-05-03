@@ -61,6 +61,8 @@ export interface MessageCreatedEvent {
   channelId: string;
   guildId: string;
   authorUserId: string;
+  authorUsername: string;
+  authorDisplayName?: string | null;
   content: string;
   attachments: MessageAttachment[];
   createdAtUtc: string;

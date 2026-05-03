@@ -29,6 +29,20 @@ const MessageActivityContext = createContext<MessageActivityContextValue>({
   hasAnyUnreadConversation: () => false,
 });
 
+const toSenderName = (
+  authorUserId: string,
+  displayName?: string | null,
+  username?: string | null
+) => {
+  const display = displayName?.trim();
+  if (display && display !== authorUserId) return display;
+
+  const user = username?.trim();
+  if (user && user !== authorUserId) return user;
+
+  return undefined;
+};
+
 export const MessageActivityProvider = ({ children }: { children: ReactNode }) => {
   const { t } = useTranslation();
   const { guilds } = useGuilds();
@@ -87,6 +101,11 @@ export const MessageActivityProvider = ({ children }: { children: ReactNode }) =
           content: event.content,
           attachments: event.attachments,
           targetUrl,
+          senderName: toSenderName(
+            event.authorUserId,
+            event.authorDisplayName,
+            event.authorUsername
+          ),
           title,
         });
 
@@ -134,6 +153,11 @@ export const MessageActivityProvider = ({ children }: { children: ReactNode }) =
           content: event.content,
           attachments: event.attachments ?? [],
           targetUrl,
+          senderName: toSenderName(
+            event.authorUserId,
+            event.authorDisplayName,
+            event.authorUsername
+          ),
           title,
         });
 

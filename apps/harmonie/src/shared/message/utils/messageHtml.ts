@@ -44,7 +44,7 @@ export const stripHtmlToText = (content: string) =>
   decodeHtmlEntities(
     content
       .replace(/<br\s*\/?>/gi, '\n')
-      .replace(/<\/p>\s*<p>/gi, '\n\n')
+      .replace(/<\/p>\s*<p>/gi, '\n')
       .replace(/<[^>]*>/g, '')
   ).trim();
 
