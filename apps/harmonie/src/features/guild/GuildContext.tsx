@@ -54,7 +54,7 @@ export const GuildProvider = ({ children }: { children: ReactNode }) => {
   const { connection } = useRealtime();
   const { user } = useUser();
   const [guilds, setGuilds] = useState<Guild[]>([]);
-  const [guildsLoading, setGuildsLoading] = useState(false);
+  const [guildsLoading, setGuildsLoading] = useState(true);
   const [membersByGuild, setMembersByGuild] = useState<Record<string, MembersCacheEntry>>({});
   const membersByGuildRef = useRef<Record<string, MembersCacheEntry>>({});
   const fetchingRef = useRef<Set<string>>(new Set());

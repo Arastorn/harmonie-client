@@ -47,7 +47,7 @@ export const MessageAttachments = ({
   return (
     <>
       {images.length > 0 && (
-        <div className="flex flex-wrap gap-2 mt-1">
+        <div className="flex flex-wrap gap-2 mt-1 min-w-0 max-w-full">
           {images.map((attachment) => (
             <MessageAttachmentImage
               key={attachment.fileId}
@@ -62,7 +62,7 @@ export const MessageAttachments = ({
         </div>
       )}
       {files.length > 0 && (
-        <div className="flex flex-col gap-1 mt-1">
+        <div className="flex flex-col gap-1 mt-1 min-w-0 max-w-full">
           {files.map((attachment) => (
             <MessageAttachmentFileChip
               key={attachment.fileId}
