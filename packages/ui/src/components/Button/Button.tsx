@@ -1,5 +1,6 @@
-import { ButtonHTMLAttributes } from 'react';
+import { ButtonHTMLAttributes, useId } from 'react';
 import { Loader2 } from 'lucide-react';
+import { Tooltip } from '../Tooltip/Tooltip';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'tertiary' | 'danger';
 export type ButtonSize = 'normal' | 'small';
@@ -29,9 +30,13 @@ export const Button = ({
   isLoading,
   children,
   className,
+  title,
+  'aria-describedby': ariaDescribedBy,
   ...props
 }: ButtonProps) => {
   const isDisabled = disabled || isLoading;
+  const generatedTooltipId = useId();
+  const tooltipId = typeof title === 'string' && title.length > 0 ? generatedTooltipId : undefined;
 
   const classes = [
     'font-body font-normal rounded-full inline-flex items-center justify-center gap-2',
@@ -45,10 +50,23 @@ export const Button = ({
     .filter(Boolean)
     .join(' ');
 
-  return (
-    <button disabled={isDisabled} className={classes} {...props}>
+  const button = (
+    <button
+      disabled={isDisabled}
+      className={classes}
+      aria-describedby={[ariaDescribedBy, tooltipId].filter(Boolean).join(' ') || undefined}
+      {...props}
+    >
       {isLoading && <Loader2 size={14} className="animate-spin" />}
       {children}
     </button>
+  );
+
+  if (typeof title !== 'string' || title.length === 0) return button;
+
+  return (
+    <Tooltip content={title} id={tooltipId}>
+      {button}
+    </Tooltip>
   );
 };

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { DoorOpen, House, Mailbox, Pencil, Plus, ShieldBan, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { ContextMenu, GuildAvatar } from '@harmonie/ui';
+import { ContextMenu, GuildAvatar, Tooltip } from '@harmonie/ui';
 import { useMessageActivity } from '@/features/realtime/MessageActivityContext';
 import { useFileBlobUrl } from '@/shared/hooks/useFileBlobUrl';
 import { useGuilds } from './GuildContext';
@@ -30,24 +30,26 @@ const GuildSidebarItem = ({
 
   return (
     <div className="relative">
-      <button
-        onClick={onClick}
-        onContextMenu={canOpenGuildContextMenu ? (e) => onOpenContextMenu(e, guild) : undefined}
-        title={guild.name}
-        className={[
-          'w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-transparent cursor-pointer first:mt-1 last:mb-1 transform-gpu transition-transform duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] hover:scale-[1.1] active:scale-[0.97]',
-          isActive ? 'ring-2 ring-primary' : 'hover:opacity-90',
-        ].join(' ')}
-      >
-        <GuildAvatar
-          iconUrl={iconUrl}
-          alt={guild.name}
-          icon={guild.icon?.name ?? undefined}
-          color={guild.icon?.color ?? undefined}
-          bg={guild.icon?.bg ?? undefined}
-          size={34}
-        />
-      </button>
+      <Tooltip content={guild.name} side="right">
+        <button
+          onClick={onClick}
+          onContextMenu={canOpenGuildContextMenu ? (e) => onOpenContextMenu(e, guild) : undefined}
+          aria-label={guild.name}
+          className={[
+            'w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-transparent cursor-pointer first:mt-1 last:mb-1 transform-gpu transition-transform duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] hover:scale-[1.1] active:scale-[0.97]',
+            isActive ? 'ring-2 ring-primary' : 'hover:opacity-90',
+          ].join(' ')}
+        >
+          <GuildAvatar
+            iconUrl={iconUrl}
+            alt={guild.name}
+            icon={guild.icon?.name ?? undefined}
+            color={guild.icon?.color ?? undefined}
+            bg={guild.icon?.bg ?? undefined}
+            size={34}
+          />
+        </button>
+      </Tooltip>
       {hasUnread && (
         <span className="absolute top-1 right-0 h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-background" />
       )}
@@ -138,18 +140,20 @@ export const GuildSidebar = () => {
         >
           {/* Home button for conversations */}
           <div className="relative">
-            <button
-              onClick={() => navigate('/conversations')}
-              title={t('conversation.home')}
-              className={[
-                'w-10 h-10 rounded-xl flex items-center justify-center shrink-0 cursor-pointer transform-gpu transition-transform duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] hover:scale-[1.1] active:scale-[0.97]',
-                isConversationsRoute
-                  ? 'bg-primary text-primary-fg'
-                  : 'bg-surface-2 text-text-2 hover:bg-surface-3',
-              ].join(' ')}
-            >
-              <House size={18} />
-            </button>
+            <Tooltip content={t('conversation.home')} side="right">
+              <button
+                onClick={() => navigate('/conversations')}
+                aria-label={t('conversation.home')}
+                className={[
+                  'w-10 h-10 rounded-xl flex items-center justify-center shrink-0 cursor-pointer transform-gpu transition-transform duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] hover:scale-[1.1] active:scale-[0.97]',
+                  isConversationsRoute
+                    ? 'bg-primary text-primary-fg'
+                    : 'bg-surface-2 text-text-2 hover:bg-surface-3',
+                ].join(' ')}
+              >
+                <House size={18} />
+              </button>
+            </Tooltip>
             {hasAnyUnreadConversation() && !isConversationsRoute && (
               <span className="absolute top-1 right-0 h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-background" />
             )}
@@ -178,7 +182,7 @@ export const GuildSidebar = () => {
               e.preventDefault();
               setAddMenu({ x: e.clientX, y: e.clientY });
             }}
-            title={t('guild.createJoin.title')}
+            aria-label={t('guild.createJoin.title')}
             className={[
               'w-10 h-10 rounded-xl flex items-center justify-center shrink-0 cursor-pointer bg-surface-2 text-text-2 hover:bg-surface-3 transform-gpu transition-transform duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] hover:scale-[1.06] active:scale-[0.97]',
               addMenu ? 'ring-2 ring-primary ring-offset-2 ring-offset-background' : '',

@@ -1,6 +1,7 @@
 import type { LucideIcon } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { ColorSwatches, IconButton } from '@harmonie/ui';
+import { useTranslation } from 'react-i18next';
 import { AVATAR_ICONS } from '@/shared/consts/constants';
 import { useIconAppearancePalette } from '@/shared/hooks/useIconAppearancePalette';
 
@@ -31,6 +32,7 @@ export const IconAppearanceEditor = ({
   iconGridClassName = 'grid-cols-12',
   disabled = false,
 }: IconAppearanceEditorProps) => {
+  const { t } = useTranslation();
   const { iconColors, bgColors } = useIconAppearancePalette();
 
   return (
@@ -63,6 +65,7 @@ export const IconAppearanceEditor = ({
           selected={selectedColor}
           onSelect={onSelectColor}
           showCustomPicker
+          customColorLabel={t('settings.avatar.customColor')}
         />
       </div>
 
@@ -73,6 +76,7 @@ export const IconAppearanceEditor = ({
           selected={selectedBg}
           onSelect={onSelectBg}
           showCustomPicker
+          customColorLabel={t('settings.avatar.customColor')}
         />
       </div>
     </div>

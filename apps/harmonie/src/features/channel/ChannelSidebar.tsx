@@ -119,6 +119,7 @@ export const ChannelSidebar = () => {
               onClick={() => setSettingsGuild(guild)}
               aria-label={t('guild.contextMenu.edit')}
               title={t('guild.contextMenu.edit')}
+              tooltipSide="right"
             >
               <Settings size={14} />
             </IconButton>

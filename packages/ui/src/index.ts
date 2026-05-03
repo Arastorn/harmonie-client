@@ -30,6 +30,8 @@ export type { RichTextMessageInputLabels } from './components/RichTextMessageInp
 
 export { Separator } from './components/Separator/Separator';
 export type { SeparatorProps } from './components/Separator/Separator';
+export { Tooltip } from './components/Tooltip/Tooltip';
+export type { TooltipProps, TooltipSide } from './components/Tooltip/Tooltip';
 
 export { LanguageSelector } from './components/LanguageSelector/LanguageSelector';
 export type {

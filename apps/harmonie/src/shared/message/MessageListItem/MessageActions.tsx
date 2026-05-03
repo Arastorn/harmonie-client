@@ -29,6 +29,9 @@ export const MessageActions = ({
 
   if (!canEdit && !canDelete && !canReact) return null;
 
+  const visibleActionCount = [canReact, canEdit, canDelete].filter(Boolean).length;
+  const singleActionTooltipSide = visibleActionCount === 1 ? 'left' : undefined;
+
   const handleReactClick = () => {
     const rect = reactButtonRef.current?.getBoundingClientRect();
     if (rect) onPickerOpen(rect);
@@ -38,13 +41,23 @@ export const MessageActions = ({
     <div className="absolute right-2 -top-3 flex gap-0.5 p-0.5 opacity-0 group-hover:opacity-100 transition-opacity z-10 bg-surface-1 border border-border-2 rounded-full shadow-sm">
       {canReact && (
         <div ref={reactButtonRef}>
-          <IconButton size="medium" title={reactLabel} onClick={handleReactClick}>
+          <IconButton
+            size="medium"
+            title={reactLabel}
+            tooltipSide={singleActionTooltipSide}
+            onClick={handleReactClick}
+          >
             <SmilePlus size={16} />
           </IconButton>
         </div>
       )}
       {canEdit && (
-        <IconButton size="medium" title={editLabel} onClick={onEdit}>
+        <IconButton
+          size="medium"
+          title={editLabel}
+          tooltipSide={singleActionTooltipSide}
+          onClick={onEdit}
+        >
           <Pencil size={16} />
         </IconButton>
       )}
