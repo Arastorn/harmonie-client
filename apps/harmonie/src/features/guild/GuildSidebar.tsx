@@ -237,12 +237,12 @@ export const GuildSidebar = () => {
           onDeleted={() => {
             setEditGuild(null);
             fetchGuilds();
-            navigate('/');
+            navigate('/conversations');
           }}
           onLeave={() => {
             setEditGuild(null);
             fetchGuilds();
-            navigate('/');
+            navigate('/conversations');
           }}
         />
       )}

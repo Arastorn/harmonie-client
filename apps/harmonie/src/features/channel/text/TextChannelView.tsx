@@ -8,6 +8,7 @@ import type { GuildMember } from '@/types/guild';
 import { useCurrentGuild, useGuildMembers } from '@/features/guild/GuildContext';
 import { useChannels } from '@/features/channel/ChannelContext';
 import { useRealtime } from '@/features/realtime/RealtimeContext';
+import { REALTIME_CLIENT_METHODS } from '@/features/realtime/constants';
 import { useUser } from '@/features/user/UserContext';
 import { MemberPopover } from '@/shared/members/MemberPopover';
 import { useGuildWorkspace } from '@/features/guild/workspace/GuildWorkspaceProvider';
@@ -404,7 +405,11 @@ export const TextChannelView = () => {
           <MessageComposer
             key={channelId}
             sendFn={(content, fileIds) => sendMessage(channelId!, content, fileIds)}
-            onTypingStart={() => connection?.send('StartTypingChannel', channelId).catch(() => {})}
+            onTypingStart={() =>
+              connection
+                ?.send(REALTIME_CLIENT_METHODS.startTypingChannel, channelId)
+                .catch(() => {})
+            }
             latestEditableMessage={latestOwnMessage}
             onEditingRequested={handleStartEditing}
           />

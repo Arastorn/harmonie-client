@@ -9,6 +9,7 @@ import {
 } from '@/api/conversations';
 import { useMessages } from '@/shared/message/hooks/useMessages';
 import { useTyping } from '@/shared/message/hooks/useTyping';
+import { REALTIME_SERVER_EVENTS } from '@/features/realtime/constants';
 import type { HubConnection } from '@microsoft/signalr';
 
 interface UseConversationMessagesParams {
@@ -26,7 +27,7 @@ export const useConversationMessages = ({
     entityId: conversationId,
     connection,
     currentUserId,
-    eventName: 'ConversationUserTyping',
+    eventName: REALTIME_SERVER_EVENTS.conversationUserTyping,
     entityIdField: 'conversationId',
   });
 
@@ -44,9 +45,9 @@ export const useConversationMessages = ({
       removeReaction: removeConversationReaction,
     },
     ws: {
-      created: 'ConversationMessageCreated',
-      updated: 'ConversationMessageUpdated',
-      deleted: 'ConversationMessageDeleted',
+      created: REALTIME_SERVER_EVENTS.conversationMessageCreated,
+      updated: REALTIME_SERVER_EVENTS.conversationMessageUpdated,
+      deleted: REALTIME_SERVER_EVENTS.conversationMessageDeleted,
       entityIdField: 'conversationId',
     },
     typingUserIds,

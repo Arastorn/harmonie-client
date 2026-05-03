@@ -1,6 +1,14 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { getConversations } from '@/api/conversations';
-import type { Conversation } from '@/types/conversation';
+import { useRealtime } from '@/features/realtime/RealtimeContext';
+import { REALTIME_SERVER_EVENTS } from '@/features/realtime/constants';
+import { useUser } from '@/features/user/UserContext';
+import type {
+  Conversation,
+  ConversationParticipantLeftEvent,
+  ConversationUpdatedEvent,
+} from '@/types/conversation';
 
 interface ConversationContextValue {
   conversations: Conversation[] | null;
@@ -19,6 +27,10 @@ const ConversationContext = createContext<ConversationContextValue>({
 });
 
 export const ConversationProvider = ({ children }: { children: ReactNode }) => {
+  const navigate = useNavigate();
+  const { conversationId: activeConversationId } = useParams<{ conversationId: string }>();
+  const { connection } = useRealtime();
+  const { user } = useUser();
   const [conversations, setConversations] = useState<Conversation[] | null>(null);
 
   const fetchConversations = useCallback(() => {
@@ -38,6 +50,71 @@ export const ConversationProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     fetchConversations();
   }, [fetchConversations]);
+
+  useEffect(() => {
+    if (!connection) return;
+
+    const handleConversationCreated = () => {
+      fetchConversations();
+    };
+
+    const handleConversationUpdated = (event: ConversationUpdatedEvent) => {
+      setConversations((prev) =>
+        prev
+          ? prev.map((conversation) =>
+              conversation.conversationId === event.conversationId
+                ? { ...conversation, name: event.name }
+                : conversation
+            )
+          : prev
+      );
+    };
+
+    const handleConversationParticipantLeft = (event: ConversationParticipantLeftEvent) => {
+      if (event.userId === user?.userId) {
+        setConversations((prev) =>
+          prev
+            ? prev.filter((conversation) => conversation.conversationId !== event.conversationId)
+            : prev
+        );
+        if (event.conversationId === activeConversationId) {
+          navigate('/conversations', { replace: true });
+        }
+        return;
+      }
+
+      setConversations((prev) =>
+        prev
+          ? prev.map((conversation) =>
+              conversation.conversationId === event.conversationId
+                ? {
+                    ...conversation,
+                    participants: conversation.participants.filter(
+                      (participant) => participant.userId !== event.userId
+                    ),
+                  }
+                : conversation
+            )
+          : prev
+      );
+    };
+
+    connection.on(REALTIME_SERVER_EVENTS.conversationCreated, handleConversationCreated);
+    connection.on(REALTIME_SERVER_EVENTS.conversationUpdated, handleConversationUpdated);
+    connection.on(
+      REALTIME_SERVER_EVENTS.conversationParticipantLeft,
+      handleConversationParticipantLeft
+    );
+
+    return () => {
+      connection.off(REALTIME_SERVER_EVENTS.conversationCreated, handleConversationCreated);
+      connection.off(REALTIME_SERVER_EVENTS.conversationUpdated, handleConversationUpdated);
+      connection.off(
+        REALTIME_SERVER_EVENTS.conversationParticipantLeft,
+        handleConversationParticipantLeft
+      );
+    };
+  }, [activeConversationId, connection, fetchConversations, navigate, user?.userId]);
 
   const addConversation = (conversation: Conversation) =>
     setConversations((prev) =>

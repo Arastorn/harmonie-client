@@ -7,9 +7,9 @@ export interface AvatarAppearance {
 export interface UserProfile {
   userId: string;
   username: string;
-  displayName?: string;
+  displayName?: string | null;
   bio?: string;
-  avatarFileId?: string;
+  avatarFileId?: string | null;
   avatar?: AvatarAppearance;
   theme: string;
   language: string | null;
