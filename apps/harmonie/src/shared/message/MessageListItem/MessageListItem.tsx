@@ -97,7 +97,7 @@ export const MessageListItem = <TAuthor extends MessageAuthor = MessageAuthor>({
       data-message-id={message.messageId}
       onContextMenu={handleContextMenu}
       className={[
-        'group flex items-start gap-3 relative px-2 -mx-2 rounded-sm',
+        'group flex items-start gap-2 sm:gap-3 relative px-1 sm:px-2 -mx-1 sm:-mx-2 rounded-sm min-w-0',
         'hover:bg-surface-2 transition-colors',
         isEditing || isMenuOpen || pickerAnchorRect ? 'bg-surface-3' : '',
         isSelected ? 'bg-surface-3 ring-1 ring-primary/60' : '',
@@ -127,10 +127,15 @@ export const MessageListItem = <TAuthor extends MessageAuthor = MessageAuthor>({
       <div className="flex-1 min-w-0">
         {!grouped && (
           <div
-            className={['flex items-baseline gap-2 mb-0.5', member ? '' : 'opacity-70'].join(' ')}
+            className={[
+              'flex flex-wrap items-baseline gap-x-2 gap-y-0.5 mb-0.5 min-w-0',
+              member ? '' : 'opacity-70',
+            ].join(' ')}
           >
-            <span className="text-sm font-semibold text-text-1">{label}</span>
-            <span className="text-xs text-text-3">
+            <span className="text-sm font-semibold text-text-1 min-w-0 max-w-full truncate">
+              {label}
+            </span>
+            <span className="text-xs text-text-3 shrink-0">
               {formatContextualDateTime(message.createdAtUtc, i18n.language, t)}
             </span>
           </div>

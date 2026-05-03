@@ -16,18 +16,20 @@ export const AttachmentImage = ({
   topRightAction,
 }: AttachmentImageProps) => {
   if (!src) {
-    return <div className="w-48 h-32 rounded-md bg-surface-3 animate-pulse shrink-0" />;
+    return (
+      <div className="w-full max-w-[42rem] aspect-[4/3] rounded-md bg-surface-3 animate-pulse shrink-0" />
+    );
   }
 
   return (
-    <div className="relative shrink-0 group/img">
+    <div className="relative w-full max-w-[42rem] min-w-0 shrink group/img">
       <button
         type="button"
         onClick={onOpen}
-        className="rounded-md overflow-hidden border border-border-2 hover:opacity-90 transition-opacity cursor-zoom-in focus:outline-none focus-visible:ring-2 focus-visible:ring-primary block"
+        className="w-full rounded-md overflow-hidden border border-border-2 hover:opacity-90 transition-opacity cursor-zoom-in focus:outline-none focus-visible:ring-2 focus-visible:ring-primary block"
         aria-label={openLabel}
       >
-        <img src={src} alt={alt} className="max-w-64 max-h-48 object-cover block" />
+        <img src={src} alt={alt} className="w-full max-h-[60vh] object-contain block" />
       </button>
       {topRightAction && (
         <div className="absolute top-1 right-1 opacity-0 group-hover/img:opacity-100 transition-opacity">

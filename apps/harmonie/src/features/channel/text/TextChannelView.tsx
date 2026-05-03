@@ -319,7 +319,7 @@ export const TextChannelView = () => {
         <div className="relative flex-1 min-h-0">
           <div
             ref={scrollRef}
-            className="h-full overflow-y-auto px-4 py-4 gap-0"
+            className="h-full overflow-y-auto px-2 sm:px-4 py-4 gap-0"
             onScroll={handleMessagesScroll}
           >
             {messages.length === 0 ? (
