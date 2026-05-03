@@ -321,6 +321,7 @@ export const fr = {
       'mint-linen': 'Menthe Lin',
       'forest-obsidian': 'Forêt Obsidienne',
       'midnight-obsidian': 'Minuit Obsidien',
+      'emerald-obsidian': 'Émeraude Obsidienne',
       'crimson-obsidian': 'Cramoisi Obsidien',
       'amethyst-obsidian': 'Améthyste Obsidienne',
       'rose-obsidian': 'Rose Obsidien',

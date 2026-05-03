@@ -1,32 +1,32 @@
 [data-theme='rose-obsidian'] {
   /* ── Brand colors ── */
-  --color-primary: #d4789a;
-  --color-primary-fg: #150e11;
-  --color-secondary: #3d2a32;
-  --color-secondary-fg: #d4789a;
-  --color-tertiary: #1f1418;
-  --color-tertiary-fg: #a87890;
+  --color-primary: #d87b9f;
+  --color-primary-fg: #120d10;
+  --color-secondary: #422d37;
+  --color-secondary-fg: #d87b9f;
+  --color-tertiary: #1d1418;
+  --color-tertiary-fg: #b1859c;
 
   /* ── Background & surfaces ── */
-  --color-background: #150e11;
-  --color-surface-1: #1f1418;
-  --color-surface-2: #291b22;
-  --color-surface-3: #3d2a32;
-  --color-surface-hover: #3d2a32;
+  --color-background: #120d10;
+  --color-surface-1: #1d1418;
+  --color-surface-2: #2a1c23;
+  --color-surface-3: #422d37;
+  --color-surface-hover: #422d37;
 
   /* ── Borders ── */
-  --color-border-1: #f0e0e8;
+  --color-border-1: #f6edf2;
   --color-border-2: rgba(220, 180, 200, 0.12);
 
   /* ── Text ── */
-  --color-text-1: #f5eaf0;
-  --color-text-2: #ccb0bc;
-  --color-text-3: #a87890;
-  --color-text-4: #6a4858;
+  --color-text-1: #f6edf2;
+  --color-text-2: #d4bac6;
+  --color-text-3: #b1859c;
+  --color-text-4: #604553;
 
   /* ── Categories (tags, badges) ── */
-  --color-cat-1: #3d2a32;
-  --color-cat-1-fg: #d4789a;
+  --color-cat-1: #422d37;
+  --color-cat-1-fg: #d87b9f;
   --color-cat-2: #1e2a20;
   --color-cat-2-fg: #8aad90;
   --color-cat-3: #2d2840;
@@ -44,5 +44,5 @@
   --color-status-online: #72b882;
   --color-status-away: #c8b060;
   --color-status-busy: #c07070;
-  --color-status-offline: #6a4858;
+  --color-status-offline: #604553;
 }
