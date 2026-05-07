@@ -4,6 +4,7 @@ import { X } from 'lucide-react';
 import { RichTextMessageInput } from '@harmonie/ui';
 import { deleteFile, uploadFile } from '@/api/files';
 import type { Message } from '@/types/channel';
+import { useMessageDraft } from './hooks/useMessageDraft';
 import { useMessageFormattingPreference } from './hooks/useMessageFormattingPreference';
 import { getMessagePayloadContent, stripHtmlToText } from './utils/messageHtml';
 import { getRichTextMessageInputLabels } from './utils/richTextMessageInputLabels';
@@ -29,6 +30,7 @@ interface PendingAttachment {
 }
 
 interface MessageComposerProps {
+  draftKey?: string;
   sendFn: (content: string, attachmentFileIds: string[]) => Promise<unknown>;
   onTypingStart?: () => void;
   latestEditableMessage?: Message | null;
@@ -36,13 +38,14 @@ interface MessageComposerProps {
 }
 
 export const MessageComposer = ({
+  draftKey,
   sendFn,
   onTypingStart,
   latestEditableMessage = null,
   onEditingRequested,
 }: MessageComposerProps) => {
   const { t } = useTranslation();
-  const [content, setContent] = useState('');
+  const { clearDraft, content, setContent } = useMessageDraft(draftKey);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
   const [pendingAttachments, setPendingAttachments] = useState<PendingAttachment[]>([]);
@@ -159,7 +162,7 @@ export const MessageComposer = ({
 
     try {
       await sendFn(payloadContent, attachmentFileIds);
-      setContent('');
+      clearDraft();
       setPendingAttachments((prev) => {
         prev.forEach((a) => {
           if (a.previewUrl) URL.revokeObjectURL(a.previewUrl);
@@ -253,6 +256,8 @@ export const MessageComposer = ({
           onAttachClick={() => fileInputRef.current?.click()}
           showFormattingTools={formattingOpen}
           onToggleFormattingTools={toggleFormattingOpen}
+          autoFocus
+          autoFocusPlacement="end"
           submitDisabled={!canSend}
           labels={inputLabels}
         />
