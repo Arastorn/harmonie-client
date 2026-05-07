@@ -18,21 +18,21 @@ export const useRichTextLinks = () => {
     setLinkBubble(null);
   }, []);
 
-  const updateLinkBubble = useCallback(
-    (quill: Quill, range: QuillRange) => {
-      if (!range || range.length > 0) {
+  const showLinkBubble = useCallback(
+    (quill: Quill, range: QuillRange, selectLink = false) => {
+      if (!range) {
         clearLinkBubble();
         return;
       }
 
-      const formats = quill.getFormat(range);
+      const formats = quill.getFormat(range.index, 1);
       const url = typeof formats.link === 'string' ? formats.link : '';
       if (!url) {
         clearLinkBubble();
         return;
       }
 
-      const linkRange = getExpandedLinkRange(quill, range, url);
+      const linkRange = getExpandedLinkRange(quill, { index: range.index, length: 0 }, url);
       const startBounds = quill.getBounds(linkRange.index) ?? {
         top: 0,
         left: 0,
@@ -48,6 +48,9 @@ export const useRichTextLinks = () => {
         startBounds.left + (endBounds.left + endBounds.width - startBounds.left) / 2;
 
       linkBubbleRangeRef.current = linkRange;
+      if (selectLink) {
+        quill.setSelection(linkRange.index, linkRange.length, 'silent');
+      }
       setLinkBubble({
         url,
         top: startBounds.top - 32,
@@ -55,6 +58,18 @@ export const useRichTextLinks = () => {
       });
     },
     [clearLinkBubble]
+  );
+
+  const updateLinkBubble = useCallback(
+    (quill: Quill, range: QuillRange) => {
+      if (!range || range.length > 0) {
+        clearLinkBubble();
+        return;
+      }
+
+      showLinkBubble(quill, range);
+    },
+    [clearLinkBubble, showLinkBubble]
   );
 
   const closeLinkDialog = useCallback(() => {
@@ -125,6 +140,7 @@ export const useRichTextLinks = () => {
     removeCurrentLink,
     setLinkText,
     setLinkUrl,
+    showLinkBubble,
     submitLinkDialog,
     updateLinkBubble,
   };

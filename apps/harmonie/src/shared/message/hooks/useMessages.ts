@@ -9,6 +9,7 @@ interface WsMessageCreatedEvent {
   authorUserId: string;
   content: string;
   attachments: Message['attachments'];
+  linkPreviews?: Message['linkPreviews'];
   createdAtUtc: string;
   [key: string]: unknown;
 }
@@ -169,7 +170,7 @@ export const useMessages = ({
           content: event.content,
           attachments: event.attachments ?? [],
           reactions: [],
-          previews: [],
+          linkPreviews: event.linkPreviews ?? null,
           createdAtUtc: event.createdAtUtc,
           updatedAtUtc: null,
         },
@@ -291,7 +292,7 @@ export const useMessages = ({
       if (eventEntityId !== entityId) return;
       setMessages((prev) =>
         prev.map((m) =>
-          m.messageId === event.messageId ? { ...m, previews: event.previews ?? [] } : m
+          m.messageId === event.messageId ? { ...m, linkPreviews: event.previews ?? [] } : m
         )
       );
     };

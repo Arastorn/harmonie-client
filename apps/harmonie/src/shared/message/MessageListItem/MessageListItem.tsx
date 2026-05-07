@@ -12,6 +12,7 @@ import { MessageActions } from './MessageActions';
 import { MessageContent } from './MessageContent';
 import { MessageEmojiPicker } from './MessageEmojiPicker';
 import { MessageInlineEditor } from './MessageInlineEditor';
+import { MessageLinkPreviews } from './MessageLinkPreviews';
 
 interface MessageListItemProps<TAuthor extends MessageAuthor = MessageAuthor> {
   message: Message;
@@ -165,6 +166,7 @@ export const MessageListItem = <TAuthor extends MessageAuthor = MessageAuthor>({
                   : undefined
               }
             />
+            <MessageLinkPreviews previews={message.linkPreviews} />
           </>
         )}
         <MessageReactions

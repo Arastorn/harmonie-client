@@ -33,7 +33,7 @@ export interface Message {
   content: string | null;
   attachments: MessageAttachment[];
   reactions: MessageReaction[];
-  previews?: LinkPreview[];
+  linkPreviews?: LinkPreview[] | null;
   createdAtUtc: string;
   updatedAtUtc: string | null;
 }

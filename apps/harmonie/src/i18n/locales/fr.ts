@@ -220,6 +220,8 @@ export const fr = {
       reactionUsersError: 'Impossible de charger les réactions. Réessaie.',
       reactionUsersLoadMore: 'Charger plus',
       download: 'Télécharger',
+      openLinkPreview: 'Ouvrir l’aperçu du lien {{title}}',
+      linkPreviewImageAlt: 'Image de l’aperçu du lien {{title}}',
       openImage: "Voir l'image",
       closeImage: 'Fermer',
       zoomIn: 'Agrandir',
