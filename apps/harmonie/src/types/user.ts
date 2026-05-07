@@ -23,3 +23,13 @@ export interface PatchMyProfileInput {
   theme?: string | null;
   language?: string | null;
 }
+
+export interface UserProfileUpdatedEvent {
+  userId: string;
+  username: string;
+  displayName: string | null;
+  avatarFileId: string | null;
+  avatarColor: string | null;
+  avatarIcon: string | null;
+  avatarBg: string | null;
+}

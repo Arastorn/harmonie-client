@@ -1,8 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useMatch, useParams } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { useChannels } from '@/features/channel/ChannelContext';
-import { useGuilds } from '@/features/guild/GuildContext';
 import { useRealtime } from '@/features/realtime/RealtimeContext';
 import { useUser } from '@/features/user/UserContext';
 import type { MessageCreatedEvent } from '@/types/channel';
@@ -43,10 +40,15 @@ const toSenderName = (
   return undefined;
 };
 
+const toTitlePart = (value: string | null | undefined, fallback: string) => {
+  const trimmed = value?.trim();
+  return trimmed || fallback;
+};
+
+const isDirectConversation = (conversationType: string) =>
+  conversationType.trim().toLowerCase() === 'direct';
+
 export const MessageActivityProvider = ({ children }: { children: ReactNode }) => {
-  const { t } = useTranslation();
-  const { guilds } = useGuilds();
-  const { channels } = useChannels();
   const { connection } = useRealtime();
   const { user } = useUser();
   const { guildId: currentRouteGuildId } = useParams<{ guildId: string }>();
@@ -88,12 +90,14 @@ export const MessageActivityProvider = ({ children }: { children: ReactNode }) =
     const handleMessageCreated = (event: MessageCreatedEvent) => {
       if (event.authorUserId === user?.userId) return;
 
-      const guildName =
-        guilds.find((guild) => guild.guildId === event.guildId)?.name ?? event.guildId;
-      const channelName =
-        channels?.find((channel) => channel.channelId === event.channelId)?.name ?? event.channelId;
       const targetUrl = `/guilds/${event.guildId}/channels/${event.channelId}`;
-      const title = `Harmonie | ${channelName} | ${guildName}`;
+      const senderName =
+        toSenderName(event.authorUserId, event.authorDisplayName, event.authorUsername) ??
+        event.authorUserId;
+      const title = `${toTitlePart(event.guildName, event.guildId)} | ${toTitlePart(
+        event.channelName,
+        event.channelId
+      )} | ${senderName}`;
 
       const notify = () =>
         showBrowserNotification({
@@ -101,11 +105,6 @@ export const MessageActivityProvider = ({ children }: { children: ReactNode }) =
           content: event.content,
           attachments: event.attachments,
           targetUrl,
-          senderName: toSenderName(
-            event.authorUserId,
-            event.authorDisplayName,
-            event.authorUsername
-          ),
           title,
         });
 
@@ -135,7 +134,7 @@ export const MessageActivityProvider = ({ children }: { children: ReactNode }) =
 
     connection.on(REALTIME_SERVER_EVENTS.messageCreated, handleMessageCreated);
     return () => connection.off(REALTIME_SERVER_EVENTS.messageCreated, handleMessageCreated);
-  }, [channels, connection, currentRouteGuildId, activeTextChannelId, guilds, user?.userId]);
+  }, [connection, currentRouteGuildId, activeTextChannelId, user?.userId]);
 
   // Conversation messages
   useEffect(() => {
@@ -145,7 +144,14 @@ export const MessageActivityProvider = ({ children }: { children: ReactNode }) =
       if (event.authorUserId === user?.userId) return;
 
       const targetUrl = `/conversations/${event.conversationId}`;
-      const title = `Harmonie | ${t('conversation.home')}`;
+      const senderName =
+        toSenderName(event.authorUserId, event.authorDisplayName, event.authorUsername) ??
+        event.authorUserId;
+      const conversationName = event.conversationName?.trim();
+      const title =
+        isDirectConversation(event.conversationType) || !conversationName
+          ? senderName
+          : `${conversationName} | ${senderName}`;
 
       const notify = () =>
         showBrowserNotification({
@@ -153,11 +159,6 @@ export const MessageActivityProvider = ({ children }: { children: ReactNode }) =
           content: event.content,
           attachments: event.attachments ?? [],
           targetUrl,
-          senderName: toSenderName(
-            event.authorUserId,
-            event.authorDisplayName,
-            event.authorUsername
-          ),
           title,
         });
 
@@ -184,7 +185,7 @@ export const MessageActivityProvider = ({ children }: { children: ReactNode }) =
         REALTIME_SERVER_EVENTS.conversationMessageCreated,
         handleConversationMessageCreated
       );
-  }, [connection, activeConversationId, t, user?.userId]);
+  }, [connection, activeConversationId, user?.userId]);
 
   useEffect(() => {
     if (!activeTextChannelId) return;

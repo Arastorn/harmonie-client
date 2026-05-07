@@ -5,9 +5,11 @@ import { VoicePresenceProvider } from '@/features/channel/voice/VoicePresenceCon
 import { ChannelProvider } from '@/features/channel/ChannelContext';
 import { MessageActivityProvider } from '@/features/realtime/MessageActivityContext';
 import { ConversationProvider } from '@/features/conversation/ConversationContext';
+import { UserProfileRealtimeSync } from '@/features/user/UserProfileRealtimeSync';
 
 export const MainLayout = () => (
   <GuildProvider>
+    <UserProfileRealtimeSync />
     <GuildWorkspaceProvider>
       <ConversationProvider>
         <VoicePresenceProvider>

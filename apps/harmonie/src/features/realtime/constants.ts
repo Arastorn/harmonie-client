@@ -33,6 +33,7 @@ export const REALTIME_SERVER_EVENTS = {
   youWereKicked: 'YouWereKicked',
   memberRoleUpdated: 'MemberRoleUpdated',
   userPresenceChanged: 'UserPresenceChanged',
+  userProfileUpdated: 'UserProfileUpdated',
   reactionAdded: 'ReactionAdded',
   reactionRemoved: 'ReactionRemoved',
   messagePreviewUpdated: 'MessagePreviewUpdated',
