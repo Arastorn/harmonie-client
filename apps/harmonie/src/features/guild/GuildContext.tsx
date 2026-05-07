@@ -22,6 +22,8 @@ import type {
   MemberRoleUpdatedEvent,
   UserPresenceChangedEvent,
 } from '@/types/guild';
+import type { UserProfileUpdatedEvent } from '@/types/user';
+import { applyUserProfileUpdate } from '@/features/realtime/userProfileRealtime';
 
 const MEMBERS_TTL_MS = 5 * 60 * 1000;
 
@@ -176,6 +178,23 @@ export const GuildProvider = ({ children }: { children: ReactNode }) => {
       });
     };
 
+    const handleUserProfileUpdated = (event: UserProfileUpdatedEvent) => {
+      setMembersByGuild((prev) => {
+        let changed = false;
+        const next = Object.fromEntries(
+          Object.entries(prev).map(([guildId, entry]) => {
+            const members = entry.members.map((member) => {
+              if (member.userId !== event.userId) return member;
+              changed = true;
+              return applyUserProfileUpdate(member, event);
+            });
+            return [guildId, { ...entry, members }];
+          })
+        );
+        return changed ? next : prev;
+      });
+    };
+
     connection.on(REALTIME_SERVER_EVENTS.guildDeleted, handleGuildDeleted);
     connection.on(REALTIME_SERVER_EVENTS.youWereBanned, handleYouWereRemoved);
     connection.on(REALTIME_SERVER_EVENTS.youWereKicked, handleYouWereRemoved);
@@ -190,6 +209,7 @@ export const GuildProvider = ({ children }: { children: ReactNode }) => {
     connection.on(REALTIME_SERVER_EVENTS.memberRemoved, handleMemberChanged);
     connection.on(REALTIME_SERVER_EVENTS.memberRoleUpdated, handleMemberRoleUpdated);
     connection.on(REALTIME_SERVER_EVENTS.userPresenceChanged, handleUserPresenceChanged);
+    connection.on(REALTIME_SERVER_EVENTS.userProfileUpdated, handleUserProfileUpdated);
 
     return () => {
       connection.off(REALTIME_SERVER_EVENTS.guildDeleted, handleGuildDeleted);
@@ -206,6 +226,7 @@ export const GuildProvider = ({ children }: { children: ReactNode }) => {
       connection.off(REALTIME_SERVER_EVENTS.memberRemoved, handleMemberChanged);
       connection.off(REALTIME_SERVER_EVENTS.memberRoleUpdated, handleMemberRoleUpdated);
       connection.off(REALTIME_SERVER_EVENTS.userPresenceChanged, handleUserPresenceChanged);
+      connection.off(REALTIME_SERVER_EVENTS.userProfileUpdated, handleUserProfileUpdated);
     };
   }, [activeGuildId, connection, fetchGuildMembers, fetchGuilds, navigate, user?.userId]);
 

@@ -9,6 +9,8 @@ import type {
   ConversationParticipantLeftEvent,
   ConversationUpdatedEvent,
 } from '@/types/conversation';
+import type { UserProfileUpdatedEvent } from '@/types/user';
+import { applyUserProfileUpdate } from '@/features/realtime/userProfileRealtime';
 
 interface ConversationContextValue {
   conversations: Conversation[] | null;
@@ -111,12 +113,28 @@ export const ConversationProvider = ({ children }: { children: ReactNode }) => {
       );
     };
 
+    const handleUserProfileUpdated = (event: UserProfileUpdatedEvent) => {
+      setConversations((prev) =>
+        prev
+          ? prev.map((conversation) => ({
+              ...conversation,
+              participants: conversation.participants.map((participant) =>
+                participant.userId === event.userId
+                  ? applyUserProfileUpdate(participant, event)
+                  : participant
+              ),
+            }))
+          : prev
+      );
+    };
+
     connection.on(REALTIME_SERVER_EVENTS.conversationCreated, handleConversationCreated);
     connection.on(REALTIME_SERVER_EVENTS.conversationUpdated, handleConversationUpdated);
     connection.on(
       REALTIME_SERVER_EVENTS.conversationParticipantLeft,
       handleConversationParticipantLeft
     );
+    connection.on(REALTIME_SERVER_EVENTS.userProfileUpdated, handleUserProfileUpdated);
 
     return () => {
       connection.off(REALTIME_SERVER_EVENTS.conversationCreated, handleConversationCreated);
@@ -125,6 +143,7 @@ export const ConversationProvider = ({ children }: { children: ReactNode }) => {
         REALTIME_SERVER_EVENTS.conversationParticipantLeft,
         handleConversationParticipantLeft
       );
+      connection.off(REALTIME_SERVER_EVENTS.userProfileUpdated, handleUserProfileUpdated);
     };
   }, [activeConversationId, connection, fetchConversations, navigate, user?.userId]);
 

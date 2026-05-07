@@ -30,9 +30,11 @@ export interface ConversationList {
 
 export interface ConversationMessageCreatedEvent extends Omit<
   MessageCreatedEvent,
-  'channelId' | 'guildId'
+  'channelId' | 'channelName' | 'guildId' | 'guildName'
 > {
   conversationId: string;
+  conversationName: string | null;
+  conversationType: string;
 }
 
 export interface ConversationMessageDeletedEvent extends Omit<

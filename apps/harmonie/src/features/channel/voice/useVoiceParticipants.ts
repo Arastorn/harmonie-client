@@ -8,6 +8,8 @@ import type {
   VoiceParticipantJoinedEvent,
   VoiceParticipantLeftEvent,
 } from '@/types/voice';
+import type { UserProfileUpdatedEvent } from '@/types/user';
+import { applyVoiceParticipantProfileUpdate } from '@/features/realtime/userProfileRealtime';
 
 export const useVoiceParticipants = () => {
   const { connection } = useRealtime();
@@ -114,12 +116,32 @@ export const useVoiceParticipants = () => {
       });
     };
 
+    const handleUserProfileUpdated = (event: UserProfileUpdatedEvent) => {
+      setParticipants((prev) => {
+        let changed = false;
+        const next = new Map<string, VoiceParticipant[]>();
+        prev.forEach((participants, channelId) => {
+          next.set(
+            channelId,
+            participants.map((participant) => {
+              if (participant.userId !== event.userId) return participant;
+              changed = true;
+              return applyVoiceParticipantProfileUpdate(participant, event);
+            })
+          );
+        });
+        return changed ? next : prev;
+      });
+    };
+
     connection.on(REALTIME_SERVER_EVENTS.voiceParticipantJoined, handleJoined);
     connection.on(REALTIME_SERVER_EVENTS.voiceParticipantLeft, handleLeft);
+    connection.on(REALTIME_SERVER_EVENTS.userProfileUpdated, handleUserProfileUpdated);
 
     return () => {
       connection.off(REALTIME_SERVER_EVENTS.voiceParticipantJoined, handleJoined);
       connection.off(REALTIME_SERVER_EVENTS.voiceParticipantLeft, handleLeft);
+      connection.off(REALTIME_SERVER_EVENTS.userProfileUpdated, handleUserProfileUpdated);
     };
   }, [connection]);
 
