@@ -7,7 +7,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { useLocation } from 'react-router-dom';
+import { matchPath, useLocation } from 'react-router-dom';
 
 interface GuildWorkspaceContextValue {
   membersOpen: boolean;
@@ -69,11 +69,14 @@ export const GuildWorkspaceProvider = ({ children }: GuildWorkspaceProviderProps
     setMembersOpen(false);
   }, []);
 
+  const isTextChannelRoute =
+    matchPath('/guilds/:guildId/channels/:channelId', location.pathname) !== null;
+
   useEffect(() => {
-    if (location.pathname.includes('/voice/')) {
+    if (!isTextChannelRoute) {
       setMembersOpen(false);
     }
-  }, [location.pathname]);
+  }, [isTextChannelRoute]);
 
   const value = useMemo<GuildWorkspaceContextValue>(
     () => ({

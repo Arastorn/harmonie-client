@@ -12,18 +12,22 @@ import type {
 
 interface ConversationContextValue {
   conversations: Conversation[] | null;
+  membersPanelOpenByConversationId: Record<string, boolean>;
   fetchConversations: () => void;
   addConversation: (conversation: Conversation) => void;
   updateConversation: (conversation: Conversation) => void;
   removeConversation: (conversationId: string) => void;
+  setConversationMembersPanelOpen: (conversationId: string, open: boolean) => void;
 }
 
 const ConversationContext = createContext<ConversationContextValue>({
   conversations: null,
+  membersPanelOpenByConversationId: {},
   fetchConversations: () => {},
   addConversation: () => {},
   updateConversation: () => {},
   removeConversation: () => {},
+  setConversationMembersPanelOpen: () => {},
 });
 
 export const ConversationProvider = ({ children }: { children: ReactNode }) => {
@@ -32,6 +36,9 @@ export const ConversationProvider = ({ children }: { children: ReactNode }) => {
   const { connection } = useRealtime();
   const { user } = useUser();
   const [conversations, setConversations] = useState<Conversation[] | null>(null);
+  const [membersPanelOpenByConversationId, setMembersPanelOpenByConversationId] = useState<
+    Record<string, boolean>
+  >({});
 
   const fetchConversations = useCallback(() => {
     getConversations()
@@ -80,6 +87,11 @@ export const ConversationProvider = ({ children }: { children: ReactNode }) => {
         if (event.conversationId === activeConversationId) {
           navigate('/conversations', { replace: true });
         }
+        setMembersPanelOpenByConversationId((prev) => {
+          const next = { ...prev };
+          delete next[event.conversationId];
+          return next;
+        });
         return;
       }
 
@@ -132,19 +144,31 @@ export const ConversationProvider = ({ children }: { children: ReactNode }) => {
         : null
     );
 
-  const removeConversation = (conversationId: string) =>
+  const removeConversation = (conversationId: string) => {
     setConversations((prev) =>
       prev ? prev.filter((c) => c.conversationId !== conversationId) : null
     );
+    setMembersPanelOpenByConversationId((prev) => {
+      const next = { ...prev };
+      delete next[conversationId];
+      return next;
+    });
+  };
+
+  const setConversationMembersPanelOpen = useCallback((conversationId: string, open: boolean) => {
+    setMembersPanelOpenByConversationId((prev) => ({ ...prev, [conversationId]: open }));
+  }, []);
 
   return (
     <ConversationContext.Provider
       value={{
         conversations,
+        membersPanelOpenByConversationId,
         fetchConversations,
         addConversation,
         updateConversation,
         removeConversation,
+        setConversationMembersPanelOpen,
       }}
     >
       {children}
@@ -157,4 +181,28 @@ export const useConversations = () => useContext(ConversationContext);
 export const useConversation = (conversationId: string | undefined) => {
   const { conversations } = useContext(ConversationContext);
   return conversations?.find((c) => c.conversationId === conversationId) ?? null;
+};
+
+export const useConversationMembersPanel = (conversationId: string | undefined) => {
+  const { membersPanelOpenByConversationId, setConversationMembersPanelOpen } =
+    useContext(ConversationContext);
+
+  const membersOpen = conversationId
+    ? membersPanelOpenByConversationId[conversationId] === true
+    : false;
+
+  const setMembersOpen = useCallback(
+    (open: boolean) => {
+      if (!conversationId) return;
+      setConversationMembersPanelOpen(conversationId, open);
+    },
+    [conversationId, setConversationMembersPanelOpen]
+  );
+
+  const toggleMembersOpen = useCallback(() => {
+    if (!conversationId) return;
+    setConversationMembersPanelOpen(conversationId, !membersOpen);
+  }, [conversationId, membersOpen, setConversationMembersPanelOpen]);
+
+  return { membersOpen, setMembersOpen, toggleMembersOpen };
 };
