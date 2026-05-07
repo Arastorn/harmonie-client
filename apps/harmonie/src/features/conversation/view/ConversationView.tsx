@@ -358,6 +358,7 @@ export const ConversationView = () => {
           <div className="mt-auto flex items-end px-4 pb-4">
             <MessageComposer
               key={conversationId}
+              draftKey={`conversation:${conversationId}`}
               sendFn={(content, fileIds) =>
                 sendConversationMessage(conversationId, content, fileIds)
               }

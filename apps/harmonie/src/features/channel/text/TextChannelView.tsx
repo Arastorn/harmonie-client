@@ -396,6 +396,7 @@ export const TextChannelView = () => {
         <div className="mt-auto flex items-end px-4 pb-4">
           <MessageComposer
             key={channelId}
+            draftKey={`channel:${channelId}`}
             sendFn={(content, fileIds) => sendMessage(channelId!, content, fileIds)}
             onTypingStart={() =>
               connection
