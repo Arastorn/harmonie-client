@@ -67,6 +67,7 @@ export const RichTextMessageInput = ({
     emojiButtonRef,
     emojiPickerRef,
     handleEditorKeyDown,
+    handleEditorMouseUp,
     handleEditorPasteCapture,
     handleInsertEmoji,
     handleSelectAutocomplete,
@@ -123,6 +124,7 @@ export const RichTextMessageInput = ({
         <div
           ref={wrapperRef}
           onKeyDownCapture={handleEditorKeyDown}
+          onMouseUpCapture={handleEditorMouseUp}
           onPasteCapture={handleEditorPasteCapture}
           className={[
             'relative',

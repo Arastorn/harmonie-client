@@ -4,6 +4,7 @@ import {
   useState,
   type ClipboardEvent,
   type KeyboardEvent as ReactKeyboardEvent,
+  type MouseEvent as ReactMouseEvent,
 } from 'react';
 import Quill from 'quill';
 import {
@@ -89,6 +90,7 @@ export const useRichTextMessageInput = ({
     removeCurrentLink,
     setLinkText,
     setLinkUrl,
+    showLinkBubble,
     submitLinkDialog,
     updateLinkBubble,
   } = useRichTextLinks();
@@ -162,7 +164,7 @@ export const useRichTextMessageInput = ({
       setSelectedRange(nextRange);
       setActiveFormats(nextRange ? quill.getFormat(nextRange) : {});
       updateAutocomplete(quill, nextRange);
-      updateLinkBubble(quill, nextRange);
+      clearLinkBubble();
       syncFromEditor(quill);
     };
 
@@ -171,7 +173,7 @@ export const useRichTextMessageInput = ({
       setSelectedRange(range);
       setActiveFormats(range ? quill.getFormat(range) : {});
       updateAutocomplete(quill, range);
-      updateLinkBubble(quill, range);
+      clearLinkBubble();
     };
 
     quill.on('text-change', handleTextChange);
@@ -182,7 +184,7 @@ export const useRichTextMessageInput = ({
       quill.off('selection-change', handleSelectionChange);
       quillRef.current = null;
     };
-  }, [updateAutocomplete, updateLinkBubble]);
+  }, [clearLinkBubble, updateAutocomplete]);
 
   useEffect(() => {
     const quill = quillRef.current;
@@ -219,8 +221,8 @@ export const useRichTextMessageInput = ({
     const nextRange = quill.getSelection();
     setSelectedRange(nextRange);
     setActiveFormats(nextRange ? quill.getFormat(nextRange) : {});
-    updateLinkBubble(quill, nextRange);
-  }, [value, updateLinkBubble]);
+    clearLinkBubble();
+  }, [value, clearLinkBubble]);
 
   useEffect(() => {
     if (!emojiAnchorRect && autocompleteResults.length === 0) return;
@@ -394,6 +396,25 @@ export const useRichTextMessageInput = ({
     quill.setSelection(range.index + url.length, 0, 'silent');
   };
 
+  const handleEditorMouseUp = (event: ReactMouseEvent<HTMLDivElement>) => {
+    if (event.button !== 0) return;
+
+    const quill = quillRef.current;
+    const range = quill?.getSelection();
+    if (!quill || !range || range.length > 0) return;
+
+    const formats = quill.getFormat(range.index, 1);
+    if (typeof formats.link !== 'string') return;
+
+    setSelectionToolbarDismissed(true);
+    showLinkBubble(quill, range, true);
+
+    const nextRange = quill.getSelection();
+    setSelectedRange(nextRange);
+    setActiveFormats(nextRange ? quill.getFormat(nextRange) : {});
+    clearAutocomplete();
+  };
+
   const pickerStyle = (() => {
     if (!emojiAnchorRect) return undefined;
     let top = emojiAnchorRect.top - PICKER_HEIGHT - PICKER_OFFSET;
@@ -420,6 +441,7 @@ export const useRichTextMessageInput = ({
     emojiButtonRef,
     emojiPickerRef,
     handleEditorKeyDown,
+    handleEditorMouseUp,
     handleEditorPasteCapture,
     handleInsertEmoji,
     handleSelectAutocomplete: (result: AutocompleteResult) => {
