@@ -112,8 +112,18 @@ export const useMessages = ({
   const dismissNewMessagesSeparator = useCallback(() => setLastReadMessageId(null), []);
 
   useEffect(() => {
-    if (!entityId || !ready) return;
+    if (!entityId || !ready) {
+      setMessages([]);
+      setLoading(true);
+      setError(false);
+      setNextCursor(null);
+      setLastReadMessageId(null);
+      return;
+    }
 
+    let cancelled = false;
+
+    setMessages([]);
     setLoading(true);
     setError(false);
     setNextCursor(null);
@@ -122,6 +132,7 @@ export const useMessages = ({
     apiRef.current
       .fetchMessages(entityId)
       .then((data) => {
+        if (cancelled) return;
         const sorted = sortMessagesAsc(data.items);
         setMessages(sorted);
         setNextCursor(data.nextCursor);
@@ -131,8 +142,16 @@ export const useMessages = ({
         setLastReadMessageId(hasUnread ? data.lastReadMessageId : null);
         if (lastMessage) markAsRead(lastMessage.messageId).catch(() => {});
       })
-      .catch(() => setError(true))
-      .finally(() => setLoading(false));
+      .catch(() => {
+        if (!cancelled) setError(true);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [entityId, ready, markAsRead]);
 
   useEffect(() => {

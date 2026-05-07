@@ -274,22 +274,6 @@ export const TextChannelView = () => {
     return <Navigate to={`/guilds/${guildId}`} replace />;
   }
 
-  if (loading) {
-    return (
-      <div className="flex h-full items-center justify-center text-text-3 text-sm bg-surface-1 rounded-md">
-        {t('channel.messages.loading')}
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex h-full items-center justify-center text-error-fg text-sm bg-surface-1 rounded-md">
-        {t('channel.messages.error')}
-      </div>
-    );
-  }
-
   return (
     <>
       <div className="flex flex-col h-full bg-surface-1 rounded-md overflow-hidden">
@@ -322,7 +306,15 @@ export const TextChannelView = () => {
             className="h-full overflow-y-auto px-2 sm:px-4 py-4 gap-0"
             onScroll={handleMessagesScroll}
           >
-            {messages.length === 0 ? (
+            {loading ? (
+              <div className="flex h-full items-center justify-center text-text-3 text-sm">
+                {t('channel.messages.loading')}
+              </div>
+            ) : error ? (
+              <div className="flex h-full items-center justify-center text-error-fg text-sm">
+                {t('channel.messages.error')}
+              </div>
+            ) : messages.length === 0 ? (
               <div className="flex h-full items-center justify-center text-text-3 text-sm">
                 {t('channel.messages.empty')}
               </div>

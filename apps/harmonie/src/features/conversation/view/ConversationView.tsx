@@ -20,7 +20,7 @@ import {
 } from '@/shared/message/utils/messagePresentation';
 import { scheduleCenterMessageIfOutsideView } from '@/shared/message/utils/scrollMessageIntoView';
 import type { ConversationParticipant } from '@/types/conversation';
-import { useConversation } from '../ConversationContext';
+import { useConversation, useConversationMembersPanel } from '../ConversationContext';
 import { getConversationLabel } from '../conversationUtils';
 import { useConversationMessages } from './hooks/useConversationMessages';
 import {
@@ -39,11 +39,12 @@ export const ConversationView = () => {
   const { user } = useUser();
   const { connection } = useRealtime();
   const conversation = useConversation(conversationId);
+  const { membersOpen, setMembersOpen, toggleMembersOpen } =
+    useConversationMembersPanel(conversationId);
 
   const [messageMenu, setMessageMenu] = useState<MessageMenuState | null>(null);
   const [pendingDeleteMessageId, setPendingDeleteMessageId] = useState<string | null>(null);
   const [separatorDismissed, setSeparatorDismissed] = useState(false);
-  const [membersOpen, setMembersOpen] = useState(false);
   const [selectedParticipant, setSelectedParticipant] = useState<SelectedParticipant | null>(null);
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -113,7 +114,6 @@ export const ConversationView = () => {
   useEffect(() => {
     setMessageMenu(null);
     setSeparatorDismissed(false);
-    setMembersOpen(false);
     setSelectedParticipant(null);
     setShowScrollToBottom(false);
     previousMessageCountRef.current = 0;
@@ -234,22 +234,6 @@ export const ConversationView = () => {
 
   if (!conversationId) return null;
 
-  if (loading) {
-    return (
-      <div className="flex h-full items-center justify-center text-text-3 text-sm bg-surface-1 rounded-md">
-        {t('conversation.loading')}
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex h-full items-center justify-center text-error-fg text-sm bg-surface-1 rounded-md">
-        {t('conversation.error')}
-      </div>
-    );
-  }
-
   const isGroup = conversation?.type === 'Group';
 
   return (
@@ -264,7 +248,7 @@ export const ConversationView = () => {
                   size="small"
                   aria-label={t('conversation.participantsTitle')}
                   title={t('conversation.participantsTitle')}
-                  onClick={() => setMembersOpen((o) => !o)}
+                  onClick={toggleMembersOpen}
                 >
                   <Users size={16} />
                 </IconButton>
@@ -284,7 +268,15 @@ export const ConversationView = () => {
               className="h-full overflow-y-auto px-2 sm:px-4 py-4 gap-0"
               onScroll={handleMessagesScroll}
             >
-              {messages.length === 0 ? (
+              {loading ? (
+                <div className="flex h-full items-center justify-center text-text-3 text-sm">
+                  {t('conversation.loading')}
+                </div>
+              ) : error ? (
+                <div className="flex h-full items-center justify-center text-error-fg text-sm">
+                  {t('conversation.error')}
+                </div>
+              ) : messages.length === 0 ? (
                 <div className="flex h-full items-center justify-center text-text-3 text-sm">
                   {t('conversation.empty')}
                 </div>
