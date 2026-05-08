@@ -6,18 +6,18 @@ import { ModalPanel, NavList, Separator } from '@harmonie/ui';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useUser } from '@/features/user/UserContext';
 import { AvatarSection } from './AvatarSection';
-import { BioSection } from './BioSection';
 import { LanguageSection } from './LanguageSection';
+import { ProfileSection } from './ProfileSection';
 import { ThemeSection } from './ThemeSection';
 
-type Section = 'bio' | 'language' | 'avatar' | 'theme';
+type Section = 'profile' | 'language' | 'avatar' | 'theme';
 
 interface SettingsPanelProps {
   onClose: () => void;
 }
 
 const NAV_ITEMS: { id: Section; icon: LucideIcon }[] = [
-  { id: 'bio', icon: FileText },
+  { id: 'profile', icon: FileText },
   { id: 'language', icon: Globe },
   { id: 'avatar', icon: UserRound },
   { id: 'theme', icon: Palette },
@@ -27,7 +27,7 @@ export const SettingsPanel = ({ onClose }: SettingsPanelProps) => {
   const { t } = useTranslation();
   const { user, updateUser } = useUser();
   const { logout } = useAuth();
-  const [section, setSection] = useState<Section>('bio');
+  const [section, setSection] = useState<Section>('profile');
 
   const sidebar = (
     <>
@@ -62,7 +62,7 @@ export const SettingsPanel = ({ onClose }: SettingsPanelProps) => {
       closeLabel={t('settings.close')}
       sidebar={sidebar}
     >
-      {section === 'bio' && <BioSection user={user} updateUser={updateUser} />}
+      {section === 'profile' && <ProfileSection user={user} updateUser={updateUser} />}
       {section === 'language' && <LanguageSection updateUser={updateUser} />}
       {section === 'avatar' && <AvatarSection user={user} updateUser={updateUser} />}
       {section === 'theme' && <ThemeSection />}

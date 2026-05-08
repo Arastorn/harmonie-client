@@ -291,19 +291,22 @@ export const fr = {
     title: 'Paramètres',
     close: 'Fermer les paramètres',
     nav: {
-      bio: 'Bio',
+      profile: 'Profil',
       language: 'Langue',
       avatar: 'Avatar',
       theme: 'Thème',
     },
-    bio: {
-      title: 'Bio',
+    profile: {
+      title: 'Profil',
+      displayNameLabel: "Nom d'affichage",
+      displayNamePlaceholder: 'Le nom visible par les autres membres',
+      displayNameHint: "Laisse vide pour utiliser ton nom d'utilisateur.",
       label: 'À propos de toi',
       placeholder: 'Dis quelque chose sur toi…',
       hint: '500 caractères maximum.',
       save: 'Sauvegarder',
       cancel: 'Annuler',
-      error: 'Impossible de sauvegarder la bio. Réessaie.',
+      error: 'Impossible de sauvegarder le profil. Réessaie.',
     },
     language: {
       title: 'Langue',
