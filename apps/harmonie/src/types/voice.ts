@@ -1,3 +1,5 @@
+import type { LocalTrack, RemoteTrack } from 'livekit-client';
+
 export interface VoiceParticipantInit {
   userId: string;
   username: string;
@@ -24,6 +26,13 @@ export interface VoiceParticipant {
   avatarBg: string | null;
   avatarColor: string | null;
   avatarIcon: string | null;
+}
+
+export interface VoiceScreenShare {
+  participantId: string;
+  trackSid: string;
+  track: LocalTrack | RemoteTrack;
+  isLocal: boolean;
 }
 
 export interface VoiceParticipantJoinedEvent {

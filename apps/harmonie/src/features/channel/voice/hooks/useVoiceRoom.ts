@@ -3,8 +3,8 @@ import { Room, RoomEvent, Track, type Participant } from 'livekit-client';
 import { joinVoiceChannel } from '@/api/channels';
 import { useAudioInput } from '@/features/user/audio/AudioInputContext';
 import { useAudioOutput } from '@/features/user/audio/AudioOutputContext';
-import type { VoiceParticipantInit } from '@/types/voice';
-import { buildIceServers, getJoinErrorKey, hasRelayServer } from './voiceUtils';
+import type { VoiceParticipantInit, VoiceScreenShare } from '@/types/voice';
+import { buildIceServers, getJoinErrorKey, hasRelayServer } from '../voiceUtils';
 
 interface UseVoiceRoomParams {
   seedParticipantsFromJoin: (channelId: string, initial: VoiceParticipantInit[]) => void;
@@ -32,9 +32,27 @@ export const useVoiceRoom = ({
   const [isJoining, setIsJoining] = useState(false);
   const [joinError, setJoinError] = useState<string | null>(null);
   const [speakingUserIds, setSpeakingUserIds] = useState<Set<string>>(new Set());
+  const [screenShares, setScreenShares] = useState<VoiceScreenShare[]>([]);
+  const [isScreenSharing, setIsScreenSharing] = useState(false);
+  const [screenShareError, setScreenShareError] = useState<string | null>(null);
 
   const roomRef = useRef<Room | null>(null);
   const remoteAudioElementsRef = useRef<Map<string, HTMLAudioElement>>(new Map());
+
+  const upsertScreenShare = useCallback((screenShare: VoiceScreenShare) => {
+    setScreenShares((prev) => {
+      const existingIndex = prev.findIndex((share) => share.trackSid === screenShare.trackSid);
+      if (existingIndex === -1) return [...prev, screenShare];
+
+      const next = [...prev];
+      next[existingIndex] = screenShare;
+      return next;
+    });
+  }, []);
+
+  const removeScreenShare = useCallback((trackSid: string) => {
+    setScreenShares((prev) => prev.filter((share) => share.trackSid !== trackSid));
+  }, []);
 
   const disconnectRoom = useCallback(async () => {
     remoteAudioElementsRef.current.forEach((audioEl) => {
@@ -59,6 +77,9 @@ export const useVoiceRoom = ({
     }
     setIsMuted(false);
     setSpeakingUserIds(new Set());
+    setScreenShares([]);
+    setIsScreenSharing(false);
+    setScreenShareError(null);
   }, []);
 
   const leaveChannel = useCallback(() => {
@@ -87,6 +108,16 @@ export const useVoiceRoom = ({
         const room = new Room();
 
         room.on(RoomEvent.TrackSubscribed, (track, publication, participant) => {
+          if (track.kind === Track.Kind.Video && publication.source === Track.Source.ScreenShare) {
+            upsertScreenShare({
+              participantId: participant.identity,
+              trackSid: publication.trackSid,
+              track,
+              isLocal: false,
+            });
+            return;
+          }
+
           if (track.kind !== Track.Kind.Audio) return;
 
           const audioElement = track.attach() as HTMLAudioElement;
@@ -108,6 +139,11 @@ export const useVoiceRoom = ({
         });
 
         room.on(RoomEvent.TrackUnsubscribed, (track, publication) => {
+          if (track.kind === Track.Kind.Video && publication.source === Track.Source.ScreenShare) {
+            removeScreenShare(publication.trackSid);
+            return;
+          }
+
           if (track.kind !== Track.Kind.Audio) return;
 
           const audioElement = remoteAudioElementsRef.current.get(publication.trackSid);
@@ -125,6 +161,36 @@ export const useVoiceRoom = ({
             trackSid,
             error,
           });
+        });
+
+        room.on(RoomEvent.TrackUnpublished, (publication) => {
+          if (publication.source !== Track.Source.ScreenShare) return;
+          removeScreenShare(publication.trackSid);
+        });
+
+        room.on(RoomEvent.LocalTrackPublished, (publication, participant) => {
+          if (
+            publication.source !== Track.Source.ScreenShare ||
+            publication.kind !== Track.Kind.Video ||
+            !publication.track
+          ) {
+            return;
+          }
+
+          upsertScreenShare({
+            participantId: participant.identity,
+            trackSid: publication.trackSid,
+            track: publication.track,
+            isLocal: true,
+          });
+          setIsScreenSharing(true);
+          setScreenShareError(null);
+        });
+
+        room.on(RoomEvent.LocalTrackUnpublished, (publication) => {
+          if (publication.source !== Track.Source.ScreenShare) return;
+          removeScreenShare(publication.trackSid);
+          setIsScreenSharing(false);
         });
 
         room.on(RoomEvent.ParticipantConnected, () => {
@@ -159,6 +225,8 @@ export const useVoiceRoom = ({
         room.on(RoomEvent.Disconnected, () => {
           setActiveChannelId(null);
           setIsMuted(false);
+          setScreenShares([]);
+          setIsScreenSharing(false);
           roomRef.current = null;
         });
 
@@ -206,9 +274,11 @@ export const useVoiceRoom = ({
       disconnectRoom,
       inputMuted,
       outputMuted,
+      removeScreenShare,
       seedParticipantsFromJoin,
       selectedInputDeviceId,
       syncParticipantsFromRoom,
+      upsertScreenShare,
     ]
   );
 
@@ -220,6 +290,23 @@ export const useVoiceRoom = ({
     setInputMuted(nextMuted);
     setIsMuted(nextMuted);
   }, [isMuted, setInputMuted]);
+
+  const toggleScreenShare = useCallback(async () => {
+    const room = roomRef.current;
+    if (!room) return;
+
+    const nextEnabled = !isScreenSharing;
+    setScreenShareError(null);
+
+    try {
+      await room.localParticipant.setScreenShareEnabled(nextEnabled);
+      setIsScreenSharing(room.localParticipant.isScreenShareEnabled);
+    } catch (error) {
+      console.error('[Voice] Failed to toggle screen share', { error });
+      setScreenShareError('voice.screenShareError');
+      setIsScreenSharing(room.localParticipant.isScreenShareEnabled);
+    }
+  }, [isScreenSharing]);
 
   // Sync audio input device when it changes
   useEffect(() => {
@@ -274,8 +361,12 @@ export const useVoiceRoom = ({
     isJoining,
     joinError,
     speakingUserIds,
+    screenShares,
+    isScreenSharing,
+    screenShareError,
     joinChannel,
     leaveChannel,
     toggleMute,
+    toggleScreenShare,
   };
 };

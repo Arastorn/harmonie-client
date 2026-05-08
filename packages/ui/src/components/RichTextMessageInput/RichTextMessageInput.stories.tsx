@@ -53,6 +53,16 @@ export const WithFormattingOpen: Story = {
   },
 };
 
+export const WithLists: Story = {
+  render: (args) => <InteractiveTemplate {...args} />,
+  args: {
+    value:
+      '<h1>Changelog -- Soon</h1><ul><li>Reload visual messages only</li><li>Message cache between conversations</li><li>Notification title improvements</li></ul>',
+    placeholder: 'Write a message...',
+    showFormattingTools: true,
+  },
+};
+
 export const WithError: Story = {
   render: (args) => <InteractiveTemplate {...args} />,
   args: {

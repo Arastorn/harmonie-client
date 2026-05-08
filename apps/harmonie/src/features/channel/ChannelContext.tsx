@@ -10,7 +10,7 @@ import type {
   ChannelsReorderedEvent,
   ChannelUpdatedEvent,
 } from '@/types/guild';
-import { useVoicePresence } from './voice/VoicePresenceContext';
+import { useVoicePresence } from './voice/context/VoicePresenceContext';
 
 interface ChannelState {
   guildId: string;

@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { PhoneOff, Rss } from 'lucide-react';
 import { IconButton, Separator } from '@harmonie/ui';
-import { useVoicePresence } from './VoicePresenceContext';
+import { useVoicePresence } from './context/VoicePresenceContext';
 
 export const VoiceConnectionBar = () => {
   const { t } = useTranslation();
