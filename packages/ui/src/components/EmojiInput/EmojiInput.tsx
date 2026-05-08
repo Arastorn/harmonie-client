@@ -4,6 +4,9 @@ import type { EmojiClickData, PickerProps } from 'emoji-picker-react';
 import { Input, type InputProps } from '../Input/Input';
 import { EmojiPickerBase } from '../EmojiPickerBase/EmojiPickerBase';
 
+const PICKER_WIDTH = 300;
+const PICKER_HEIGHT = 380;
+
 export interface EmojiInputProps extends Omit<
   InputProps,
   'value' | 'onChange' | 'rightElement' | 'ref'
@@ -11,6 +14,7 @@ export interface EmojiInputProps extends Omit<
   value: string;
   onChange: (value: string) => void;
   pickerProps?: Omit<PickerProps, 'onEmojiClick' | 'categoryIcons'>;
+  pickerPlacement?: 'top' | 'bottom';
   emojiButtonLabel?: string;
 }
 
@@ -18,6 +22,7 @@ export const EmojiInput = ({
   value,
   onChange,
   pickerProps,
+  pickerPlacement = 'bottom',
   emojiButtonLabel = 'Open emoji picker',
   ...inputProps
 }: EmojiInputProps) => {
@@ -80,8 +85,20 @@ export const EmojiInput = ({
             <Smile size={16} />
           </button>
           {isPickerOpen && (
-            <div className="absolute right-0 top-[calc(100%+0.5rem)] z-20 shadow-lg">
-              <EmojiPickerBase onEmojiClick={handleEmojiClick} {...(pickerProps ?? {})} />
+            <div
+              className={[
+                'absolute right-0 z-20 shadow-lg',
+                pickerPlacement === 'top'
+                  ? 'bottom-[calc(100%+0.5rem)]'
+                  : 'top-[calc(100%+0.5rem)]',
+              ].join(' ')}
+            >
+              <EmojiPickerBase
+                onEmojiClick={handleEmojiClick}
+                width={PICKER_WIDTH}
+                height={PICKER_HEIGHT}
+                {...(pickerProps ?? {})}
+              />
             </div>
           )}
         </div>
