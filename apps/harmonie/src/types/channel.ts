@@ -34,15 +34,37 @@ export interface Message {
   attachments: MessageAttachment[];
   reactions: MessageReaction[];
   linkPreviews?: LinkPreview[] | null;
+  isPinned: boolean;
   createdAtUtc: string;
   updatedAtUtc: string | null;
 }
 
 export interface MessageList {
-  conversationId: string;
+  channelId?: string;
+  conversationId?: string;
   items: Message[];
   nextCursor: string | null;
   lastReadMessageId: string | null;
+}
+
+export interface PinnedMessage {
+  messageId: string;
+  authorUserId: string;
+  authorUsername: string;
+  authorDisplayName?: string | null;
+  content: string | null;
+  attachments: MessageAttachment[];
+  createdAtUtc: string;
+  updatedAtUtc: string | null;
+  pinnedByUserId: string;
+  pinnedAtUtc: string;
+}
+
+export interface PinnedMessageList {
+  channelId?: string;
+  conversationId?: string;
+  items: PinnedMessage[];
+  nextCursor: string | null;
 }
 
 export interface UpdateChannelInput {
@@ -67,6 +89,7 @@ export interface MessageCreatedEvent {
   authorDisplayName?: string | null;
   content: string;
   attachments: MessageAttachment[];
+  isPinned?: boolean;
   createdAtUtc: string;
 }
 

@@ -2,6 +2,9 @@ export const en = {
   app: {
     name: 'Harmonie',
   },
+  common: {
+    close: 'Close',
+  },
   dateTime: {
     dateAt: '{{date}} at {{time}}',
   },
@@ -206,6 +209,14 @@ export const en = {
       deleteConfirmButton: 'Delete',
       deleteCancel: 'Cancel',
       deleteError: 'Unable to delete message. Please try again.',
+      pin: 'Pin message',
+      unpin: 'Unpin message',
+      pinned: 'Pinned',
+      pinnedMessages: 'Pinned messages',
+      noPinnedMessages: 'No pinned messages.',
+      pinnedMessagesError: 'Unable to load pinned messages. Please try again.',
+      pinnedMessagesLoadMore: 'Load more',
+      attachmentOnly: 'Message with attachment',
       react: 'React to message',
       reactionUsersSentenceOne: '{{names}} reacted',
       reactionUsersSentence: '{{names}} reacted',

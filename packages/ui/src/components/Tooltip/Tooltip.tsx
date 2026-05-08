@@ -1,4 +1,13 @@
-import { CSSProperties, ReactElement, ReactNode, useEffect, useId, useRef, useState } from 'react';
+import {
+  CSSProperties,
+  ReactElement,
+  ReactNode,
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 import { createPortal } from 'react-dom';
 
 export type TooltipSide = 'top' | 'right' | 'bottom' | 'left';
@@ -26,12 +35,10 @@ const transformClasses: Record<TooltipSide, string> = {
 const getPosition = (rect: DOMRect, side: TooltipSide): CSSProperties => {
   const centerX = rect.left + rect.width / 2;
   const centerY = rect.top + rect.height / 2;
-  const minCenterX = viewportMargin + maxWidth / 2;
-  const maxCenterX = Math.max(minCenterX, window.innerWidth - viewportMargin - maxWidth / 2);
 
   if (side === 'top' || side === 'bottom') {
     return {
-      left: Math.min(Math.max(centerX, minCenterX), maxCenterX),
+      left: centerX,
       top: side === 'top' ? rect.top - offset : rect.bottom + offset,
     };
   }
@@ -56,6 +63,7 @@ export const Tooltip = ({
   const generatedId = useId();
   const tooltipId = id ?? generatedId;
   const wrapperRef = useRef<HTMLSpanElement>(null);
+  const tooltipRef = useRef<HTMLSpanElement>(null);
   const timeoutRef = useRef<number | null>(null);
   const [position, setPosition] = useState<CSSProperties | null>(null);
 
@@ -75,6 +83,22 @@ export const Tooltip = ({
 
   useEffect(() => close, []);
 
+  useLayoutEffect(() => {
+    if (!position || (side !== 'top' && side !== 'bottom')) return;
+
+    const tooltipRect = tooltipRef.current?.getBoundingClientRect();
+    if (!tooltipRect) return;
+
+    const halfWidth = tooltipRect.width / 2;
+    const minLeft = viewportMargin + halfWidth;
+    const maxLeft = Math.max(minLeft, window.innerWidth - viewportMargin - halfWidth);
+    const nextLeft = Math.min(Math.max(Number(position.left), minLeft), maxLeft);
+
+    if (nextLeft !== position.left) {
+      setPosition((current) => (current ? { ...current, left: nextLeft } : current));
+    }
+  }, [position, side]);
+
   if (!content) return children;
 
   return (
@@ -90,6 +114,7 @@ export const Tooltip = ({
       {position &&
         createPortal(
           <span
+            ref={tooltipRef}
             id={tooltipId}
             role="tooltip"
             className={[

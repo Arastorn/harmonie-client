@@ -36,5 +36,7 @@ export const REALTIME_SERVER_EVENTS = {
   userProfileUpdated: 'UserProfileUpdated',
   reactionAdded: 'ReactionAdded',
   reactionRemoved: 'ReactionRemoved',
+  messagePinned: 'MessagePinned',
+  messageUnpinned: 'MessageUnpinned',
   messagePreviewUpdated: 'MessagePreviewUpdated',
 } as const;

@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Navigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Users } from 'lucide-react';
-import { Button, IconButton, Modal, Separator } from '@harmonie/ui';
+import { IconButton } from '@harmonie/ui';
 import { GuildSearchBar } from '@/features/guild/search/GuildSearchBar';
 import type { GuildMember } from '@/types/guild';
 import { useCurrentGuild, useGuildMembers } from '@/features/guild/GuildContext';
@@ -12,19 +12,8 @@ import { REALTIME_CLIENT_METHODS } from '@/features/realtime/constants';
 import { useUser } from '@/features/user/UserContext';
 import { MemberPopover } from '@/shared/members/MemberPopover';
 import { useGuildWorkspace } from '@/features/guild/workspace/GuildWorkspaceProvider';
-import { MessageComposer } from '@/shared/message/MessageComposer';
-import { MessageListItem } from '@/shared/message/MessageListItem/MessageListItem';
-import { ScrollToBottomButton } from '@/shared/message/ScrollToBottomButton';
-import {
-  MessageContextMenu,
-  type MessageMenuState,
-} from '@/shared/message/MessageListItem/MessageContextMenu';
-import {
-  areMessagesGrouped,
-  getDaySeparatorLabel,
-} from '@/shared/message/utils/messagePresentation';
-import { scheduleCenterMessageIfOutsideView } from '@/shared/message/utils/scrollMessageIntoView';
-import { sendMessage } from '@/api/channels';
+import { getChannelPinnedMessages, sendMessage } from '@/api/channels';
+import { MessageThread, useMessageThreadRefs } from '@/shared/message/MessageThread';
 import { useChannelMessages } from './hooks/useChannelMessages';
 import { useTextChannelSearchTarget } from './hooks/useTextChannelSearchTarget';
 
@@ -46,36 +35,7 @@ export const TextChannelView = () => {
     setSearchChannelId,
   } = useGuildWorkspace();
   const [selected, setSelected] = useState<SelectedMember | null>(null);
-  const [messageMenu, setMessageMenu] = useState<MessageMenuState | null>(null);
-  const [pendingDeleteMessageId, setPendingDeleteMessageId] = useState<string | null>(null);
-  const [separatorDismissed, setSeparatorDismissed] = useState(false);
-  const [showScrollToBottom, setShowScrollToBottom] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const messagesContentRef = useRef<HTMLDivElement>(null);
-  const scrollAnchorRef = useRef<{ scrollTop: number; scrollHeight: number } | null>(null);
-  const previousMessageCountRef = useRef(0);
-  const suppressNextScrollEffectsRef = useRef(false);
-  const shouldStickToBottomRef = useRef(false);
-
-  const scrollToBottom = useCallback((behavior: ScrollBehavior = 'auto') => {
-    const scrollElement = scrollRef.current;
-    if (!scrollElement) return;
-
-    setShowScrollToBottom(false);
-
-    if (behavior === 'smooth') {
-      scrollElement.scrollTo({ top: scrollElement.scrollHeight, behavior });
-      return;
-    }
-
-    scrollElement.scrollTop = scrollElement.scrollHeight;
-
-    requestAnimationFrame(() => {
-      const nextScrollElement = scrollRef.current;
-      if (!nextScrollElement) return;
-      nextScrollElement.scrollTop = nextScrollElement.scrollHeight;
-    });
-  }, []);
+  const threadRefs = useMessageThreadRefs();
 
   const members = useGuildMembers(guildId);
   const membersMap = useMemo(
@@ -106,6 +66,7 @@ export const TextChannelView = () => {
     saveEdit,
     removeMessage,
     removeAttachment,
+    setMessagePinned,
     toggleReaction,
   } = useChannelMessages({
     channelId,
@@ -120,146 +81,14 @@ export const TextChannelView = () => {
     messages,
     loading,
     error,
-    scrollRef,
-    previousMessageCountRef,
-    suppressNextScrollEffectsRef,
+    scrollRef: threadRefs.scrollRef,
+    previousMessageCountRef: threadRefs.previousMessageCountRef,
+    suppressNextScrollEffectsRef: threadRefs.suppressNextScrollEffectsRef,
     loadUntilMessage,
   });
 
-  useEffect(() => {
-    setMessageMenu(null);
-    setSeparatorDismissed(false);
-    setShowScrollToBottom(false);
-    previousMessageCountRef.current = 0;
-    scrollAnchorRef.current = null;
-    suppressNextScrollEffectsRef.current = false;
-    shouldStickToBottomRef.current = false;
-  }, [channelId]);
-
-  useEffect(() => {
-    const element = scrollRef.current;
-    if (!element) return;
-
-    if (scrollAnchorRef.current) {
-      const { scrollTop, scrollHeight } = scrollAnchorRef.current;
-      suppressNextScrollEffectsRef.current = true;
-      element.scrollTop = scrollTop + (element.scrollHeight - scrollHeight);
-      scrollAnchorRef.current = null;
-      return;
-    }
-
-    if (activeSearchTarget || seekingTargetRef.current) {
-      previousMessageCountRef.current = messages.length;
-      return;
-    }
-
-    const previousMessageCount = previousMessageCountRef.current;
-    const hasNewMessages = messages.length > previousMessageCount;
-    const isInitialLoad = previousMessageCount === 0 && messages.length > 0;
-
-    if (hasNewMessages || isInitialLoad) {
-      suppressNextScrollEffectsRef.current = true;
-      shouldStickToBottomRef.current = true;
-      requestAnimationFrame(() => {
-        scrollToBottom();
-      });
-    }
-
-    previousMessageCountRef.current = messages.length;
-  }, [activeSearchTarget, messages, scrollToBottom, seekingTargetRef]);
-
-  useEffect(() => {
-    const contentEl = messagesContentRef.current;
-    const scrollEl = scrollRef.current;
-    if (!contentEl || !scrollEl) return;
-
-    const observer = new ResizeObserver(() => {
-      if (shouldStickToBottomRef.current) {
-        requestAnimationFrame(() => {
-          scrollToBottom();
-        });
-      }
-    });
-
-    observer.observe(contentEl);
-    observer.observe(scrollEl);
-    return () => observer.disconnect();
-  }, [messages.length, scrollToBottom]);
-
-  useEffect(() => {
-    if (!editingMessageId) return;
-
-    const element = scrollRef.current;
-    if (!element) return;
-
-    const messageElement = element.querySelector<HTMLElement>(
-      `[data-message-id="${editingMessageId}"]`
-    );
-    if (!messageElement) return;
-
-    suppressNextScrollEffectsRef.current = true;
-    shouldStickToBottomRef.current = false;
-    return scheduleCenterMessageIfOutsideView(element, messageElement);
-  }, [editingMessageId]);
-
-  useEffect(() => {
-    if (lastReadMessageId === null || separatorDismissed) return;
-    const el = scrollRef.current;
-    if (!el) return;
-    const rafId = requestAnimationFrame(() => {
-      if (el.scrollHeight <= el.clientHeight) setSeparatorDismissed(true);
-    });
-    return () => cancelAnimationFrame(rafId);
-  }, [lastReadMessageId, separatorDismissed]);
-
-  const handleMessagesScroll = useCallback(() => {
-    const element = scrollRef.current;
-    if (!element) return;
-
-    if (lastReadMessageId !== null && !separatorDismissed) {
-      setSeparatorDismissed(true);
-    }
-    const distanceFromBottom = element.scrollHeight - element.scrollTop - element.clientHeight;
-    shouldStickToBottomRef.current = distanceFromBottom < 50;
-    setShowScrollToBottom(distanceFromBottom > 160);
-    if (element.scrollTop >= 100) return;
-    scrollAnchorRef.current = {
-      scrollTop: element.scrollTop,
-      scrollHeight: element.scrollHeight,
-    };
-    void loadMore();
-  }, [lastReadMessageId, loadMore, separatorDismissed]);
-
   const handleAvatarClick = (member: GuildMember, rect: DOMRect) => {
     setSelected((prev) => (prev?.member.userId === member.userId ? null : { member, rect }));
-  };
-
-  const handleOpenMessageMenu = (
-    event: React.MouseEvent<HTMLElement>,
-    messageId: string,
-    horizontalAnchor: 'left' | 'right' = 'left'
-  ) => {
-    event.preventDefault();
-    setMessageMenu({
-      messageId,
-      position: { x: event.clientX, y: event.clientY },
-      horizontalAnchor,
-    });
-  };
-
-  const handleStartEditing = (messageId: string) => {
-    setMessageMenu(null);
-    startEditing(messageId);
-  };
-
-  const handleDeleteRequest = (messageId: string) => {
-    setMessageMenu(null);
-    setPendingDeleteMessageId(messageId);
-  };
-
-  const handleConfirmDelete = () => {
-    if (pendingDeleteMessageId) removeMessage(pendingDeleteMessageId);
-    setPendingDeleteMessageId(null);
   };
 
   if (!guildId || !channelId || guildsLoading || channels === null) {
@@ -276,159 +105,74 @@ export const TextChannelView = () => {
 
   return (
     <>
-      <div className="flex flex-col h-full bg-surface-1 rounded-md overflow-hidden">
-        <div className="flex items-center justify-between px-4 h-14 shrink-0 bg-surface-2 rounded-t-md">
-          <span className="text-sm font-semibold text-text-1"># {currentChannel.name}</span>
-          <div className="flex items-center gap-2">
-            <GuildSearchBar
-              query={searchQuery}
-              authorId={searchAuthorId}
-              channelId={searchChannelId}
-              onQueryChange={setSearchQuery}
-              onAuthorChange={setSearchAuthorId}
-              onChannelChange={setSearchChannelId}
-            />
-            <IconButton size="small" onClick={toggleMembersPanel}>
-              <Users size={16} />
-            </IconButton>
-          </div>
-        </div>
-
-        {loadingMore && (
-          <div className="flex justify-center py-1 text-text-3 text-xs shrink-0">
-            {t('channel.messages.loading')}
-          </div>
-        )}
-
-        <div className="relative flex-1 min-h-0">
-          <div
-            ref={scrollRef}
-            className="h-full overflow-y-auto px-2 sm:px-4 py-4 gap-0"
-            onScroll={handleMessagesScroll}
-          >
-            {loading ? (
-              <div className="flex h-full items-center justify-center text-text-3 text-sm">
-                {t('channel.messages.loading')}
-              </div>
-            ) : error ? (
-              <div className="flex h-full items-center justify-center text-error-fg text-sm">
-                {t('channel.messages.error')}
-              </div>
-            ) : messages.length === 0 ? (
-              <div className="flex h-full items-center justify-center text-text-3 text-sm">
-                {t('channel.messages.empty')}
-              </div>
-            ) : (
-              <div ref={messagesContentRef}>
-                {messages.map((message, index) => {
-                  const previousMessage = messages[index - 1];
-                  const daySeparatorLabel = getDaySeparatorLabel(previousMessage, message);
-                  const grouped = daySeparatorLabel
-                    ? false
-                    : areMessagesGrouped(previousMessage, message);
-                  const isFirstUnread =
-                    lastReadMessageId !== null && previousMessage?.messageId === lastReadMessageId;
-
-                  return (
-                    <div key={message.messageId}>
-                      {daySeparatorLabel && <Separator label={daySeparatorLabel} />}
-                      {isFirstUnread && (
-                        <div
-                          className={`transition-opacity duration-500 ${separatorDismissed ? 'opacity-0' : 'opacity-100'}`}
-                          onTransitionEnd={() => {
-                            if (separatorDismissed) dismissNewMessagesSeparator();
-                          }}
-                        >
-                          <Separator label={t('channel.messages.newMessages')} variant="accent" />
-                        </div>
-                      )}
-                      <MessageListItem
-                        message={message}
-                        member={membersMap.get(message.authorUserId)}
-                        grouped={grouped}
-                        isOwn={message.authorUserId === user?.userId}
-                        isEditing={message.messageId === editingMessageId}
-                        isMenuOpen={message.messageId === messageMenu?.messageId}
-                        isSelected={message.messageId === selectedMessageId}
-                        onAvatarClick={handleAvatarClick}
-                        onEdit={handleStartEditing}
-                        onCancelEdit={cancelEditing}
-                        onSaveEdit={saveEdit}
-                        onDelete={handleDeleteRequest}
-                        onAttachmentDeleted={(fileId) =>
-                          removeAttachment(message.messageId, fileId)
-                        }
-                        onReact={toggleReaction}
-                        reactionSource={{ type: 'channel', entityId: channelId }}
-                        reactionUserMap={membersMap}
-                        currentUser={user}
-                        onOpenMenu={handleOpenMessageMenu}
-                      />
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          {showScrollToBottom && (
-            <ScrollToBottomButton
-              label={t('channel.messages.scrollToBottom')}
-              onClick={() => scrollToBottom()}
-            />
-          )}
-        </div>
-
-        {typingUserIds.length > 0 && (
-          <div className="px-4 py-1 text-xs text-text-3 shrink-0 h-6">
-            {(() => {
-              const names = typingUserIds.map(
-                (id) => membersMap.get(id)?.displayName ?? membersMap.get(id)?.username ?? id
-              );
-              if (names.length === 1) return t('channel.typing.one', { name: names[0] });
-              if (names.length === 2)
-                return t('channel.typing.two', { name1: names[0], name2: names[1] });
-              return t('channel.typing.several');
-            })()}
-          </div>
-        )}
-
-        <div className="mt-auto flex items-end px-4 pb-4">
-          <MessageComposer
-            key={channelId}
-            draftKey={`channel:${channelId}`}
-            sendFn={(content, fileIds) => sendMessage(channelId!, content, fileIds)}
-            onTypingStart={() =>
-              connection
-                ?.send(REALTIME_CLIENT_METHODS.startTypingChannel, channelId)
-                .catch(() => {})
-            }
-            latestEditableMessage={latestOwnMessage}
-            onEditingRequested={handleStartEditing}
+      <MessageThread
+        resetKey={channelId}
+        title={`# ${currentChannel.name}`}
+        beforePinActions={
+          <GuildSearchBar
+            query={searchQuery}
+            authorId={searchAuthorId}
+            channelId={searchChannelId}
+            onQueryChange={setSearchQuery}
+            onAuthorChange={setSearchAuthorId}
+            onChannelChange={setSearchChannelId}
           />
-        </div>
-      </div>
-
-      <MessageContextMenu
-        menu={messageMenu}
-        onClose={() => setMessageMenu(null)}
-        onEdit={handleStartEditing}
-        onDelete={handleDeleteRequest}
+        }
+        afterPinActions={
+          <IconButton
+            size="small"
+            aria-label={t('guild.members.title')}
+            title={t('guild.members.title')}
+            tooltipSide="bottom"
+            onClick={toggleMembersPanel}
+          >
+            <Users size={16} />
+          </IconButton>
+        }
+        refs={threadRefs}
+        messages={messages}
+        loading={loading}
+        error={error}
+        loadingMore={loadingMore}
+        editingMessageId={editingMessageId}
+        lastReadMessageId={lastReadMessageId}
+        latestOwnMessage={latestOwnMessage}
+        typingUserIds={typingUserIds}
+        labels={{
+          loading: t('channel.messages.loading'),
+          error: t('channel.messages.error'),
+          empty: t('channel.messages.empty'),
+        }}
+        currentUser={user}
+        authorMap={membersMap}
+        reactionSource={{ type: 'channel', entityId: channelId }}
+        composer={{
+          draftKey: `channel:${channelId}`,
+          sendFn: (content, fileIds) => sendMessage(channelId, content, fileIds),
+          onTypingStart: () =>
+            connection?.send(REALTIME_CLIENT_METHODS.startTypingChannel, channelId).catch(() => {}),
+        }}
+        pinned={{
+          entityId: channelId,
+          fetchPinnedMessages: getChannelPinnedMessages,
+        }}
+        searchState={{
+          activeSearchTarget,
+          selectedMessageId,
+          seekingTargetRef,
+        }}
+        loadMore={loadMore}
+        loadUntilMessage={loadUntilMessage}
+        startEditing={startEditing}
+        cancelEditing={cancelEditing}
+        dismissNewMessagesSeparator={dismissNewMessagesSeparator}
+        saveEdit={saveEdit}
+        removeMessage={removeMessage}
+        removeAttachment={removeAttachment}
+        setMessagePinned={(messageId, isPinned) => void setMessagePinned(messageId, isPinned)}
+        toggleReaction={toggleReaction}
+        onAvatarClick={handleAvatarClick}
       />
-
-      {pendingDeleteMessageId && (
-        <Modal title={t('channel.messages.delete')} onClose={() => setPendingDeleteMessageId(null)}>
-          <p className="font-body text-sm text-text-2">{t('channel.messages.deleteConfirm')}</p>
-          <div className="flex justify-end gap-2">
-            <Button variant="tertiary" onClick={() => setPendingDeleteMessageId(null)}>
-              {t('channel.messages.deleteCancel')}
-            </Button>
-            <Button variant="danger" onClick={handleConfirmDelete}>
-              {t('channel.messages.deleteConfirmButton')}
-            </Button>
-          </div>
-        </Modal>
-      )}
 
       {selected && guildId && (
         <MemberPopover

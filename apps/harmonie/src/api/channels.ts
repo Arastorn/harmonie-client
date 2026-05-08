@@ -3,6 +3,7 @@ import type { Channel } from '@/types/guild';
 import type {
   Message,
   MessageList,
+  PinnedMessageList,
   MessageReactionUsersList,
   UpdateChannelInput,
 } from '@/types/channel';
@@ -27,6 +28,15 @@ export const getChannelMessages = (channelId: string, before?: string): Promise<
   return apiFetch(url.toString()).then((r) => parseOrThrow<MessageList>(r));
 };
 
+export const getChannelPinnedMessages = (
+  channelId: string,
+  before?: string | null
+): Promise<PinnedMessageList> => {
+  const url = new URL(`${API_BASE}/channels/${channelId}/pins`);
+  if (before) url.searchParams.set('before', before);
+  return apiFetch(url.toString()).then((r) => parseOrThrow<PinnedMessageList>(r));
+};
+
 export const updateChannel = (channelId: string, input: UpdateChannelInput): Promise<Channel> =>
   apiFetch(`${API_BASE}/channels/${channelId}`, {
     method: 'PATCH',
@@ -46,6 +56,20 @@ export const deleteMessage = (channelId: string, messageId: string): Promise<voi
     method: 'DELETE',
   }).then((r) => {
     if (!r.ok) throw new Error('Failed to delete message');
+  });
+
+export const pinMessage = (channelId: string, messageId: string): Promise<void> =>
+  apiFetch(`${API_BASE}/channels/${channelId}/messages/${messageId}/pin`, {
+    method: 'PUT',
+  }).then((r) => {
+    if (!r.ok) throw new Error('Failed to pin message');
+  });
+
+export const unpinMessage = (channelId: string, messageId: string): Promise<void> =>
+  apiFetch(`${API_BASE}/channels/${channelId}/messages/${messageId}/pin`, {
+    method: 'DELETE',
+  }).then((r) => {
+    if (!r.ok) throw new Error('Failed to unpin message');
   });
 
 export const ackChannel = (channelId: string, messageId: string): Promise<void> =>
