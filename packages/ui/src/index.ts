@@ -95,6 +95,8 @@ export type { BadgeProps, BadgeVariant } from './components/Badge/Badge';
 
 export { RowCard } from './components/RowCard/RowCard';
 export type { RowCardProps } from './components/RowCard/RowCard';
+export { ClickableRowCard } from './components/ClickableRowCard/ClickableRowCard';
+export type { ClickableRowCardProps } from './components/ClickableRowCard/ClickableRowCard';
 export { UserListItem } from './components/UserListItem/UserListItem';
 export type { UserListItemProps } from './components/UserListItem/UserListItem';
 export { UserPopover } from './components/UserPopover/UserPopover';

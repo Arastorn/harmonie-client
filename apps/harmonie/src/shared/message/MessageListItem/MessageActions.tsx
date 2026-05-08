@@ -1,35 +1,45 @@
 import { useRef } from 'react';
-import { Pencil, SmilePlus, Trash2 } from 'lucide-react';
+import { Pencil, Pin, PinOff, SmilePlus, Trash2 } from 'lucide-react';
 import { IconButton } from '@harmonie/ui';
 
 interface MessageActionsProps {
   canEdit: boolean;
   canDelete: boolean;
+  canPin: boolean;
+  isPinned: boolean;
   canReact: boolean;
   editLabel: string;
   deleteLabel: string;
+  pinLabel: string;
+  unpinLabel: string;
   reactLabel: string;
   onEdit: () => void;
   onDelete: () => void;
+  onPinToggle: () => void;
   onPickerOpen: (rect: DOMRect) => void;
 }
 
 export const MessageActions = ({
   canEdit,
   canDelete,
+  canPin,
+  isPinned,
   canReact,
   editLabel,
   deleteLabel,
+  pinLabel,
+  unpinLabel,
   reactLabel,
   onEdit,
   onDelete,
+  onPinToggle,
   onPickerOpen,
 }: MessageActionsProps) => {
   const reactButtonRef = useRef<HTMLDivElement>(null);
 
-  if (!canEdit && !canDelete && !canReact) return null;
+  if (!canEdit && !canDelete && !canPin && !canReact) return null;
 
-  const visibleActionCount = [canReact, canEdit, canDelete].filter(Boolean).length;
+  const visibleActionCount = [canReact, canPin, canEdit, canDelete].filter(Boolean).length;
   const singleActionTooltipSide = visibleActionCount === 1 ? 'left' : undefined;
 
   const handleReactClick = () => {
@@ -50,6 +60,16 @@ export const MessageActions = ({
             <SmilePlus size={16} />
           </IconButton>
         </div>
+      )}
+      {canPin && (
+        <IconButton
+          size="medium"
+          title={isPinned ? unpinLabel : pinLabel}
+          tooltipSide={singleActionTooltipSide}
+          onClick={onPinToggle}
+        >
+          {isPinned ? <PinOff size={16} /> : <Pin size={16} />}
+        </IconButton>
       )}
       {canEdit && (
         <IconButton

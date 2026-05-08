@@ -10,6 +10,7 @@ interface WsMessageCreatedEvent {
   content: string;
   attachments: Message['attachments'];
   linkPreviews?: Message['linkPreviews'];
+  isPinned?: boolean;
   createdAtUtc: string;
   [key: string]: unknown;
 }
@@ -35,12 +36,32 @@ interface WsReactionEvent {
   [key: string]: unknown;
 }
 
+interface WsMessagePinnedEvent {
+  messageId: string;
+  channelId?: string | null;
+  conversationId?: string | null;
+  pinnedByUserId: string;
+  pinnedAtUtc: string;
+  [key: string]: unknown;
+}
+
+interface WsMessageUnpinnedEvent {
+  messageId: string;
+  channelId?: string | null;
+  conversationId?: string | null;
+  unpinnedByUserId: string;
+  unpinnedAtUtc: string;
+  [key: string]: unknown;
+}
+
 export interface UseMessagesApi {
   fetchMessages: (entityId: string, cursor?: string) => Promise<MessageList>;
   ackMessage: (entityId: string, messageId: string) => Promise<void>;
   updateMessage: (entityId: string, messageId: string, content: string) => Promise<Message>;
   deleteMessage: (entityId: string, messageId: string) => Promise<void>;
   deleteAttachment: (entityId: string, messageId: string, attachmentId: string) => Promise<void>;
+  pinMessage: (entityId: string, messageId: string) => Promise<void>;
+  unpinMessage: (entityId: string, messageId: string) => Promise<void>;
   addReaction: (entityId: string, messageId: string, emoji: string) => Promise<void>;
   removeReaction: (entityId: string, messageId: string, emoji: string) => Promise<void>;
 }
@@ -171,6 +192,7 @@ export const useMessages = ({
           attachments: event.attachments ?? [],
           reactions: [],
           linkPreviews: event.linkPreviews ?? null,
+          isPinned: event.isPinned ?? false,
           createdAtUtc: event.createdAtUtc,
           updatedAtUtc: null,
         },
@@ -304,6 +326,39 @@ export const useMessages = ({
     };
   }, [connection, entityId, ready]);
 
+  useEffect(() => {
+    if (!connection || !entityId || !ready) return;
+
+    const getEntityId = (event: WsMessagePinnedEvent | WsMessageUnpinnedEvent) =>
+      wsRef.current.entityIdField === 'channelId' ? event.channelId : event.conversationId;
+
+    const updatePinnedState = (messageId: string, isPinned: boolean) => {
+      setMessages((prev) =>
+        prev.map((message) =>
+          message.messageId === messageId ? { ...message, isPinned } : message
+        )
+      );
+    };
+
+    const handleMessagePinned = (event: WsMessagePinnedEvent) => {
+      if (getEntityId(event) !== entityId) return;
+      updatePinnedState(event.messageId, true);
+    };
+
+    const handleMessageUnpinned = (event: WsMessageUnpinnedEvent) => {
+      if (getEntityId(event) !== entityId) return;
+      updatePinnedState(event.messageId, false);
+    };
+
+    connection.on(REALTIME_SERVER_EVENTS.messagePinned, handleMessagePinned);
+    connection.on(REALTIME_SERVER_EVENTS.messageUnpinned, handleMessageUnpinned);
+
+    return () => {
+      connection.off(REALTIME_SERVER_EVENTS.messagePinned, handleMessagePinned);
+      connection.off(REALTIME_SERVER_EVENTS.messageUnpinned, handleMessageUnpinned);
+    };
+  }, [connection, entityId, ready]);
+
   const loadMoreWithCursor = useCallback(
     async (cursor: string) => {
       if (!entityId || loadingMoreRef.current) return [];
@@ -400,6 +455,23 @@ export const useMessages = ({
     [entityId]
   );
 
+  const setMessagePinned = useCallback(
+    async (messageId: string, isPinned: boolean) => {
+      if (!entityId) return;
+      const backup = messagesRef.current;
+      setMessages((prev) => prev.map((m) => (m.messageId === messageId ? { ...m, isPinned } : m)));
+      try {
+        await (isPinned ? apiRef.current.pinMessage : apiRef.current.unpinMessage)(
+          entityId,
+          messageId
+        );
+      } catch {
+        setMessages(backup);
+      }
+    },
+    [entityId]
+  );
+
   const toggleReaction = useCallback(
     async (messageId: string, emoji: string) => {
       if (!entityId) return;
@@ -462,6 +534,7 @@ export const useMessages = ({
     saveEdit,
     removeMessage,
     removeAttachment,
+    setMessagePinned,
     toggleReaction,
   };
 };

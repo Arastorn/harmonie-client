@@ -4,7 +4,9 @@ import {
   deleteAttachment,
   deleteMessage,
   getChannelMessages,
+  pinMessage,
   removeReaction,
+  unpinMessage,
   updateMessage,
 } from '@/api/channels';
 import { useMessages } from '@/shared/message/hooks/useMessages';
@@ -45,6 +47,8 @@ export const useChannelMessages = ({
       updateMessage,
       deleteMessage,
       deleteAttachment,
+      pinMessage,
+      unpinMessage,
       addReaction,
       removeReaction,
     },

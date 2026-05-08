@@ -2,6 +2,9 @@ export const fr = {
   app: {
     name: 'Harmonie',
   },
+  common: {
+    close: 'Fermer',
+  },
   dateTime: {
     dateAt: '{{date}} à {{time}}',
   },
@@ -207,6 +210,14 @@ export const fr = {
       deleteConfirmButton: 'Supprimer',
       deleteCancel: 'Annuler',
       deleteError: 'Impossible de supprimer le message. Réessaie.',
+      pin: 'Épingler le message',
+      unpin: 'Désépingler le message',
+      pinned: 'Épinglé',
+      pinnedMessages: 'Messages épinglés',
+      noPinnedMessages: 'Aucun message épinglé.',
+      pinnedMessagesError: 'Impossible de charger les messages épinglés. Réessaie.',
+      pinnedMessagesLoadMore: 'Charger plus',
+      attachmentOnly: 'Message avec pièce jointe',
       react: 'Réagir au message',
       reactionUsersSentenceOne: '{{names}} a réagi',
       reactionUsersSentence: '{{names}} ont réagi',

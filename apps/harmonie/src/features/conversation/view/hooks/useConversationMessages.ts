@@ -4,7 +4,9 @@ import {
   deleteConversationMessage,
   deleteConversationMessageAttachment,
   getConversationMessages,
+  pinConversationMessage,
   removeConversationReaction,
+  unpinConversationMessage,
   updateConversationMessage,
 } from '@/api/conversations';
 import { useMessages } from '@/shared/message/hooks/useMessages';
@@ -41,6 +43,8 @@ export const useConversationMessages = ({
       updateMessage: updateConversationMessage,
       deleteMessage: deleteConversationMessage,
       deleteAttachment: deleteConversationMessageAttachment,
+      pinMessage: pinConversationMessage,
+      unpinMessage: unpinConversationMessage,
       addReaction: addConversationReaction,
       removeReaction: removeConversationReaction,
     },

@@ -1,5 +1,10 @@
 import { apiFetch, parseOrThrow } from '@/api/client';
-import type { Message, MessageList, MessageReactionUsersList } from '@/types/channel';
+import type {
+  Message,
+  MessageList,
+  MessageReactionUsersList,
+  PinnedMessageList,
+} from '@/types/channel';
 import type {
   ConversationCreateResponse,
   ConversationList,
@@ -53,6 +58,15 @@ export const getConversationMessages = (
   return apiFetch(url.toString()).then((r) => parseOrThrow<MessageList>(r));
 };
 
+export const getConversationPinnedMessages = (
+  conversationId: string,
+  before?: string | null
+): Promise<PinnedMessageList> => {
+  const url = new URL(`${API_BASE}/conversations/${conversationId}/pins`);
+  if (before) url.searchParams.set('before', before);
+  return apiFetch(url.toString()).then((r) => parseOrThrow<PinnedMessageList>(r));
+};
+
 export const sendConversationMessage = (
   conversationId: string,
   content: string,
@@ -83,6 +97,23 @@ export const deleteConversationMessage = (
     method: 'DELETE',
   }).then((r) => {
     if (!r.ok) throw new Error('Failed to delete conversation message');
+  });
+
+export const pinConversationMessage = (conversationId: string, messageId: string): Promise<void> =>
+  apiFetch(`${API_BASE}/conversations/${conversationId}/messages/${messageId}/pin`, {
+    method: 'PUT',
+  }).then((r) => {
+    if (!r.ok) throw new Error('Failed to pin conversation message');
+  });
+
+export const unpinConversationMessage = (
+  conversationId: string,
+  messageId: string
+): Promise<void> =>
+  apiFetch(`${API_BASE}/conversations/${conversationId}/messages/${messageId}/pin`, {
+    method: 'DELETE',
+  }).then((r) => {
+    if (!r.ok) throw new Error('Failed to unpin conversation message');
   });
 
 export const deleteConversationMessageAttachment = (

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Avatar } from '@harmonie/ui';
 import { useTranslation } from 'react-i18next';
+import { Pin } from 'lucide-react';
 import type { Message } from '@/types/channel';
 import type { UserProfile } from '@/types/user';
 import { useFileBlobUrl } from '@/shared/hooks/useFileBlobUrl';
@@ -27,6 +28,7 @@ interface MessageListItemProps<TAuthor extends MessageAuthor = MessageAuthor> {
   onCancelEdit?: () => void;
   onSaveEdit?: (messageId: string, content: string) => Promise<void>;
   onDelete?: (messageId: string) => void;
+  onPinToggle?: (messageId: string, isPinned: boolean) => void;
   onAttachmentDeleted?: (attachmentFileId: string) => void;
   onReact?: (messageId: string, emoji: string) => void;
   reactionSource?: {
@@ -55,6 +57,7 @@ export const MessageListItem = <TAuthor extends MessageAuthor = MessageAuthor>({
   onCancelEdit,
   onSaveEdit,
   onDelete,
+  onPinToggle,
   onAttachmentDeleted,
   onReact,
   reactionSource,
@@ -79,7 +82,7 @@ export const MessageListItem = <TAuthor extends MessageAuthor = MessageAuthor>({
   };
 
   const handleContextMenu = (event: React.MouseEvent<HTMLElement>) => {
-    if (!isOwn || !(onEdit || onDelete)) return;
+    if (!(onPinToggle || (isOwn && (onEdit || onDelete)))) return;
     event.preventDefault();
     onOpenMenu?.(event, message.messageId, 'right');
   };
@@ -93,15 +96,24 @@ export const MessageListItem = <TAuthor extends MessageAuthor = MessageAuthor>({
     setPickerAnchorRect(null);
   };
 
+  const pinnedBadge = message.isPinned ? (
+    <span className="inline-flex items-center gap-1 text-xs font-medium text-primary shrink-0">
+      <Pin size={12} />
+      {t('channel.messages.pinned')}
+    </span>
+  ) : null;
+
   return (
     <div
       data-message-id={message.messageId}
       onContextMenu={handleContextMenu}
       className={[
         'group flex items-start gap-2 sm:gap-3 relative px-1 sm:px-2 -mx-1 sm:-mx-2 rounded-sm min-w-0',
-        'hover:bg-surface-2 transition-colors',
+        'hover:bg-surface-2 transition-[background-color,box-shadow] duration-200',
         isEditing || isMenuOpen || pickerAnchorRect ? 'bg-surface-3' : '',
-        isSelected ? 'bg-surface-3 ring-1 ring-primary/60' : '',
+        isSelected
+          ? 'z-10 ring-1 ring-primary/70 shadow-[0_0_8px_color-mix(in_srgb,var(--color-primary)_70%,transparent)]'
+          : '',
         grouped ? 'py-0.5' : 'pt-3 pb-2',
       ].join(' ')}
     >
@@ -139,8 +151,11 @@ export const MessageListItem = <TAuthor extends MessageAuthor = MessageAuthor>({
             <span className="text-xs text-text-3 shrink-0">
               {formatContextualDateTime(message.createdAtUtc, i18n.language, t)}
             </span>
+            {pinnedBadge}
           </div>
         )}
+
+        {grouped && pinnedBadge && <div className="mb-0.5">{pinnedBadge}</div>}
 
         {isEditing ? (
           <MessageInlineEditor
@@ -183,12 +198,17 @@ export const MessageListItem = <TAuthor extends MessageAuthor = MessageAuthor>({
         <MessageActions
           canEdit={isOwn && Boolean(onEdit)}
           canDelete={isOwn && Boolean(onDelete)}
+          canPin={Boolean(onPinToggle)}
+          isPinned={message.isPinned}
           canReact={Boolean(onReact)}
           editLabel={t('channel.messages.edit')}
           deleteLabel={t('channel.messages.delete')}
+          pinLabel={t('channel.messages.pin')}
+          unpinLabel={t('channel.messages.unpin')}
           reactLabel={t('channel.messages.react')}
           onEdit={() => onEdit?.(message.messageId)}
           onDelete={() => onDelete?.(message.messageId)}
+          onPinToggle={() => onPinToggle?.(message.messageId, !message.isPinned)}
           onPickerOpen={handlePickerOpen}
         />
       )}
