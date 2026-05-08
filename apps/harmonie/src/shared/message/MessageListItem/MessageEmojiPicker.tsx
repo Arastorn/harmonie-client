@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import type { EmojiClickData } from 'emoji-picker-react';
 import { EmojiPickerBase } from '@harmonie/ui';
 
-const PICKER_WIDTH = 320;
+const PICKER_WIDTH = 300;
 const PICKER_HEIGHT = 380;
 const OFFSET = 8;
 

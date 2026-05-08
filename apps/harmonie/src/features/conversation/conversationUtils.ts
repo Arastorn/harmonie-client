@@ -14,6 +14,9 @@ export const userToConversationParticipant = (
   avatar: user.avatar ?? null,
 });
 
+const getParticipantLabel = (participant: ConversationParticipant): string =>
+  participant.displayName ?? participant.username;
+
 export const getConversationLabel = (
   conversation: Conversation,
   currentUserId: string | undefined
@@ -24,10 +27,10 @@ export const getConversationLabel = (
       ? participants.filter((p) => p.userId !== currentUserId)
       : participants;
     const list = others.length > 0 ? others : participants;
-    return conversation.name ?? list.map((p) => p.username).join(', ');
+    return conversation.name ?? list.map(getParticipantLabel).join(', ');
   }
   const other = currentUserId
     ? participants.find((p) => p.userId !== currentUserId)
     : participants[0];
-  return other?.username ?? conversation.conversationId;
+  return other ? getParticipantLabel(other) : conversation.conversationId;
 };

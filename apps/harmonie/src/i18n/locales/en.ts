@@ -290,19 +290,22 @@ export const en = {
     title: 'Settings',
     close: 'Close settings',
     nav: {
-      bio: 'Bio',
+      profile: 'Profile',
       language: 'Language',
       avatar: 'Avatar',
       theme: 'Theme',
     },
-    bio: {
-      title: 'Bio',
+    profile: {
+      title: 'Profile',
+      displayNameLabel: 'Display name',
+      displayNamePlaceholder: 'The name other members will see',
+      displayNameHint: 'Leave empty to use your username.',
       label: 'About you',
       placeholder: 'Tell something about yourself…',
       hint: '500 characters maximum.',
       save: 'Save',
       cancel: 'Cancel',
-      error: 'Unable to save bio. Please try again.',
+      error: 'Unable to save profile. Please try again.',
     },
     language: {
       title: 'Language',
