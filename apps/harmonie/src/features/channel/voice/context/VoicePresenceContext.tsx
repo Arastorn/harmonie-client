@@ -1,7 +1,7 @@
 import { createContext, useContext, type ReactNode } from 'react';
-import type { VoiceParticipant, VoiceParticipantInit } from '@/types/voice';
-import { useVoiceParticipants } from './useVoiceParticipants';
-import { useVoiceRoom } from './useVoiceRoom';
+import type { VoiceParticipant, VoiceParticipantInit, VoiceScreenShare } from '@/types/voice';
+import { useVoiceParticipants } from '../hooks/useVoiceParticipants';
+import { useVoiceRoom } from '../hooks/useVoiceRoom';
 
 interface VoicePresenceContextValue {
   getParticipants: (channelId: string) => VoiceParticipant[];
@@ -16,6 +16,9 @@ interface VoicePresenceContextValue {
   updateActiveChannelMeta: (channelName: string, guildName: string) => void;
   isMuted: boolean;
   speakingUserIds: Set<string>;
+  screenShares: VoiceScreenShare[];
+  isScreenSharing: boolean;
+  screenShareError: string | null;
   joinChannel: (
     channelId: string,
     channelName?: string,
@@ -24,6 +27,7 @@ interface VoicePresenceContextValue {
   ) => Promise<void>;
   leaveChannel: () => void;
   toggleMute: () => void;
+  toggleScreenShare: () => void;
   isJoining: boolean;
   joinError: string | null;
 }
@@ -39,9 +43,13 @@ const VoicePresenceContext = createContext<VoicePresenceContextValue>({
   updateActiveChannelMeta: () => {},
   isMuted: false,
   speakingUserIds: new Set(),
+  screenShares: [],
+  isScreenSharing: false,
+  screenShareError: null,
   joinChannel: async () => {},
   leaveChannel: () => {},
   toggleMute: () => {},
+  toggleScreenShare: () => {},
   isJoining: false,
   joinError: null,
 });
@@ -64,9 +72,13 @@ export const VoicePresenceProvider = ({ children }: { children: ReactNode }) => 
     isJoining,
     joinError,
     speakingUserIds,
+    screenShares,
+    isScreenSharing,
+    screenShareError,
     joinChannel,
     leaveChannel,
     toggleMute,
+    toggleScreenShare,
   } = useVoiceRoom({ seedParticipantsFromJoin, syncParticipantsFromRoom });
 
   return (
@@ -82,9 +94,13 @@ export const VoicePresenceProvider = ({ children }: { children: ReactNode }) => 
         updateActiveChannelMeta,
         isMuted,
         speakingUserIds,
+        screenShares,
+        isScreenSharing,
+        screenShareError,
         joinChannel,
         leaveChannel,
         toggleMute,
+        toggleScreenShare,
         isJoining,
         joinError,
       }}

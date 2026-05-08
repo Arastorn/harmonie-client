@@ -32,7 +32,9 @@ export const VoiceParticipantCard = ({
     <div
       className={[
         'flex flex-col items-center justify-center rounded-md border p-8 text-center transition-all duration-150 hover:scale-[1.01]',
-        isSpeaking ? 'border-primary shadow-[0_0_0_2px_var(--color-primary)]' : 'border-border-2',
+        isSpeaking
+          ? 'border-primary shadow-[inset_0_0_0_2px_var(--color-primary)]'
+          : 'border-border-2',
         className,
       ]
         .filter(Boolean)
