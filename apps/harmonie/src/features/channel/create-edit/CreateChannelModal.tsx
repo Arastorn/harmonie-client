@@ -87,6 +87,7 @@ export const CreateChannelModal = ({
             setError(false);
           }}
           error={error ? t('guild.channels.create.error') : undefined}
+          pickerPlacement="top"
           autoFocus
           maxLength={100}
         />
