@@ -9,6 +9,7 @@ interface WsMessageCreatedEvent {
   authorUserId: string;
   content: string;
   attachments: Message['attachments'];
+  replyTo?: Message['replyTo'];
   linkPreviews?: Message['linkPreviews'];
   isPinned?: boolean;
   createdAtUtc: string;
@@ -191,6 +192,7 @@ export const useMessages = ({
           content: event.content,
           attachments: event.attachments ?? [],
           reactions: [],
+          replyTo: event.replyTo ?? null,
           linkPreviews: event.linkPreviews ?? null,
           isPinned: event.isPinned ?? false,
           createdAtUtc: event.createdAtUtc,

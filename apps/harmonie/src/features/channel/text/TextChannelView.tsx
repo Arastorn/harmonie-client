@@ -148,7 +148,8 @@ export const TextChannelView = () => {
         reactionSource={{ type: 'channel', entityId: channelId }}
         composer={{
           draftKey: `channel:${channelId}`,
-          sendFn: (content, fileIds) => sendMessage(channelId, content, fileIds),
+          sendFn: (content, fileIds, replyToMessageId) =>
+            sendMessage(channelId, content, fileIds, replyToMessageId),
           onTypingStart: () =>
             connection?.send(REALTIME_CLIENT_METHODS.startTypingChannel, channelId).catch(() => {}),
         }}

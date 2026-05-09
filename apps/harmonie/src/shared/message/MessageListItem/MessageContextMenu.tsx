@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Pencil, Pin, PinOff, Trash2 } from 'lucide-react';
+import { Pencil, Pin, PinOff, Reply, Trash2 } from 'lucide-react';
 import { ContextMenu } from '@harmonie/ui';
 
 export interface MessageMenuState {
@@ -7,6 +7,7 @@ export interface MessageMenuState {
   position: { x: number; y: number };
   horizontalAnchor?: 'left' | 'right';
   isPinned: boolean;
+  canReply: boolean;
   canEdit: boolean;
   canDelete: boolean;
 }
@@ -14,6 +15,7 @@ export interface MessageMenuState {
 interface MessageContextMenuProps {
   menu: MessageMenuState | null;
   onClose: () => void;
+  onReply: (messageId: string) => void;
   onEdit: (messageId: string) => void;
   onDelete: (messageId: string) => void;
   onPinToggle: (messageId: string, isPinned: boolean) => void;
@@ -22,6 +24,7 @@ interface MessageContextMenuProps {
 export const MessageContextMenu = ({
   menu,
   onClose,
+  onReply,
   onEdit,
   onDelete,
   onPinToggle,
@@ -36,6 +39,15 @@ export const MessageContextMenu = ({
       onClose={onClose}
       horizontalAnchor={menu.horizontalAnchor}
       items={[
+        ...(menu.canReply
+          ? [
+              {
+                label: t('channel.messages.reply'),
+                icon: <Reply size={14} />,
+                onClick: () => onReply(menu.messageId),
+              },
+            ]
+          : []),
         ...(menu.canEdit
           ? [
               {

@@ -125,7 +125,8 @@ export const ConversationView = () => {
           reactionSource={{ type: 'conversation', entityId: conversationId }}
           composer={{
             draftKey: `conversation:${conversationId}`,
-            sendFn: (content, fileIds) => sendConversationMessage(conversationId, content, fileIds),
+            sendFn: (content, fileIds, replyToMessageId) =>
+              sendConversationMessage(conversationId, content, fileIds, replyToMessageId),
             onTypingStart: () =>
               connection
                 ?.send(REALTIME_CLIENT_METHODS.startTypingConversation, conversationId)

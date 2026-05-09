@@ -10,7 +10,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { Button, IconButton, Modal, Separator } from '@harmonie/ui';
 import { Pin } from 'lucide-react';
-import type { Message, PinnedMessageList } from '@/types/channel';
+import type { Message, PinnedMessageList, ReplyPreview } from '@/types/channel';
 import type { UserProfile } from '@/types/user';
 import type { MessageAuthor } from '@/shared/message/types';
 import { MessageComposer } from './MessageComposer';
@@ -49,7 +49,11 @@ interface MessageThreadLabels {
 
 interface MessageThreadComposerConfig {
   draftKey: string;
-  sendFn: (content: string, attachmentFileIds: string[]) => Promise<unknown>;
+  sendFn: (
+    content: string,
+    attachmentFileIds: string[],
+    replyToMessageId?: string | null
+  ) => Promise<unknown>;
   onTypingStart?: () => void;
 }
 
@@ -137,6 +141,7 @@ export const MessageThread = <TAuthor extends MessageAuthor = MessageAuthor>({
   const { t } = useTranslation();
   const [messageMenu, setMessageMenu] = useState<MessageMenuState | null>(null);
   const [pendingDeleteMessageId, setPendingDeleteMessageId] = useState<string | null>(null);
+  const [replyTo, setReplyTo] = useState<ReplyPreview | null>(null);
   const [pinnedMessagesOpen, setPinnedMessagesOpen] = useState(false);
   const [pinnedHighlightMessageId, setPinnedHighlightMessageId] = useState<string | null>(null);
   const [separatorDismissed, setSeparatorDismissed] = useState(false);
@@ -178,6 +183,7 @@ export const MessageThread = <TAuthor extends MessageAuthor = MessageAuthor>({
   useEffect(() => {
     setMessageMenu(null);
     setPendingDeleteMessageId(null);
+    setReplyTo(null);
     setPinnedMessagesOpen(false);
     setPinnedHighlightMessageId(null);
     setSeparatorDismissed(false);
@@ -328,6 +334,7 @@ export const MessageThread = <TAuthor extends MessageAuthor = MessageAuthor>({
       position: { x: event.clientX, y: event.clientY },
       horizontalAnchor,
       isPinned: message?.isPinned ?? false,
+      canReply: Boolean(message),
       canEdit: isOwnMessage,
       canDelete: isOwnMessage,
     });
@@ -335,7 +342,26 @@ export const MessageThread = <TAuthor extends MessageAuthor = MessageAuthor>({
 
   const handleStartEditing = (messageId: string) => {
     setMessageMenu(null);
+    setReplyTo(null);
     startEditing(messageId);
+  };
+
+  const handleStartReply = (messageId: string) => {
+    const message = messages.find((item) => item.messageId === messageId);
+    if (!message) return;
+    setMessageMenu(null);
+    cancelEditing();
+    const author = authorMap.get(message.authorUserId);
+    setReplyTo({
+      messageId: message.messageId,
+      authorUserId: message.authorUserId,
+      authorDisplayName: author?.displayName ?? null,
+      authorUsername: author?.username ?? t('channel.messages.memberNotFound'),
+      content: message.content,
+      hasAttachments: message.attachments.length > 0,
+      isDeleted: false,
+      deletedAtUtc: null,
+    });
   };
 
   const handleDeleteRequest = (messageId: string) => {
@@ -358,7 +384,7 @@ export const MessageThread = <TAuthor extends MessageAuthor = MessageAuthor>({
     });
   };
 
-  const handlePinnedMessageSelected = async (messageId: string) => {
+  const revealMessage = async (messageId: string) => {
     const loaded = await loadUntilMessage(messageId);
     if (!loaded) return;
     if (pinnedHighlightTimeoutRef.current) clearTimeout(pinnedHighlightTimeoutRef.current);
@@ -379,8 +405,15 @@ export const MessageThread = <TAuthor extends MessageAuthor = MessageAuthor>({
     });
   };
 
+  const handlePinnedMessageSelected = (messageId: string) => {
+    void revealMessage(messageId);
+  };
+
   const handleConfirmDelete = () => {
-    if (pendingDeleteMessageId) removeMessage(pendingDeleteMessageId);
+    if (pendingDeleteMessageId) {
+      removeMessage(pendingDeleteMessageId);
+      if (replyTo?.messageId === pendingDeleteMessageId) setReplyTo(null);
+    }
     setPendingDeleteMessageId(null);
   };
 
@@ -472,6 +505,8 @@ export const MessageThread = <TAuthor extends MessageAuthor = MessageAuthor>({
                         onCancelEdit={cancelEditing}
                         onSaveEdit={saveEdit}
                         onDelete={handleDeleteRequest}
+                        onReply={handleStartReply}
+                        onReplyClick={(messageId) => void revealMessage(messageId)}
                         onPinToggle={handlePinToggle}
                         onAttachmentDeleted={(fileId) =>
                           removeAttachment(message.messageId, fileId)
@@ -515,6 +550,8 @@ export const MessageThread = <TAuthor extends MessageAuthor = MessageAuthor>({
             onTypingStart={composer.onTypingStart}
             latestEditableMessage={latestOwnMessage}
             onEditingRequested={handleStartEditing}
+            replyTo={replyTo}
+            onCancelReply={() => setReplyTo(null)}
           />
         </div>
       </div>
@@ -522,6 +559,7 @@ export const MessageThread = <TAuthor extends MessageAuthor = MessageAuthor>({
       <MessageContextMenu
         menu={messageMenu}
         onClose={() => setMessageMenu(null)}
+        onReply={handleStartReply}
         onEdit={handleStartEditing}
         onDelete={handleDeleteRequest}
         onPinToggle={handlePinToggle}

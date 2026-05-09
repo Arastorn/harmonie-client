@@ -14,6 +14,7 @@ import { MessageContent } from './MessageContent';
 import { MessageEmojiPicker } from './MessageEmojiPicker';
 import { MessageInlineEditor } from './MessageInlineEditor';
 import { MessageLinkPreviews } from './MessageLinkPreviews';
+import { MessageReplyPreview } from './MessageReplyPreview';
 
 interface MessageListItemProps<TAuthor extends MessageAuthor = MessageAuthor> {
   message: Message;
@@ -28,6 +29,8 @@ interface MessageListItemProps<TAuthor extends MessageAuthor = MessageAuthor> {
   onCancelEdit?: () => void;
   onSaveEdit?: (messageId: string, content: string) => Promise<void>;
   onDelete?: (messageId: string) => void;
+  onReply?: (messageId: string) => void;
+  onReplyClick?: (messageId: string) => void;
   onPinToggle?: (messageId: string, isPinned: boolean) => void;
   onAttachmentDeleted?: (attachmentFileId: string) => void;
   onReact?: (messageId: string, emoji: string) => void;
@@ -57,6 +60,8 @@ export const MessageListItem = <TAuthor extends MessageAuthor = MessageAuthor>({
   onCancelEdit,
   onSaveEdit,
   onDelete,
+  onReply,
+  onReplyClick,
   onPinToggle,
   onAttachmentDeleted,
   onReact,
@@ -82,7 +87,7 @@ export const MessageListItem = <TAuthor extends MessageAuthor = MessageAuthor>({
   };
 
   const handleContextMenu = (event: React.MouseEvent<HTMLElement>) => {
-    if (!(onPinToggle || (isOwn && (onEdit || onDelete)))) return;
+    if (!(onReply || onPinToggle || (isOwn && (onEdit || onDelete)))) return;
     event.preventDefault();
     onOpenMenu?.(event, message.messageId, 'right');
   };
@@ -156,6 +161,9 @@ export const MessageListItem = <TAuthor extends MessageAuthor = MessageAuthor>({
         )}
 
         {grouped && pinnedBadge && <div className="mb-0.5">{pinnedBadge}</div>}
+        {message.replyTo && (
+          <MessageReplyPreview replyTo={message.replyTo} onClick={onReplyClick} />
+        )}
 
         {isEditing ? (
           <MessageInlineEditor
@@ -201,15 +209,18 @@ export const MessageListItem = <TAuthor extends MessageAuthor = MessageAuthor>({
           canPin={Boolean(onPinToggle)}
           isPinned={message.isPinned}
           canReact={Boolean(onReact)}
+          canReply={Boolean(onReply)}
           editLabel={t('channel.messages.edit')}
           deleteLabel={t('channel.messages.delete')}
           pinLabel={t('channel.messages.pin')}
           unpinLabel={t('channel.messages.unpin')}
           reactLabel={t('channel.messages.react')}
+          replyLabel={t('channel.messages.reply')}
           onEdit={() => onEdit?.(message.messageId)}
           onDelete={() => onDelete?.(message.messageId)}
           onPinToggle={() => onPinToggle?.(message.messageId, !message.isPinned)}
           onPickerOpen={handlePickerOpen}
+          onReply={() => onReply?.(message.messageId)}
         />
       )}
 
