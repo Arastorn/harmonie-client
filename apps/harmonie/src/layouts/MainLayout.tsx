@@ -1,10 +1,11 @@
 import { Outlet } from 'react-router-dom';
 import { GuildProvider } from '@/features/guild/GuildContext';
 import { GuildWorkspaceProvider } from '@/features/guild/workspace/GuildWorkspaceProvider';
-import { VoicePresenceProvider } from '@/features/channel/voice/context/VoicePresenceContext';
+import { VoicePresenceProvider } from '@/shared/voice/context/VoicePresenceContext';
 import { ChannelProvider } from '@/features/channel/ChannelContext';
 import { MessageActivityProvider } from '@/features/realtime/MessageActivityContext';
 import { ConversationProvider } from '@/features/conversation/ConversationContext';
+import { ConversationCallIncomingToast } from '@/features/conversation/ConversationCallIncomingToast';
 import { UserProfileRealtimeSync } from '@/features/user/UserProfileRealtimeSync';
 
 export const MainLayout = () => (
@@ -13,6 +14,7 @@ export const MainLayout = () => (
     <GuildWorkspaceProvider>
       <ConversationProvider>
         <VoicePresenceProvider>
+          <ConversationCallIncomingToast />
           <ChannelProvider>
             <MessageActivityProvider>
               <Outlet />

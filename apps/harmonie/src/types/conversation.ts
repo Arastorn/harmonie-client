@@ -102,6 +102,16 @@ export interface ConversationUpdatedEvent {
   name: string | null;
 }
 
+export interface ConversationCallIncomingEvent {
+  conversationId: string;
+  callerUserId: string;
+  callerUsername: string;
+  callerDisplayName: string | null;
+  conversationName: string | null;
+  conversationType: 'Direct' | 'Group' | string;
+  startedAtUtc: string;
+}
+
 export interface SearchUser {
   userId: string;
   username: string;

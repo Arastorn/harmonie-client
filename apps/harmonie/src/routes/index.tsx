@@ -8,7 +8,7 @@ import { ConnectPage } from '@/features/auth/ConnectPage';
 import { RegisterPage } from '@/features/auth/RegisterPage';
 import { ChannelIndexPage } from '@/features/channel/ChannelIndexPage';
 import { TextChannelView } from '@/features/channel/text/TextChannelView';
-import { VoiceChannelView } from '@/features/channel/voice/VoiceChannelView';
+import { VoiceChannelView } from '@/shared/voice/VoiceChannelView';
 import { ConversationIndexPage } from '@/features/conversation/ConversationIndexPage';
 import { ConversationView } from '@/features/conversation/view/ConversationView';
 

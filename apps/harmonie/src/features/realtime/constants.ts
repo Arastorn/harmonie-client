@@ -1,6 +1,9 @@
 export const REALTIME_CLIENT_METHODS = {
   startTypingChannel: 'StartTypingChannel',
   startTypingConversation: 'StartTypingConversation',
+  startConversationCall: 'StartConversationCall',
+  acceptConversationCall: 'AcceptConversationCall',
+  declineConversationCall: 'DeclineConversationCall',
 } as const;
 
 export const REALTIME_SERVER_EVENTS = {
@@ -16,6 +19,12 @@ export const REALTIME_SERVER_EVENTS = {
   conversationMessageCreated: 'ConversationMessageCreated',
   conversationMessageUpdated: 'ConversationMessageUpdated',
   conversationMessageDeleted: 'ConversationMessageDeleted',
+  conversationCallIncoming: 'ConversationCallIncoming',
+  conversationVoiceParticipantJoined: 'ConversationVoiceParticipantJoined',
+  conversationVoiceParticipantLeft: 'ConversationVoiceParticipantLeft',
+  conversationCallAccepted: 'ConversationCallAccepted',
+  conversationCallDeclined: 'ConversationCallDeclined',
+  conversationCallEnded: 'ConversationCallEnded',
   voiceParticipantJoined: 'VoiceParticipantJoined',
   voiceParticipantLeft: 'VoiceParticipantLeft',
   guildDeleted: 'GuildDeleted',

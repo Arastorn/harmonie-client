@@ -4,7 +4,7 @@ import { useGuilds } from '@/features/guild/GuildContext';
 import { GuildSidebar } from '@/features/guild/GuildSidebar';
 import { GuildWorkspaceSidepanels } from '@/features/guild/workspace/GuildWorkspaceSidepanels';
 import { UserPanel } from '@/features/user/UserPanel';
-import { VoiceConnectionBar } from '@/features/channel/voice/VoiceConnectionBar';
+import { VoiceConnectionBar } from '@/shared/voice/VoiceConnectionBar';
 import { LayoutSync } from './LayoutSync';
 
 interface MainLayoutShellProps {

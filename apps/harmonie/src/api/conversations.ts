@@ -10,6 +10,7 @@ import type {
   ConversationList,
   SearchUsersResult,
 } from '@/types/conversation';
+import type { JoinVoiceResponse } from '@/types/voice';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
@@ -185,3 +186,8 @@ export const searchUsers = (query: string): Promise<SearchUsersResult> => {
   url.searchParams.set('Q', query);
   return apiFetch(url.toString()).then((r) => parseOrThrow<SearchUsersResult>(r));
 };
+
+export const joinConversationVoiceCall = (conversationId: string): Promise<JoinVoiceResponse> =>
+  apiFetch(`${API_BASE}/conversations/${conversationId}/voice/join`, {
+    method: 'POST',
+  }).then((r) => parseOrThrow<JoinVoiceResponse>(r));
