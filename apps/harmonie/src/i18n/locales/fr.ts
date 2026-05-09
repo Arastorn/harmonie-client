@@ -52,6 +52,7 @@ export const fr = {
     channels: {
       text: 'Salons textuels',
       voice: 'Salons vocaux',
+      backToChannels: 'Retour aux salons',
       create: {
         title: 'Créer un salon',
         typeLabel: 'Type de salon',
@@ -406,6 +407,7 @@ export const fr = {
     },
   },
   conversation: {
+    backToConversations: 'Retour aux conversations',
     home: 'Messages privés',
     newConversation: 'Nouvelle conversation',
     newDm: 'Nouveau message direct',

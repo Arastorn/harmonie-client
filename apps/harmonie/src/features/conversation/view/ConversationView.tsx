@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button, IconButton } from '@harmonie/ui';
-import { Phone, PhoneOff, Users } from 'lucide-react';
+import { ArrowLeft, Phone, PhoneOff, Users } from 'lucide-react';
 import { getConversationPinnedMessages, sendConversationMessage } from '@/api/conversations';
 import { useRealtime } from '@/features/realtime/RealtimeContext';
 import { REALTIME_CLIENT_METHODS } from '@/features/realtime/constants';
@@ -28,6 +28,7 @@ interface SelectedParticipant {
 
 export const ConversationView = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { conversationId } = useParams<{ conversationId: string }>();
   const { user } = useUser();
   const { connection } = useRealtime();
@@ -160,6 +161,17 @@ export const ConversationView = () => {
             <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-md bg-surface-1">
               <header className="flex h-14 shrink-0 items-center justify-between bg-surface-2 px-4">
                 <div className="flex min-w-0 items-center gap-2">
+                  <IconButton
+                    className="md:hidden"
+                    size="small"
+                    variant="ghost"
+                    aria-label={t('conversation.backToConversations')}
+                    title={t('conversation.backToConversations')}
+                    tooltipSide="bottom"
+                    onClick={() => navigate('/conversations')}
+                  >
+                    <ArrowLeft size={16} />
+                  </IconButton>
                   <Phone size={16} className="shrink-0 text-text-3" />
                   <span className="truncate text-sm font-semibold text-text-1">
                     {conversationTitle}
@@ -203,12 +215,26 @@ export const ConversationView = () => {
             <MessageThread
               resetKey={conversationId}
               title={conversationTitle}
+              leadingActions={
+                <IconButton
+                  className="md:hidden"
+                  size="small"
+                  variant="ghost"
+                  aria-label={t('conversation.backToConversations')}
+                  title={t('conversation.backToConversations')}
+                  tooltipSide="bottom"
+                  onClick={() => navigate('/conversations')}
+                >
+                  <ArrowLeft size={16} />
+                </IconButton>
+              }
               afterPinActions={
                 <>
                   <IconButton
                     size="small"
                     aria-label={t('conversation.call.start')}
                     title={t('conversation.call.start')}
+                    tooltipSide="bottom"
                     onClick={() => void handleStartCall()}
                   >
                     <Phone size={16} />
@@ -218,6 +244,7 @@ export const ConversationView = () => {
                       size="small"
                       aria-label={t('conversation.participantsTitle')}
                       title={t('conversation.participantsTitle')}
+                      tooltipSide="bottom"
                       onClick={toggleMembersOpen}
                     >
                       <Users size={16} />

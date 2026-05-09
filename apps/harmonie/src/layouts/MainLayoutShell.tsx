@@ -1,5 +1,5 @@
 import { type ReactNode } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useParams } from 'react-router-dom';
 import { useGuilds } from '@/features/guild/GuildContext';
 import { GuildSidebar } from '@/features/guild/GuildSidebar';
 import { GuildWorkspaceSidepanels } from '@/features/guild/workspace/GuildWorkspaceSidepanels';
@@ -14,13 +14,23 @@ interface MainLayoutShellProps {
 
 export const MainLayoutShell = ({ sidebar, showSidepanels = true }: MainLayoutShellProps) => {
   const { guilds } = useGuilds();
+  const { channelId, conversationId } = useParams<{
+    channelId?: string;
+    conversationId?: string;
+  }>();
   const hasGuilds = guilds.length > 0;
+  const hasMobileDetail = Boolean(channelId || conversationId);
 
   return (
     <>
       <LayoutSync />
-      <div className="flex h-screen bg-background p-3 gap-2 overflow-hidden">
-        <div className="flex h-full shrink-0 flex-col gap-2">
+      <div className="flex h-screen gap-0 overflow-hidden bg-background p-0 md:gap-2 md:p-3">
+        <div
+          className={[
+            'h-full shrink-0 flex-col gap-2',
+            hasMobileDetail ? 'hidden md:flex' : 'flex w-full md:w-auto',
+          ].join(' ')}
+        >
           <div className="flex min-h-0 flex-1 gap-2">
             <GuildSidebar />
             {sidebar}
@@ -30,13 +40,22 @@ export const MainLayoutShell = ({ sidebar, showSidepanels = true }: MainLayoutSh
             <UserPanel />
           </div>
         </div>
-        <div className="flex flex-1 gap-2 overflow-hidden min-w-0">
+        <div
+          className={[
+            'min-w-0 flex-1 gap-2 overflow-hidden',
+            hasMobileDetail ? 'flex' : 'hidden md:flex',
+          ].join(' ')}
+        >
           <div className="flex-1 overflow-hidden min-w-0">
             <main className="h-full overflow-hidden">
               <Outlet />
             </main>
           </div>
-          {showSidepanels && <GuildWorkspaceSidepanels hasGuilds={hasGuilds} />}
+          {showSidepanels && (
+            <div className="hidden lg:contents">
+              <GuildWorkspaceSidepanels hasGuilds={hasGuilds} />
+            </div>
+          )}
         </div>
       </div>
     </>

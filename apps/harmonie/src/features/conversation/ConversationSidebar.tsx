@@ -117,7 +117,7 @@ export const ConversationSidebar = () => {
 
   return (
     <>
-      <aside className="flex flex-col w-60 bg-surface-1 rounded-md shrink-0 overflow-hidden min-h-0">
+      <aside className="flex min-h-0 w-0 flex-1 flex-col overflow-hidden bg-surface-1 md:w-60 md:flex-none md:shrink-0 md:rounded-md">
         <header className="pl-4 pr-2 h-14 bg-surface-2 rounded-t-md flex items-center justify-between gap-2">
           <h2 className="font-semibold text-text-1 truncate">{t('conversation.home')}</h2>
           <IconButton
