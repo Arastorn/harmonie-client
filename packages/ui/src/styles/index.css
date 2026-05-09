@@ -19,6 +19,7 @@
   --color-surface-2: #faf7f2;
   --color-surface-3: #eee9e2;
   --color-surface-hover: #eee9e2;
+  --color-rich-text-input-background: #faf7f2;
 
   /* ── Borders ── */
   --color-border-1: #3d3530;
@@ -45,6 +46,8 @@
   /* ── Error states ── */
   --color-error: #fae8e8;
   --color-error-fg: #a05050;
+  --color-danger-action: #c92f46;
+  --color-danger-action-fg: #ffffff;
 
   /* ── User status ── */
   --color-status-online: #72b882;
@@ -76,6 +79,7 @@
   --color-surface-2: #faf7f2;
   --color-surface-3: #eee9e2;
   --color-surface-hover: #eee9e2;
+  --color-rich-text-input-background: #faf7f2;
   --color-border-1: #3d3530;
   --color-border-2: rgba(61, 53, 48, 0.14);
   --color-text-1: #3d3530;
@@ -94,6 +98,8 @@
   --color-cat-5-fg: #a05050;
   --color-error: #fae8e8;
   --color-error-fg: #a05050;
+  --color-danger-action: #c92f46;
+  --color-danger-action-fg: #ffffff;
   --color-status-online: #72b882;
   --color-status-away: #c8b060;
   --color-status-busy: #c07070;
@@ -110,6 +116,7 @@
 /* ── Dark — Obsidian ── */
 @import './forest-obsidian.css';
 @import './midnight-obsidian.css';
+@import './black-obsidian.css';
 @import './emerald-obsidian.css';
 @import './crimson-obsidian.css';
 @import './amethyst-obsidian.css';

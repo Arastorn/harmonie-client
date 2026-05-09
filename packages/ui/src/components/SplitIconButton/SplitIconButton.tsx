@@ -36,7 +36,7 @@ const secondarySizeClasses: Record<IconButtonSize, string> = {
 
 const selectedVariantClasses = {
   primary: 'bg-primary text-primary-fg',
-  danger: 'bg-error text-error-fg',
+  danger: 'bg-[var(--color-danger-action)] text-[var(--color-danger-action-fg)]',
 } as const;
 
 export const SplitIconButton = forwardRef<HTMLButtonElement, SplitIconButtonProps>(

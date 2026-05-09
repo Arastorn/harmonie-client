@@ -104,7 +104,7 @@ export const RichTextMessageInput = ({
 
   return (
     <div className="flex flex-col gap-1.5">
-      <div className="relative rounded-sm border border-border-2 bg-surface-2 transition-[border-color,box-shadow] duration-150 focus-within:border-primary focus-within:shadow-[0_0_14px_var(--color-primary)]">
+      <div className="relative rounded-sm border border-border-2 bg-[var(--color-rich-text-input-background)] transition-[border-color,box-shadow] duration-150 focus-within:border-primary focus-within:shadow-[0_0_0_2px_color-mix(in_srgb,var(--color-primary)_16%,transparent)]">
         {showFormattingTools && (
           <div className="px-3 pt-2">
             <div className="pb-1">

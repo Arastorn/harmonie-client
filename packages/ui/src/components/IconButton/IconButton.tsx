@@ -23,7 +23,7 @@ const variantClasses: Record<IconButtonVariant, string> = {
   filled: 'bg-surface-3 text-text-2 hover:bg-surface-2',
   overlay: 'bg-transparent text-primary-fg hover:bg-transparent',
   primary: 'bg-primary text-primary-fg hover:opacity-90',
-  danger: 'bg-error text-error-fg hover:opacity-90',
+  danger: 'bg-[var(--color-danger-action)] text-[var(--color-danger-action-fg)] hover:opacity-90',
 };
 
 const selectedClasses = 'bg-primary text-primary-fg hover:bg-primary';

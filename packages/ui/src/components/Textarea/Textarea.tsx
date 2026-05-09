@@ -28,10 +28,10 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
     const textareaId = id ?? (label ? label.toLowerCase().replace(/\s+/g, '-') : undefined);
 
     const borderStateClasses = error
-      ? 'border-error-fg shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-error-fg)_20%,transparent)]'
+      ? 'border-error-fg shadow-[0_0_0_2px_color-mix(in_srgb,var(--color-error-fg)_14%,transparent)]'
       : topContent
-        ? 'focus-within:border-secondary-fg focus-within:shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-secondary-fg)_20%,transparent)]'
-        : 'focus:border-secondary-fg focus:shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-secondary-fg)_20%,transparent)]';
+        ? 'focus-within:border-secondary-fg focus-within:shadow-[0_0_0_2px_color-mix(in_srgb,var(--color-secondary-fg)_14%,transparent)]'
+        : 'focus:border-secondary-fg focus:shadow-[0_0_0_2px_color-mix(in_srgb,var(--color-secondary-fg)_14%,transparent)]';
 
     const textareaClasses = [
       'w-full px-4 py-3 font-body text-sm text-text-2 caret-primary outline-none resize-none',

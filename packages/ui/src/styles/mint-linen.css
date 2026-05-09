@@ -3,26 +3,27 @@
   --color-primary: #6b8e23;
   --color-primary-fg: #ffffff;
   --color-secondary: #cfe0a8;
-  --color-secondary-fg: #3a5200;
-  --color-tertiary: #f4f7f4;
-  --color-tertiary-fg: #5a6a5a;
+  --color-secondary-fg: #3b632a;
+  --color-tertiary: #f0f4ef;
+  --color-tertiary-fg: #4a5d4c;
 
   /* ── Background & surfaces ── */
-  --color-background: #f4f7f4;
+  --color-background: #f0f4ef;
   --color-surface-1: #ffffff;
-  --color-surface-2: #f2f5ea;
-  --color-surface-3: #ecefe4;
-  --color-surface-hover: #ecefe4;
+  --color-surface-2: #f9fbf9;
+  --color-surface-3: #e2f0d9;
+  --color-surface-hover: rgba(106, 176, 76, 0.05);
+  --color-rich-text-input-background: #ffffff;
 
   /* ── Borders ── */
-  --color-border-1: #191d16;
-  --color-border-2: rgba(25, 29, 22, 0.14);
+  --color-border-1: #d1dbd0;
+  --color-border-2: rgba(106, 176, 76, 0.1);
 
   /* ── Text ── */
-  --color-text-1: #191d16;
-  --color-text-2: #414a3a;
-  --color-text-3: #6a7563;
-  --color-text-4: #93a08d;
+  --color-text-1: #1e2b1f;
+  --color-text-2: #4a5d4c;
+  --color-text-3: #7b8e7d;
+  --color-text-4: #a8b9aa;
 
   /* ── Categories (tags, badges) ── */
   --color-cat-1: #ecf2df;
@@ -39,6 +40,8 @@
   /* ── Error states ── */
   --color-error: #f9eded;
   --color-error-fg: #a05050;
+  --color-danger-action: #c92f46;
+  --color-danger-action-fg: #ffffff;
 
   /* ── User status ── */
   --color-status-online: #72b882;

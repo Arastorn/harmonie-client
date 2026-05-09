@@ -1,32 +1,33 @@
 [data-theme='rose-linen'] {
   /* ── Brand colors ── */
-  --color-primary: #b07060;
+  --color-primary: #e94e77;
   --color-primary-fg: #ffffff;
-  --color-secondary: #f7e9e6;
-  --color-secondary-fg: #864d3e;
-  --color-tertiary: #faf9f9;
-  --color-tertiary-fg: #615a58;
+  --color-secondary: #ffebf0;
+  --color-secondary-fg: #e94e77;
+  --color-tertiary: #f9e4e8;
+  --color-tertiary-fg: #5c4d50;
 
   /* ── Background & surfaces ── */
-  --color-background: #faf9f9;
+  --color-background: #f8f0f2;
   --color-surface-1: #ffffff;
-  --color-surface-2: #f4f3f3;
-  --color-surface-3: #e3e2e2;
-  --color-surface-hover: #e3e2e2;
+  --color-surface-2: #fdfafb;
+  --color-surface-3: #ffebf0;
+  --color-surface-hover: #fff5f7;
+  --color-rich-text-input-background: #ffffff;
 
   /* ── Borders ── */
-  --color-border-1: #2d2a2a;
-  --color-border-2: rgba(45, 42, 42, 0.1);
+  --color-border-1: #eacdd3;
+  --color-border-2: rgba(233, 78, 119, 0.15);
 
   /* ── Text ── */
-  --color-text-1: #2d2a2a;
-  --color-text-2: #5c5555;
-  --color-text-3: #8a8181;
-  --color-text-4: #b8adad;
+  --color-text-1: #3d2a2e;
+  --color-text-2: #6b5358;
+  --color-text-3: #967d82;
+  --color-text-4: #c2b0b4;
 
   /* ── Categories (tags, badges) ── */
-  --color-cat-1: #f7e9e6;
-  --color-cat-1-fg: #b07060;
+  --color-cat-1: #ffebf0;
+  --color-cat-1-fg: #e94e77;
   --color-cat-2: #edeaf5;
   --color-cat-2-fg: #7a6e9a;
   --color-cat-3: #f5f0eb;
@@ -37,12 +38,14 @@
   --color-cat-5-fg: #a05050;
 
   /* ── Error states ── */
-  --color-error: #f5e8e8;
-  --color-error-fg: #a05050;
+  --color-error: #fff0f3;
+  --color-error-fg: #e94e77;
+  --color-danger-action: #c92f46;
+  --color-danger-action-fg: #ffffff;
 
   /* ── User status ── */
-  --color-status-online: #72b882;
-  --color-status-away: #c8b060;
-  --color-status-busy: #c07070;
-  --color-status-offline: #b8adad;
+  --color-status-online: #28ca6a;
+  --color-status-away: #f3a952;
+  --color-status-busy: #f44336;
+  --color-status-offline: #b0a4a6;
 }

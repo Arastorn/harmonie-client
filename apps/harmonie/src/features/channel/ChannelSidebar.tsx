@@ -146,7 +146,7 @@ export const ChannelSidebar = () => {
             <>
               {/* Text channels section */}
               <section>
-                <div className="flex justify-between text-text-3 mb-1 items-center h-7">
+                <div className="flex justify-between text-text-2 mb-1 items-center h-7">
                   <p className="text-xs font-semibold uppercase tracking-wide px-2">
                     {t('guild.channels.text')}
                   </p>
@@ -173,7 +173,7 @@ export const ChannelSidebar = () => {
 
               {/* Voice channels section */}
               <section>
-                <div className="flex justify-between text-text-3 mb-1 items-center">
+                <div className="flex justify-between text-text-2 mb-1 items-center">
                   <p className="text-xs font-semibold uppercase tracking-wide px-2">
                     {t('guild.channels.voice')}
                   </p>
