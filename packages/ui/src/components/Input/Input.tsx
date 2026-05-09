@@ -39,8 +39,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       sizeClasses[uiSize],
       rightElement ? 'pr-10' : '',
       error
-        ? 'border-error-fg shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-error-fg)_20%,transparent)]'
-        : 'focus:border-secondary-fg focus:shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-secondary-fg)_20%,transparent)]',
+        ? 'border-error-fg shadow-[0_0_0_2px_color-mix(in_srgb,var(--color-error-fg)_14%,transparent)]'
+        : 'focus:border-secondary-fg focus:shadow-[0_0_0_2px_color-mix(in_srgb,var(--color-secondary-fg)_14%,transparent)]',
       disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-text',
       className ?? '',
     ]

@@ -13,6 +13,7 @@
   --color-surface-2: #211d2c;
   --color-surface-3: #322d42;
   --color-surface-hover: #322d42;
+  --color-rich-text-input-background: #211d2c;
 
   /* ── Borders ── */
   --color-border-1: #e0d8f0;
@@ -39,6 +40,8 @@
   /* ── Error states ── */
   --color-error: #3a1c1c;
   --color-error-fg: #c96565;
+  --color-danger-action: #c92f46;
+  --color-danger-action-fg: #ffffff;
 
   /* ── User status ── */
   --color-status-online: #72b882;

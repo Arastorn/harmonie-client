@@ -61,9 +61,11 @@ export const ChannelItem = ({
             size={16}
             className={[
               'shrink-0',
-              voiceActive || (unread && !active)
-                ? 'text-primary drop-shadow-[0_0_8px_var(--color-primary)]'
-                : 'text-text-3',
+              active
+                ? 'text-secondary-fg'
+                : voiceActive || unread
+                  ? 'text-primary drop-shadow-[0_0_8px_var(--color-primary)]'
+                  : 'text-text-2',
             ].join(' ')}
             fill={voiceActive ? 'currentColor' : 'none'}
           />

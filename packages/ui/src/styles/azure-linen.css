@@ -1,28 +1,29 @@
 [data-theme='azure-linen'] {
   /* ── Brand colors ── */
-  --color-primary: #5d8aa8;
+  --color-primary: #1e6ec7;
   --color-primary-fg: #ffffff;
-  --color-secondary: #eef2f5;
-  --color-secondary-fg: #32617d;
-  --color-tertiary: #fbf9f7;
-  --color-tertiary-fg: #5d5a58;
+  --color-secondary: #e1effe;
+  --color-secondary-fg: #1e6ec7;
+  --color-tertiary: #d6e4f3;
+  --color-tertiary-fg: #2c5282;
 
   /* ── Background & surfaces ── */
-  --color-background: #fbf9f7;
+  --color-background: #e6edf5;
   --color-surface-1: #ffffff;
-  --color-surface-2: #f5f3f1;
-  --color-surface-3: #e4e2e0;
-  --color-surface-hover: #e4e2e0;
+  --color-surface-2: #f4f8fc;
+  --color-surface-3: #dbeafe;
+  --color-surface-hover: #eef6ff;
+  --color-rich-text-input-background: #ffffff;
 
   /* ── Borders ── */
-  --color-border-1: #1b1c1b;
-  --color-border-2: rgba(27, 28, 27, 0.1);
+  --color-border-1: #b9cadc;
+  --color-border-2: rgba(30, 110, 199, 0.2);
 
   /* ── Text ── */
-  --color-text-1: #1b1c1b;
-  --color-text-2: #4a4d4a;
-  --color-text-3: #7b7e7b;
-  --color-text-4: #a8aca8;
+  --color-text-1: #1a3a5f;
+  --color-text-2: #2e4a6d;
+  --color-text-3: #5f7a9a;
+  --color-text-4: #94a9c2;
 
   /* ── Categories (tags, badges) ── */
   --color-cat-1: #eef2f5;
@@ -37,12 +38,14 @@
   --color-cat-5-fg: #a05050;
 
   /* ── Error states ── */
-  --color-error: #f9eded;
-  --color-error-fg: #a05050;
+  --color-error: #fff5f5;
+  --color-error-fg: #e53e3e;
+  --color-danger-action: #c92f46;
+  --color-danger-action-fg: #ffffff;
 
   /* ── User status ── */
-  --color-status-online: #72b882;
-  --color-status-away: #c8b060;
-  --color-status-busy: #c07070;
-  --color-status-offline: #a8aca8;
+  --color-status-online: #28ca6a;
+  --color-status-away: #f3a952;
+  --color-status-busy: #f44336;
+  --color-status-offline: #a0aec0;
 }

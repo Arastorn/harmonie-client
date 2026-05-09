@@ -113,9 +113,9 @@ export const Select = ({
     'transition-[border-color,box-shadow] duration-150',
     sizeClasses[size],
     error
-      ? 'border-error-fg shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-error-fg)_20%,transparent)]'
+      ? 'border-error-fg shadow-[0_0_0_2px_color-mix(in_srgb,var(--color-error-fg)_14%,transparent)]'
       : isOpen
-        ? 'border-secondary-fg shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-secondary-fg)_20%,transparent)]'
+        ? 'border-secondary-fg shadow-[0_0_0_2px_color-mix(in_srgb,var(--color-secondary-fg)_14%,transparent)]'
         : 'hover:border-border-1',
     disabled ? 'opacity-50 cursor-not-allowed' : '',
   ]

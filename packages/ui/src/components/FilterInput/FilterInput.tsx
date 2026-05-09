@@ -15,7 +15,7 @@ export const FilterInput = ({
     'relative flex items-center rounded-sm bg-surface-2 border border-border-2',
     'transition-[border-color,box-shadow] duration-150',
     'focus-within:border-secondary-fg',
-    'focus-within:shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-secondary-fg)_20%,transparent)]',
+    'focus-within:shadow-[0_0_0_2px_color-mix(in_srgb,var(--color-secondary-fg)_14%,transparent)]',
     'cursor-text',
     className,
   ]
