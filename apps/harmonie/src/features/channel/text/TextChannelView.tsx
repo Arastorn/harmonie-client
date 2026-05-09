@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
-import { Navigate, useParams } from 'react-router-dom';
+import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Users } from 'lucide-react';
+import { ArrowLeft, Users } from 'lucide-react';
 import { IconButton } from '@harmonie/ui';
 import { GuildSearchBar } from '@/features/guild/search/GuildSearchBar';
 import type { GuildMember } from '@/types/guild';
@@ -24,6 +24,7 @@ interface SelectedMember {
 
 export const TextChannelView = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { channelId, guildId } = useParams<{ channelId: string; guildId: string }>();
   const {
     toggleMembersPanel,
@@ -108,6 +109,19 @@ export const TextChannelView = () => {
       <MessageThread
         resetKey={channelId}
         title={`# ${currentChannel.name}`}
+        leadingActions={
+          <IconButton
+            className="md:hidden"
+            size="small"
+            variant="ghost"
+            aria-label={t('guild.channels.backToChannels')}
+            title={t('guild.channels.backToChannels')}
+            tooltipSide="bottom"
+            onClick={() => navigate(`/guilds/${guildId}`)}
+          >
+            <ArrowLeft size={16} />
+          </IconButton>
+        }
         beforePinActions={
           <GuildSearchBar
             query={searchQuery}

@@ -71,6 +71,7 @@ interface MessageThreadSearchState {
 interface MessageThreadProps<TAuthor extends MessageAuthor = MessageAuthor> {
   resetKey?: string;
   title: ReactNode;
+  leadingActions?: ReactNode;
   beforePinActions?: ReactNode;
   afterPinActions?: ReactNode;
   refs: MessageThreadRefs;
@@ -108,6 +109,7 @@ interface MessageThreadProps<TAuthor extends MessageAuthor = MessageAuthor> {
 export const MessageThread = <TAuthor extends MessageAuthor = MessageAuthor>({
   resetKey,
   title,
+  leadingActions,
   beforePinActions,
   afterPinActions,
   refs,
@@ -425,7 +427,10 @@ export const MessageThread = <TAuthor extends MessageAuthor = MessageAuthor>({
     <>
       <div className="flex flex-col flex-1 min-w-0 h-full bg-surface-1 rounded-md overflow-hidden">
         <div className="flex items-center justify-between px-4 h-14 shrink-0 bg-surface-2 rounded-t-md">
-          <span className="text-sm font-semibold text-text-1 truncate">{title}</span>
+          <div className="flex min-w-0 items-center gap-2">
+            {leadingActions}
+            <span className="truncate text-sm font-semibold text-text-1">{title}</span>
+          </div>
           <div className="flex items-center gap-2">
             {beforePinActions}
             <IconButton

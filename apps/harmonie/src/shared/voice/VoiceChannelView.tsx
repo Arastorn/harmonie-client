@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { Navigate, useParams } from 'react-router-dom';
-import { Volume2 } from 'lucide-react';
+import { Navigate, useNavigate, useParams } from 'react-router-dom';
+import { ArrowLeft, Volume2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { IconButton } from '@harmonie/ui';
 import { useChannels } from '@/features/channel/ChannelContext';
 import { useCurrentGuild } from '@/features/guild/GuildContext';
 import { useTheme } from '@/features/user/ThemeContext';
@@ -17,6 +19,8 @@ import {
 } from './layout/voiceLayout';
 
 export const VoiceChannelView = () => {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
   const [pinnedTargetId, setPinnedTargetId] = useState<string | null>(null);
   const { channelId, guildId } = useParams<{ channelId: string; guildId: string }>();
   const { channels } = useChannels();
@@ -117,6 +121,17 @@ export const VoiceChannelView = () => {
     <div className="flex h-full flex-col overflow-hidden rounded-md bg-surface-1">
       <header className="flex shrink-0 items-center justify-between px-4 h-14 bg-surface-2 rounded-t-md">
         <div className="flex items-center gap-2 min-w-0">
+          <IconButton
+            className="md:hidden"
+            size="small"
+            variant="ghost"
+            aria-label={t('guild.channels.backToChannels')}
+            title={t('guild.channels.backToChannels')}
+            tooltipSide="bottom"
+            onClick={() => navigate(`/guilds/${guildId}`)}
+          >
+            <ArrowLeft size={16} />
+          </IconButton>
           <Volume2 size={16} className="shrink-0 text-text-3" />
           <span className="text-sm font-semibold text-text-1 truncate">
             {channel?.name ?? channelId}

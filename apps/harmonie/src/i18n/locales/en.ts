@@ -52,6 +52,7 @@ export const en = {
     channels: {
       text: 'Text channels',
       voice: 'Voice channels',
+      backToChannels: 'Back to channels',
       create: {
         title: 'Create a channel',
         typeLabel: 'Channel type',
@@ -404,6 +405,7 @@ export const en = {
     },
   },
   conversation: {
+    backToConversations: 'Back to conversations',
     home: 'Direct Messages',
     newConversation: 'New conversation',
     newDm: 'New direct message',
