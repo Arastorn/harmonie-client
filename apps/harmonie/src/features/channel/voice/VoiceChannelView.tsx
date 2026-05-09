@@ -72,6 +72,9 @@ export const VoiceChannelView = () => {
   const maxCols = Math.max(1, ...rows.map((r) => r.length));
   const cardWidth = `calc((100% - ${(maxCols - 1) * 1.5}rem) / ${maxCols})`;
   const labelsByUserId = new Map(cards.map((card) => [card.userId, card.label]));
+  const cameraTracksByUserId = new Map(
+    voice.cameraTracks.map((cameraTrack) => [cameraTrack.participantId, cameraTrack])
+  );
   const isDarkTheme = theme.endsWith('obsidian');
 
   const availablePinTargetIds = new Set([
@@ -131,16 +134,20 @@ export const VoiceChannelView = () => {
             isDarkTheme={isDarkTheme}
             speakingUserIds={voice.speakingUserIds}
             screenShares={voice.screenShares}
+            cameraTracksByUserId={cameraTracksByUserId}
             labelsByUserId={labelsByUserId}
             activePinnedTargetId={activePinnedTargetId}
             pinnedParticipant={pinnedParticipant}
             pinnedScreenShare={pinnedScreenShare}
             hasPinnedItem={Boolean(pinnedParticipant || pinnedScreenShare)}
             isMuted={voice.isMuted}
+            isCameraEnabled={voice.isCameraEnabled}
             isScreenSharing={voice.isScreenSharing}
             screenShareError={voice.screenShareError}
+            cameraError={voice.cameraError}
             onTogglePin={handleTogglePin}
             onToggleMute={voice.toggleMute}
+            onToggleCamera={() => void voice.toggleCamera()}
             onToggleScreenShare={() => void voice.toggleScreenShare()}
             onLeave={voice.leaveChannel}
           />

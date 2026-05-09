@@ -1,5 +1,10 @@
 import { createContext, useContext, type ReactNode } from 'react';
-import type { VoiceParticipant, VoiceParticipantInit, VoiceScreenShare } from '@/types/voice';
+import type {
+  VoiceCameraTrack,
+  VoiceParticipant,
+  VoiceParticipantInit,
+  VoiceScreenShare,
+} from '@/types/voice';
 import { useVoiceParticipants } from '../hooks/useVoiceParticipants';
 import { useVoiceRoom } from '../hooks/useVoiceRoom';
 
@@ -19,6 +24,9 @@ interface VoicePresenceContextValue {
   screenShares: VoiceScreenShare[];
   isScreenSharing: boolean;
   screenShareError: string | null;
+  cameraTracks: VoiceCameraTrack[];
+  isCameraEnabled: boolean;
+  cameraError: string | null;
   joinChannel: (
     channelId: string,
     channelName?: string,
@@ -28,6 +36,7 @@ interface VoicePresenceContextValue {
   leaveChannel: () => void;
   toggleMute: () => void;
   toggleScreenShare: () => void;
+  toggleCamera: () => void;
   isJoining: boolean;
   joinError: string | null;
 }
@@ -46,10 +55,14 @@ const VoicePresenceContext = createContext<VoicePresenceContextValue>({
   screenShares: [],
   isScreenSharing: false,
   screenShareError: null,
+  cameraTracks: [],
+  isCameraEnabled: false,
+  cameraError: null,
   joinChannel: async () => {},
   leaveChannel: () => {},
   toggleMute: () => {},
   toggleScreenShare: () => {},
+  toggleCamera: () => {},
   isJoining: false,
   joinError: null,
 });
@@ -75,10 +88,14 @@ export const VoicePresenceProvider = ({ children }: { children: ReactNode }) => 
     screenShares,
     isScreenSharing,
     screenShareError,
+    cameraTracks,
+    isCameraEnabled,
+    cameraError,
     joinChannel,
     leaveChannel,
     toggleMute,
     toggleScreenShare,
+    toggleCamera,
   } = useVoiceRoom({ seedParticipantsFromJoin, syncParticipantsFromRoom });
 
   return (
@@ -97,10 +114,14 @@ export const VoicePresenceProvider = ({ children }: { children: ReactNode }) => 
         screenShares,
         isScreenSharing,
         screenShareError,
+        cameraTracks,
+        isCameraEnabled,
+        cameraError,
         joinChannel,
         leaveChannel,
         toggleMute,
         toggleScreenShare,
+        toggleCamera,
         isJoining,
         joinError,
       }}

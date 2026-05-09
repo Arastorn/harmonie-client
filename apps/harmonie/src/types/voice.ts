@@ -35,6 +35,13 @@ export interface VoiceScreenShare {
   isLocal: boolean;
 }
 
+export interface VoiceCameraTrack {
+  participantId: string;
+  trackSid: string;
+  track: LocalTrack | RemoteTrack;
+  isLocal: boolean;
+}
+
 export interface VoiceParticipantJoinedEvent {
   guildId: string;
   channelId: string;

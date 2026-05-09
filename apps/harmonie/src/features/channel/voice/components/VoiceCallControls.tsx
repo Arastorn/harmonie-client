@@ -1,25 +1,50 @@
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Mic, MicOff, PhoneOff, ScreenShare, ScreenShareOff } from 'lucide-react';
-import { Button, IconButton } from '@harmonie/ui';
+import {
+  ChevronUp,
+  Mic,
+  MicOff,
+  PhoneOff,
+  ScreenShare,
+  ScreenShareOff,
+  Video,
+  VideoOff,
+} from 'lucide-react';
+import { Button, IconButton, SplitIconButton } from '@harmonie/ui';
+import { VideoInputPopover } from '@/features/user/video/VideoInputPopover';
 
 interface VoiceCallControlsProps {
   isMuted: boolean;
+  isCameraEnabled: boolean;
   isScreenSharing: boolean;
   screenShareError: string | null;
+  cameraError: string | null;
   onToggleMute: () => void;
+  onToggleCamera: () => void;
   onToggleScreenShare: () => void;
   onLeave: () => void;
 }
 
 export const VoiceCallControls = ({
   isMuted,
+  isCameraEnabled,
   isScreenSharing,
   screenShareError,
+  cameraError,
   onToggleMute,
+  onToggleCamera,
   onToggleScreenShare,
   onLeave,
 }: VoiceCallControlsProps) => {
   const { t } = useTranslation();
+  const controlError = cameraError ?? screenShareError;
+  const [videoInputPopoverOpen, setVideoInputPopoverOpen] = useState(false);
+  const videoInputChevronRef = useRef<HTMLButtonElement>(null);
+
+  const handleToggleCamera = () => {
+    setVideoInputPopoverOpen(false);
+    onToggleCamera();
+  };
 
   return (
     <div className="pointer-events-none absolute inset-x-0 bottom-0 flex justify-center px-4 pb-6 pt-16">
@@ -33,6 +58,29 @@ export const VoiceCallControls = ({
         >
           {isMuted ? <MicOff size={20} /> : <Mic size={20} />}
         </IconButton>
+
+        <SplitIconButton
+          ref={videoInputChevronRef}
+          size="medium"
+          selected={isCameraEnabled}
+          selectedVariant="primary"
+          open={videoInputPopoverOpen}
+          primaryLabel={isCameraEnabled ? t('voice.stopCamera') : t('voice.startCamera')}
+          secondaryLabel={t('video.input.select')}
+          primaryIcon={isCameraEnabled ? <Video size={20} /> : <VideoOff size={20} />}
+          secondaryIcon={
+            <ChevronUp
+              size={12}
+              className={
+                videoInputPopoverOpen
+                  ? 'transition-transform duration-150'
+                  : 'rotate-180 transition-transform duration-150'
+              }
+            />
+          }
+          onPrimaryClick={handleToggleCamera}
+          onSecondaryClick={() => setVideoInputPopoverOpen((open) => !open)}
+        />
 
         <IconButton
           size="medium"
@@ -56,10 +104,16 @@ export const VoiceCallControls = ({
           <span>{t('voice.leave')}</span>
         </Button>
       </div>
-      {screenShareError && (
+      {controlError && (
         <p className="pointer-events-auto absolute bottom-1 text-xs font-medium text-error">
-          {t(screenShareError)}
+          {t(controlError)}
         </p>
+      )}
+      {videoInputPopoverOpen && (
+        <VideoInputPopover
+          anchorRef={videoInputChevronRef}
+          onClose={() => setVideoInputPopoverOpen(false)}
+        />
       )}
     </div>
   );
