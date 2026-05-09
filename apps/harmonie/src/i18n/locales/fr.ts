@@ -438,6 +438,13 @@ export const fr = {
     renameError: 'Impossible de renommer la conversation. Réessaie.',
     save: 'Enregistrer',
     participantsTitle: 'Membres',
+    call: {
+      start: 'Démarrer un appel',
+      readyToJoin: 'Prêt à rejoindre cet appel ?',
+      incomingTitle: 'Appel de {{name}}',
+      answer: 'Répondre',
+      decline: 'Refuser',
+    },
   },
   user: {
     logout: 'Se déconnecter',

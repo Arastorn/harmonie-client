@@ -3,6 +3,8 @@ import type { Room } from 'livekit-client';
 import { useRealtime } from '@/features/realtime/RealtimeContext';
 import { REALTIME_SERVER_EVENTS } from '@/features/realtime/constants';
 import type {
+  ConversationVoiceParticipantJoinedEvent,
+  ConversationVoiceParticipantLeftEvent,
   VoiceParticipant,
   VoiceParticipantInit,
   VoiceParticipantJoinedEvent,
@@ -104,12 +106,60 @@ export const useVoiceParticipants = () => {
       });
     };
 
+    const upsertParticipant = (
+      roomId: string,
+      incoming: VoiceParticipant,
+      prev: Map<string, VoiceParticipant[]>
+    ) => {
+      const next = new Map(prev);
+      const current = next.get(roomId) ?? [];
+      const existingIndex = current.findIndex((p) => p.userId === incoming.userId);
+      if (existingIndex === -1) {
+        next.set(roomId, [...current, incoming]);
+      } else {
+        const updated = [...current];
+        updated[existingIndex] = incoming;
+        next.set(roomId, updated);
+      }
+      return next;
+    };
+
+    const handleConversationJoined = (event: ConversationVoiceParticipantJoinedEvent) => {
+      setParticipants((prev) =>
+        upsertParticipant(
+          event.conversationId,
+          {
+            userId: event.userId,
+            username: event.username,
+            displayName: event.displayName,
+            avatarFileId: event.avatarFileId,
+            avatarBg: event.avatarBg ?? null,
+            avatarColor: event.avatarColor,
+            avatarIcon: event.avatarIcon,
+          },
+          prev
+        )
+      );
+    };
+
     const handleLeft = (event: VoiceParticipantLeftEvent) => {
       setParticipants((prev) => {
         const next = new Map(prev);
         const current = next.get(event.channelId) ?? [];
         next.set(
           event.channelId,
+          current.filter((p) => p.userId !== event.userId)
+        );
+        return next;
+      });
+    };
+
+    const handleConversationLeft = (event: ConversationVoiceParticipantLeftEvent) => {
+      setParticipants((prev) => {
+        const next = new Map(prev);
+        const current = next.get(event.conversationId) ?? [];
+        next.set(
+          event.conversationId,
           current.filter((p) => p.userId !== event.userId)
         );
         return next;
@@ -136,11 +186,24 @@ export const useVoiceParticipants = () => {
 
     connection.on(REALTIME_SERVER_EVENTS.voiceParticipantJoined, handleJoined);
     connection.on(REALTIME_SERVER_EVENTS.voiceParticipantLeft, handleLeft);
+    connection.on(
+      REALTIME_SERVER_EVENTS.conversationVoiceParticipantJoined,
+      handleConversationJoined
+    );
+    connection.on(REALTIME_SERVER_EVENTS.conversationVoiceParticipantLeft, handleConversationLeft);
     connection.on(REALTIME_SERVER_EVENTS.userProfileUpdated, handleUserProfileUpdated);
 
     return () => {
       connection.off(REALTIME_SERVER_EVENTS.voiceParticipantJoined, handleJoined);
       connection.off(REALTIME_SERVER_EVENTS.voiceParticipantLeft, handleLeft);
+      connection.off(
+        REALTIME_SERVER_EVENTS.conversationVoiceParticipantJoined,
+        handleConversationJoined
+      );
+      connection.off(
+        REALTIME_SERVER_EVENTS.conversationVoiceParticipantLeft,
+        handleConversationLeft
+      );
       connection.off(REALTIME_SERVER_EVENTS.userProfileUpdated, handleUserProfileUpdated);
     };
   }, [connection]);

@@ -9,16 +9,21 @@ import { useVoiceParticipants } from '../hooks/useVoiceParticipants';
 import { useVoiceRoom } from '../hooks/useVoiceRoom';
 
 interface VoicePresenceContextValue {
-  getParticipants: (channelId: string) => VoiceParticipant[];
+  getParticipants: (roomId: string) => VoiceParticipant[];
   seedFromChannelList: (
     channels: { channelId: string; participants: VoiceParticipantInit[] | null | undefined }[]
   ) => void;
+  seedParticipants: (roomId: string, participants: VoiceParticipantInit[]) => void;
+  activeTargetKind: 'channel' | 'conversation' | null;
   activeChannelId: string | null;
   activeChannelName: string | null;
+  activeConversationId: string | null;
+  activeConversationName: string | null;
   activeGuildId: string | null;
   activeGuildName: string | null;
   ping: number | null;
   updateActiveChannelMeta: (channelName: string, guildName: string) => void;
+  updateActiveConversationMeta: (conversationName: string) => void;
   isMuted: boolean;
   speakingUserIds: Set<string>;
   screenShares: VoiceScreenShare[];
@@ -33,7 +38,9 @@ interface VoicePresenceContextValue {
     guildId?: string,
     guildName?: string
   ) => Promise<void>;
+  joinConversation: (conversationId: string, conversationName?: string) => Promise<void>;
   leaveChannel: () => void;
+  leaveCall: () => void;
   toggleMute: () => void;
   toggleScreenShare: () => void;
   toggleCamera: () => void;
@@ -44,12 +51,17 @@ interface VoicePresenceContextValue {
 const VoicePresenceContext = createContext<VoicePresenceContextValue>({
   getParticipants: () => [],
   seedFromChannelList: () => {},
+  seedParticipants: () => {},
+  activeTargetKind: null,
   activeChannelId: null,
   activeChannelName: null,
+  activeConversationId: null,
+  activeConversationName: null,
   activeGuildId: null,
   activeGuildName: null,
   ping: null,
   updateActiveChannelMeta: () => {},
+  updateActiveConversationMeta: () => {},
   isMuted: false,
   speakingUserIds: new Set(),
   screenShares: [],
@@ -59,7 +71,9 @@ const VoicePresenceContext = createContext<VoicePresenceContextValue>({
   isCameraEnabled: false,
   cameraError: null,
   joinChannel: async () => {},
+  joinConversation: async () => {},
   leaveChannel: () => {},
+  leaveCall: () => {},
   toggleMute: () => {},
   toggleScreenShare: () => {},
   toggleCamera: () => {},
@@ -75,12 +89,16 @@ export const VoicePresenceProvider = ({ children }: { children: ReactNode }) => 
     syncParticipantsFromRoom,
   } = useVoiceParticipants();
   const {
+    activeTargetKind,
     activeChannelId,
     activeChannelName,
+    activeConversationId,
+    activeConversationName,
     activeGuildId,
     activeGuildName,
     ping,
     updateActiveChannelMeta,
+    updateActiveConversationMeta,
     isMuted,
     isJoining,
     joinError,
@@ -92,7 +110,9 @@ export const VoicePresenceProvider = ({ children }: { children: ReactNode }) => 
     isCameraEnabled,
     cameraError,
     joinChannel,
+    joinConversation,
     leaveChannel,
+    leaveCall,
     toggleMute,
     toggleScreenShare,
     toggleCamera,
@@ -103,12 +123,17 @@ export const VoicePresenceProvider = ({ children }: { children: ReactNode }) => 
       value={{
         getParticipants,
         seedFromChannelList,
+        seedParticipants: seedParticipantsFromJoin,
+        activeTargetKind,
         activeChannelId,
         activeChannelName,
+        activeConversationId,
+        activeConversationName,
         activeGuildId,
         activeGuildName,
         ping,
         updateActiveChannelMeta,
+        updateActiveConversationMeta,
         isMuted,
         speakingUserIds,
         screenShares,
@@ -118,7 +143,9 @@ export const VoicePresenceProvider = ({ children }: { children: ReactNode }) => 
         isCameraEnabled,
         cameraError,
         joinChannel,
+        joinConversation,
         leaveChannel,
+        leaveCall,
         toggleMute,
         toggleScreenShare,
         toggleCamera,

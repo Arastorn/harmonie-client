@@ -436,6 +436,13 @@ export const en = {
     renameError: 'Failed to rename conversation. Please try again.',
     save: 'Save',
     participantsTitle: 'Members',
+    call: {
+      start: 'Start call',
+      readyToJoin: 'Ready to join this call?',
+      incomingTitle: 'Call from {{name}}',
+      answer: 'Answer',
+      decline: 'Decline',
+    },
   },
   user: {
     logout: 'Log out',

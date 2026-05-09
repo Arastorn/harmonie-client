@@ -1,15 +1,32 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Room, RoomEvent, Track, type Participant } from 'livekit-client';
 import { joinVoiceChannel } from '@/api/channels';
+import { joinConversationVoiceCall } from '@/api/conversations';
 import { useAudioInput } from '@/features/user/audio/AudioInputContext';
 import { useAudioOutput } from '@/features/user/audio/AudioOutputContext';
 import { useVideoInput, VIDEO_DEFAULT_DEVICE_ID } from '@/features/user/video/VideoInputContext';
-import type { VoiceCameraTrack, VoiceParticipantInit, VoiceScreenShare } from '@/types/voice';
+import type {
+  JoinVoiceResponse,
+  VoiceCameraTrack,
+  VoiceParticipantInit,
+  VoiceScreenShare,
+} from '@/types/voice';
 import { buildIceServers, getJoinErrorKey, hasRelayServer } from '../voiceUtils';
 
 interface UseVoiceRoomParams {
-  seedParticipantsFromJoin: (channelId: string, initial: VoiceParticipantInit[]) => void;
-  syncParticipantsFromRoom: (channelId: string, room: Room) => void;
+  seedParticipantsFromJoin: (roomId: string, initial: VoiceParticipantInit[]) => void;
+  syncParticipantsFromRoom: (roomId: string, room: Room) => void;
+}
+
+type VoiceTargetKind = 'channel' | 'conversation';
+
+interface JoinVoiceTargetParams {
+  kind: VoiceTargetKind;
+  targetId: string;
+  targetName?: string;
+  guildId?: string;
+  guildName?: string;
+  join: () => Promise<JoinVoiceResponse>;
 }
 
 export const useVoiceRoom = ({
@@ -24,8 +41,11 @@ export const useVoiceRoom = ({
   const { applySinkId, muted: outputMuted } = useAudioOutput();
   const { selectedDeviceId: selectedVideoInputDeviceId } = useVideoInput();
 
+  const [activeTargetKind, setActiveTargetKind] = useState<VoiceTargetKind | null>(null);
   const [activeChannelId, setActiveChannelId] = useState<string | null>(null);
   const [activeChannelName, setActiveChannelName] = useState<string | null>(null);
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
+  const [activeConversationName, setActiveConversationName] = useState<string | null>(null);
   const [activeGuildId, setActiveGuildId] = useState<string | null>(null);
   const [activeGuildName, setActiveGuildName] = useState<string | null>(null);
   const [ping, setPing] = useState<number | null>(null);
@@ -91,8 +111,11 @@ export const useVoiceRoom = ({
       await roomRef.current.disconnect();
       roomRef.current = null;
     }
+    setActiveTargetKind(null);
     setActiveChannelId(null);
     setActiveChannelName(null);
+    setActiveConversationId(null);
+    setActiveConversationName(null);
     setActiveGuildId(null);
     setActiveGuildName(null);
     setPing(null);
@@ -110,20 +133,20 @@ export const useVoiceRoom = ({
     setCameraError(null);
   }, []);
 
-  const leaveChannel = useCallback(() => {
+  const leaveCall = useCallback(() => {
     void disconnectRoom();
   }, [disconnectRoom]);
 
-  const joinChannel = useCallback(
-    async (channelId: string, channelName?: string, guildId?: string, guildName?: string) => {
+  const joinTarget = useCallback(
+    async ({ kind, targetId, targetName, guildId, guildName, join }: JoinVoiceTargetParams) => {
       setJoinError(null);
       setIsJoining(true);
       try {
         await disconnectRoom();
 
-        const { token, url, iceServers, currentParticipants } = await joinVoiceChannel(channelId);
+        const { token, url, iceServers, currentParticipants } = await join();
         if (currentParticipants && currentParticipants.length > 0) {
-          seedParticipantsFromJoin(channelId, currentParticipants);
+          seedParticipantsFromJoin(targetId, currentParticipants);
         }
         const resolvedIceServers = buildIceServers(iceServers);
 
@@ -168,7 +191,8 @@ export const useVoiceRoom = ({
 
           void audioElement.play().catch((error) => {
             console.error('[Voice] Failed to play remote audio track', {
-              channelId,
+              targetKind: kind,
+              targetId,
               participantIdentity: participant.identity,
               trackSid: publication.trackSid,
               error,
@@ -199,7 +223,8 @@ export const useVoiceRoom = ({
 
         room.on(RoomEvent.TrackSubscriptionFailed, (trackSid, participant, error) => {
           console.error('[Voice] Remote track subscription failed', {
-            channelId,
+            targetKind: kind,
+            targetId,
             participantIdentity: participant.identity,
             trackSid,
             error,
@@ -284,16 +309,16 @@ export const useVoiceRoom = ({
         });
 
         room.on(RoomEvent.ParticipantConnected, () => {
-          syncParticipantsFromRoom(channelId, room);
+          syncParticipantsFromRoom(targetId, room);
         });
         room.on(RoomEvent.ParticipantDisconnected, () => {
-          syncParticipantsFromRoom(channelId, room);
+          syncParticipantsFromRoom(targetId, room);
         });
         room.on(RoomEvent.Connected, () => {
-          syncParticipantsFromRoom(channelId, room);
+          syncParticipantsFromRoom(targetId, room);
         });
         room.on(RoomEvent.Reconnected, () => {
-          syncParticipantsFromRoom(channelId, room);
+          syncParticipantsFromRoom(targetId, room);
         });
 
         room.on(RoomEvent.ActiveSpeakersChanged, (speakers: Participant[]) => {
@@ -301,11 +326,11 @@ export const useVoiceRoom = ({
         });
 
         room.on(RoomEvent.SignalReconnecting, () => {
-          console.warn('[Voice] Signal reconnecting', { channelId });
+          console.warn('[Voice] Signal reconnecting', { targetKind: kind, targetId });
         });
 
         room.on(RoomEvent.Reconnecting, () => {
-          console.warn('[Voice] Media reconnecting', { channelId });
+          console.warn('[Voice] Media reconnecting', { targetKind: kind, targetId });
         });
 
         room.on(RoomEvent.MediaDevicesError, (error) => {
@@ -313,7 +338,18 @@ export const useVoiceRoom = ({
         });
 
         room.on(RoomEvent.Disconnected, () => {
+          setActiveTargetKind(null);
           setActiveChannelId(null);
+          setActiveChannelName(null);
+          setActiveConversationId(null);
+          setActiveConversationName(null);
+          setActiveGuildId(null);
+          setActiveGuildName(null);
+          setPing(null);
+          if (pingIntervalRef.current) {
+            clearInterval(pingIntervalRef.current);
+            pingIntervalRef.current = null;
+          }
           setIsMuted(false);
           setScreenShares([]);
           setIsScreenSharing(false);
@@ -335,10 +371,13 @@ export const useVoiceRoom = ({
         await room.localParticipant.setMicrophoneEnabled(!inputMuted);
 
         roomRef.current = room;
-        setActiveChannelId(channelId);
-        setActiveChannelName(channelName ?? null);
-        setActiveGuildId(guildId ?? null);
-        setActiveGuildName(guildName ?? null);
+        setActiveTargetKind(kind);
+        setActiveChannelId(kind === 'channel' ? targetId : null);
+        setActiveChannelName(kind === 'channel' ? (targetName ?? null) : null);
+        setActiveConversationId(kind === 'conversation' ? targetId : null);
+        setActiveConversationName(kind === 'conversation' ? (targetName ?? null) : null);
+        setActiveGuildId(kind === 'channel' ? (guildId ?? null) : null);
+        setActiveGuildName(kind === 'channel' ? (guildName ?? null) : null);
         setIsMuted(inputMuted);
 
         const measurePing = async () => {
@@ -357,7 +396,7 @@ export const useVoiceRoom = ({
         void measurePing();
         pingIntervalRef.current = setInterval(() => void measurePing(), 3000);
       } catch (err) {
-        console.error('[Voice] joinChannel failed:', err);
+        console.error('[Voice] joinTarget failed:', err);
         setJoinError(getJoinErrorKey(err));
         await disconnectRoom();
       } finally {
@@ -378,6 +417,32 @@ export const useVoiceRoom = ({
       upsertCameraTrack,
       upsertScreenShare,
     ]
+  );
+
+  const joinChannel = useCallback(
+    async (channelId: string, channelName?: string, guildId?: string, guildName?: string) => {
+      await joinTarget({
+        kind: 'channel',
+        targetId: channelId,
+        targetName: channelName,
+        guildId,
+        guildName,
+        join: () => joinVoiceChannel(channelId),
+      });
+    },
+    [joinTarget]
+  );
+
+  const joinConversation = useCallback(
+    async (conversationId: string, conversationName?: string) => {
+      await joinTarget({
+        kind: 'conversation',
+        targetId: conversationId,
+        targetName: conversationName,
+        join: () => joinConversationVoiceCall(conversationId),
+      });
+    },
+    [joinTarget]
   );
 
   const toggleMute = useCallback(() => {
@@ -490,13 +555,21 @@ export const useVoiceRoom = ({
     setActiveGuildName(guildName);
   }, []);
 
+  const updateActiveConversationMeta = useCallback((conversationName: string) => {
+    setActiveConversationName(conversationName);
+  }, []);
+
   return {
+    activeTargetKind,
     activeChannelId,
     activeChannelName,
+    activeConversationId,
+    activeConversationName,
     activeGuildId,
     activeGuildName,
     ping,
     updateActiveChannelMeta,
+    updateActiveConversationMeta,
     isMuted,
     isJoining,
     joinError,
@@ -508,7 +581,9 @@ export const useVoiceRoom = ({
     isCameraEnabled,
     cameraError,
     joinChannel,
-    leaveChannel,
+    joinConversation,
+    leaveChannel: leaveCall,
+    leaveCall,
     toggleMute,
     toggleScreenShare,
     toggleCamera,

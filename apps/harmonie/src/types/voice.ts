@@ -61,3 +61,21 @@ export interface VoiceParticipantLeftEvent {
   userId: string;
   leftAtUtc: string;
 }
+
+export interface ConversationVoiceParticipantJoinedEvent {
+  conversationId: string;
+  userId: string;
+  username: string;
+  displayName: string | null;
+  avatarFileId: string | null;
+  avatarBg?: string | null;
+  avatarColor: string | null;
+  avatarIcon: string | null;
+  joinedAtUtc: string;
+}
+
+export interface ConversationVoiceParticipantLeftEvent {
+  conversationId: string;
+  userId: string;
+  leftAtUtc: string;
+}

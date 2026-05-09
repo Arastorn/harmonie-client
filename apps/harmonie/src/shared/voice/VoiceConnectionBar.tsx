@@ -7,14 +7,35 @@ import { useVoicePresence } from './context/VoicePresenceContext';
 export const VoiceConnectionBar = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { activeChannelId, activeChannelName, activeGuildId, activeGuildName, ping, leaveChannel } =
-    useVoicePresence();
+  const {
+    activeTargetKind,
+    activeChannelId,
+    activeChannelName,
+    activeConversationId,
+    activeConversationName,
+    activeGuildId,
+    activeGuildName,
+    ping,
+    leaveCall,
+  } = useVoicePresence();
 
-  if (!activeChannelId) return null;
+  if (!activeChannelId && !activeConversationId) return null;
 
-  const handleGoToChannel = () => {
-    if (activeGuildId) navigate(`/guilds/${activeGuildId}/voice/${activeChannelId}`);
+  const handleGoToCall = () => {
+    if (activeTargetKind === 'channel' && activeGuildId && activeChannelId) {
+      navigate(`/guilds/${activeGuildId}/voice/${activeChannelId}`);
+    }
+    if (activeTargetKind === 'conversation' && activeConversationId) {
+      navigate(`/conversations/${activeConversationId}`);
+    }
   };
+
+  const label =
+    activeTargetKind === 'channel'
+      ? activeGuildName && activeChannelName
+        ? `${activeGuildName} / ${activeChannelName}`
+        : (activeChannelName ?? '…')
+      : (activeConversationName ?? '…');
 
   return (
     <>
@@ -31,11 +52,9 @@ export const VoiceConnectionBar = () => {
           </div>
           <button
             className="truncate text-left text-xs text-text-2 hover:text-text-1 hover:underline transition-colors duration-100 cursor-pointer"
-            onClick={handleGoToChannel}
+            onClick={handleGoToCall}
           >
-            {activeGuildName && activeChannelName
-              ? `${activeGuildName} / ${activeChannelName}`
-              : (activeChannelName ?? '…')}
+            {label}
           </button>
         </div>
 
@@ -44,7 +63,7 @@ export const VoiceConnectionBar = () => {
           variant="danger"
           aria-label={t('voice.leave')}
           title={t('voice.leave')}
-          onClick={leaveChannel}
+          onClick={leaveCall}
         >
           <PhoneOff size={14} />
         </IconButton>

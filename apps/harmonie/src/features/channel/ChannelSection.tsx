@@ -19,7 +19,7 @@ import { useFileBlobUrl } from '@/shared/hooks/useFileBlobUrl';
 import { useGuildMembers } from '@/features/guild/GuildContext';
 import { MemberPopover } from '@/shared/members/MemberPopover';
 import { useChannels } from './ChannelContext';
-import { useVoicePresence } from './voice/context/VoicePresenceContext';
+import { useVoicePresence } from '@/shared/voice/context/VoicePresenceContext';
 
 function getParticipantLabel(
   participant: Pick<VoiceParticipant, 'userId' | 'username' | 'displayName'>
