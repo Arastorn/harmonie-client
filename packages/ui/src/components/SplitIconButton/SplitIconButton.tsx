@@ -100,9 +100,11 @@ export const SplitIconButton = forwardRef<HTMLButtonElement, SplitIconButtonProp
             'hover:scale-[1.04]',
             containerSizeClasses[size],
             secondarySizeClasses[size],
-            open
-              ? 'bg-surface-3 text-text-2'
-              : 'bg-transparent text-tertiary-fg hover:bg-surface-3',
+            selected
+              ? selectedVariantClasses[selectedVariant]
+              : open
+                ? 'bg-surface-3 text-text-2'
+                : 'bg-transparent text-tertiary-fg hover:bg-surface-3',
           ].join(' ')}
         >
           {secondaryIcon}

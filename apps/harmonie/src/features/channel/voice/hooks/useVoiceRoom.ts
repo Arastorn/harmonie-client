@@ -3,7 +3,8 @@ import { Room, RoomEvent, Track, type Participant } from 'livekit-client';
 import { joinVoiceChannel } from '@/api/channels';
 import { useAudioInput } from '@/features/user/audio/AudioInputContext';
 import { useAudioOutput } from '@/features/user/audio/AudioOutputContext';
-import type { VoiceParticipantInit, VoiceScreenShare } from '@/types/voice';
+import { useVideoInput, VIDEO_DEFAULT_DEVICE_ID } from '@/features/user/video/VideoInputContext';
+import type { VoiceCameraTrack, VoiceParticipantInit, VoiceScreenShare } from '@/types/voice';
 import { buildIceServers, getJoinErrorKey, hasRelayServer } from '../voiceUtils';
 
 interface UseVoiceRoomParams {
@@ -21,6 +22,7 @@ export const useVoiceRoom = ({
     setMuted: setInputMuted,
   } = useAudioInput();
   const { applySinkId, muted: outputMuted } = useAudioOutput();
+  const { selectedDeviceId: selectedVideoInputDeviceId } = useVideoInput();
 
   const [activeChannelId, setActiveChannelId] = useState<string | null>(null);
   const [activeChannelName, setActiveChannelName] = useState<string | null>(null);
@@ -35,6 +37,9 @@ export const useVoiceRoom = ({
   const [screenShares, setScreenShares] = useState<VoiceScreenShare[]>([]);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
   const [screenShareError, setScreenShareError] = useState<string | null>(null);
+  const [cameraTracks, setCameraTracks] = useState<VoiceCameraTrack[]>([]);
+  const [isCameraEnabled, setIsCameraEnabled] = useState(false);
+  const [cameraError, setCameraError] = useState<string | null>(null);
 
   const roomRef = useRef<Room | null>(null);
   const remoteAudioElementsRef = useRef<Map<string, HTMLAudioElement>>(new Map());
@@ -52,6 +57,26 @@ export const useVoiceRoom = ({
 
   const removeScreenShare = useCallback((trackSid: string) => {
     setScreenShares((prev) => prev.filter((share) => share.trackSid !== trackSid));
+  }, []);
+
+  const upsertCameraTrack = useCallback((cameraTrack: VoiceCameraTrack) => {
+    setCameraTracks((prev) => {
+      const existingIndex = prev.findIndex((track) => track.trackSid === cameraTrack.trackSid);
+      if (existingIndex === -1) {
+        return [
+          ...prev.filter((track) => track.participantId !== cameraTrack.participantId),
+          cameraTrack,
+        ];
+      }
+
+      const next = [...prev];
+      next[existingIndex] = cameraTrack;
+      return next;
+    });
+  }, []);
+
+  const removeCameraTrack = useCallback((trackSid: string) => {
+    setCameraTracks((prev) => prev.filter((track) => track.trackSid !== trackSid));
   }, []);
 
   const disconnectRoom = useCallback(async () => {
@@ -80,6 +105,9 @@ export const useVoiceRoom = ({
     setScreenShares([]);
     setIsScreenSharing(false);
     setScreenShareError(null);
+    setCameraTracks([]);
+    setIsCameraEnabled(false);
+    setCameraError(null);
   }, []);
 
   const leaveChannel = useCallback(() => {
@@ -118,6 +146,16 @@ export const useVoiceRoom = ({
             return;
           }
 
+          if (track.kind === Track.Kind.Video && publication.source === Track.Source.Camera) {
+            upsertCameraTrack({
+              participantId: participant.identity,
+              trackSid: publication.trackSid,
+              track,
+              isLocal: false,
+            });
+            return;
+          }
+
           if (track.kind !== Track.Kind.Audio) return;
 
           const audioElement = track.attach() as HTMLAudioElement;
@@ -144,6 +182,11 @@ export const useVoiceRoom = ({
             return;
           }
 
+          if (track.kind === Track.Kind.Video && publication.source === Track.Source.Camera) {
+            removeCameraTrack(publication.trackSid);
+            return;
+          }
+
           if (track.kind !== Track.Kind.Audio) return;
 
           const audioElement = remoteAudioElementsRef.current.get(publication.trackSid);
@@ -164,33 +207,80 @@ export const useVoiceRoom = ({
         });
 
         room.on(RoomEvent.TrackUnpublished, (publication) => {
-          if (publication.source !== Track.Source.ScreenShare) return;
-          removeScreenShare(publication.trackSid);
+          if (publication.source === Track.Source.ScreenShare) {
+            removeScreenShare(publication.trackSid);
+          }
+          if (publication.source === Track.Source.Camera) {
+            removeCameraTrack(publication.trackSid);
+          }
         });
 
-        room.on(RoomEvent.LocalTrackPublished, (publication, participant) => {
+        room.on(RoomEvent.TrackMuted, (publication, participant) => {
+          if (publication.source !== Track.Source.Camera) return;
+          removeCameraTrack(publication.trackSid);
+          if (participant.isLocal) {
+            setIsCameraEnabled(false);
+          }
+        });
+
+        room.on(RoomEvent.TrackUnmuted, (publication, participant) => {
           if (
-            publication.source !== Track.Source.ScreenShare ||
+            publication.source !== Track.Source.Camera ||
             publication.kind !== Track.Kind.Video ||
             !publication.track
           ) {
             return;
           }
 
-          upsertScreenShare({
+          upsertCameraTrack({
             participantId: participant.identity,
             trackSid: publication.trackSid,
-            track: publication.track,
-            isLocal: true,
+            track: publication.track as VoiceCameraTrack['track'],
+            isLocal: participant.isLocal,
           });
-          setIsScreenSharing(true);
-          setScreenShareError(null);
+          if (participant.isLocal) {
+            setIsCameraEnabled(true);
+            setCameraError(null);
+          }
+        });
+
+        room.on(RoomEvent.LocalTrackPublished, (publication, participant) => {
+          if (publication.kind !== Track.Kind.Video || !publication.track) {
+            return;
+          }
+
+          if (publication.source === Track.Source.ScreenShare) {
+            upsertScreenShare({
+              participantId: participant.identity,
+              trackSid: publication.trackSid,
+              track: publication.track,
+              isLocal: true,
+            });
+            setIsScreenSharing(true);
+            setScreenShareError(null);
+          }
+
+          if (publication.source === Track.Source.Camera) {
+            upsertCameraTrack({
+              participantId: participant.identity,
+              trackSid: publication.trackSid,
+              track: publication.track,
+              isLocal: true,
+            });
+            setIsCameraEnabled(true);
+            setCameraError(null);
+          }
         });
 
         room.on(RoomEvent.LocalTrackUnpublished, (publication) => {
-          if (publication.source !== Track.Source.ScreenShare) return;
-          removeScreenShare(publication.trackSid);
-          setIsScreenSharing(false);
+          if (publication.source === Track.Source.ScreenShare) {
+            removeScreenShare(publication.trackSid);
+            setIsScreenSharing(false);
+          }
+          if (publication.source === Track.Source.Camera) {
+            removeCameraTrack(publication.trackSid);
+            setIsCameraEnabled(false);
+          }
         });
 
         room.on(RoomEvent.ParticipantConnected, () => {
@@ -227,6 +317,8 @@ export const useVoiceRoom = ({
           setIsMuted(false);
           setScreenShares([]);
           setIsScreenSharing(false);
+          setCameraTracks([]);
+          setIsCameraEnabled(false);
           roomRef.current = null;
         });
 
@@ -236,6 +328,9 @@ export const useVoiceRoom = ({
         });
         if (selectedInputDeviceId && selectedInputDeviceId !== 'default') {
           await room.switchActiveDevice('audioinput', selectedInputDeviceId);
+        }
+        if (selectedVideoInputDeviceId && selectedVideoInputDeviceId !== VIDEO_DEFAULT_DEVICE_ID) {
+          await room.switchActiveDevice('videoinput', selectedVideoInputDeviceId);
         }
         await room.localParticipant.setMicrophoneEnabled(!inputMuted);
 
@@ -275,9 +370,12 @@ export const useVoiceRoom = ({
       inputMuted,
       outputMuted,
       removeScreenShare,
+      removeCameraTrack,
       seedParticipantsFromJoin,
       selectedInputDeviceId,
+      selectedVideoInputDeviceId,
       syncParticipantsFromRoom,
+      upsertCameraTrack,
       upsertScreenShare,
     ]
   );
@@ -308,6 +406,33 @@ export const useVoiceRoom = ({
     }
   }, [isScreenSharing]);
 
+  const toggleCamera = useCallback(async () => {
+    const room = roomRef.current;
+    if (!room) return;
+
+    const nextEnabled = !isCameraEnabled;
+    setCameraError(null);
+    const cameraOptions =
+      selectedVideoInputDeviceId === VIDEO_DEFAULT_DEVICE_ID
+        ? undefined
+        : { deviceId: { exact: selectedVideoInputDeviceId } };
+
+    try {
+      await room.localParticipant.setCameraEnabled(nextEnabled, cameraOptions);
+      setIsCameraEnabled(room.localParticipant.isCameraEnabled);
+      if (!room.localParticipant.isCameraEnabled) {
+        const cameraPublication = room.localParticipant.getTrackPublication(Track.Source.Camera);
+        if (cameraPublication) {
+          removeCameraTrack(cameraPublication.trackSid);
+        }
+      }
+    } catch (error) {
+      console.error('[Voice] Failed to toggle camera', { error });
+      setCameraError('voice.cameraError');
+      setIsCameraEnabled(room.localParticipant.isCameraEnabled);
+    }
+  }, [isCameraEnabled, removeCameraTrack, selectedVideoInputDeviceId]);
+
   // Sync audio input device when it changes
   useEffect(() => {
     const room = roomRef.current;
@@ -319,6 +444,21 @@ export const useVoiceRoom = ({
       });
     });
   }, [selectedInputDeviceId]);
+
+  // Sync camera input device when it changes
+  useEffect(() => {
+    const room = roomRef.current;
+    if (!room) return;
+
+    const exact = selectedVideoInputDeviceId !== VIDEO_DEFAULT_DEVICE_ID;
+    void room.switchActiveDevice('videoinput', selectedVideoInputDeviceId, exact).catch((error) => {
+      console.error('[Voice] Failed to switch camera input device', {
+        deviceId: selectedVideoInputDeviceId,
+        error,
+      });
+      setCameraError('voice.cameraError');
+    });
+  }, [selectedVideoInputDeviceId]);
 
   // Sync microphone mute state
   useEffect(() => {
@@ -364,9 +504,13 @@ export const useVoiceRoom = ({
     screenShares,
     isScreenSharing,
     screenShareError,
+    cameraTracks,
+    isCameraEnabled,
+    cameraError,
     joinChannel,
     leaveChannel,
     toggleMute,
     toggleScreenShare,
+    toggleCamera,
   };
 };

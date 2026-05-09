@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Volume2 } from 'lucide-react';
-import type { VoiceScreenShare } from '@/types/voice';
+import type { VoiceCameraTrack, VoiceScreenShare } from '@/types/voice';
 import { ScreenShareTile } from '../components/ScreenShareTile';
 import { VoiceCallControls } from '../components/VoiceCallControls';
 import { VoiceParticipantTile } from '../components/VoiceParticipantTile';
@@ -14,16 +14,20 @@ interface VoiceActiveStageProps {
   isDarkTheme: boolean;
   speakingUserIds: Set<string>;
   screenShares: VoiceScreenShare[];
+  cameraTracksByUserId: Map<string, VoiceCameraTrack>;
   labelsByUserId: Map<string, string>;
   activePinnedTargetId: string | null;
   pinnedParticipant?: VoiceParticipantCardData;
   pinnedScreenShare?: VoiceScreenShare;
   hasPinnedItem: boolean;
   isMuted: boolean;
+  isCameraEnabled: boolean;
   isScreenSharing: boolean;
   screenShareError: string | null;
+  cameraError: string | null;
   onTogglePin: (targetId: string) => void;
   onToggleMute: () => void;
+  onToggleCamera: () => void;
   onToggleScreenShare: () => void;
   onLeave: () => void;
 }
@@ -36,16 +40,20 @@ export const VoiceActiveStage = ({
   isDarkTheme,
   speakingUserIds,
   screenShares,
+  cameraTracksByUserId,
   labelsByUserId,
   activePinnedTargetId,
   pinnedParticipant,
   pinnedScreenShare,
   hasPinnedItem,
   isMuted,
+  isCameraEnabled,
   isScreenSharing,
   screenShareError,
+  cameraError,
   onTogglePin,
   onToggleMute,
+  onToggleCamera,
   onToggleScreenShare,
   onLeave,
 }: VoiceActiveStageProps) => {
@@ -69,6 +77,7 @@ export const VoiceActiveStage = ({
               isDarkTheme={isDarkTheme}
               speakingUserIds={speakingUserIds}
               screenShares={screenShares}
+              cameraTracksByUserId={cameraTracksByUserId}
               labelsByUserId={labelsByUserId}
               pinnedParticipant={pinnedParticipant}
               pinnedScreenShare={pinnedScreenShare}
@@ -82,6 +91,7 @@ export const VoiceActiveStage = ({
               isDarkTheme={isDarkTheme}
               speakingUserIds={speakingUserIds}
               screenShares={screenShares}
+              cameraTracksByUserId={cameraTracksByUserId}
               labelsByUserId={labelsByUserId}
               activePinnedTargetId={activePinnedTargetId}
               onTogglePin={onTogglePin}
@@ -92,9 +102,12 @@ export const VoiceActiveStage = ({
 
       <VoiceCallControls
         isMuted={isMuted}
+        isCameraEnabled={isCameraEnabled}
         isScreenSharing={isScreenSharing}
         screenShareError={screenShareError}
+        cameraError={cameraError}
         onToggleMute={onToggleMute}
+        onToggleCamera={onToggleCamera}
         onToggleScreenShare={onToggleScreenShare}
         onLeave={onLeave}
       />
@@ -107,6 +120,7 @@ interface PinnedVoiceStageProps {
   isDarkTheme: boolean;
   speakingUserIds: Set<string>;
   screenShares: VoiceScreenShare[];
+  cameraTracksByUserId: Map<string, VoiceCameraTrack>;
   labelsByUserId: Map<string, string>;
   pinnedParticipant?: VoiceParticipantCardData;
   pinnedScreenShare?: VoiceScreenShare;
@@ -118,6 +132,7 @@ const PinnedVoiceStage = ({
   isDarkTheme,
   speakingUserIds,
   screenShares,
+  cameraTracksByUserId,
   labelsByUserId,
   pinnedParticipant,
   pinnedScreenShare,
@@ -142,6 +157,7 @@ const PinnedVoiceStage = ({
           isDarkTheme={isDarkTheme}
           cardWidth="100%"
           isSpeaking={speakingUserIds.has(pinnedParticipant.userId)}
+          cameraTrack={cameraTracksByUserId.get(pinnedParticipant.userId)}
           isPinned
           onTogglePin={() => onTogglePin(getPinTargetId('participant', pinnedParticipant.userId))}
         />
@@ -172,6 +188,7 @@ const PinnedVoiceStage = ({
               isDarkTheme={isDarkTheme}
               cardWidth="10rem"
               isSpeaking={speakingUserIds.has(card.userId)}
+              cameraTrack={cameraTracksByUserId.get(card.userId)}
               isPinned={false}
               onTogglePin={() => onTogglePin(getPinTargetId('participant', card.userId))}
             />
@@ -188,6 +205,7 @@ interface VoiceGridStageProps {
   isDarkTheme: boolean;
   speakingUserIds: Set<string>;
   screenShares: VoiceScreenShare[];
+  cameraTracksByUserId: Map<string, VoiceCameraTrack>;
   labelsByUserId: Map<string, string>;
   activePinnedTargetId: string | null;
   onTogglePin: (targetId: string) => void;
@@ -200,6 +218,7 @@ const VoiceGridStage = ({
   isDarkTheme,
   speakingUserIds,
   screenShares,
+  cameraTracksByUserId,
   labelsByUserId,
   activePinnedTargetId,
   onTogglePin,
@@ -233,6 +252,7 @@ const VoiceGridStage = ({
                 isDarkTheme={isDarkTheme}
                 cardWidth={cardWidth}
                 isSpeaking={speakingUserIds.has(card.userId)}
+                cameraTrack={cameraTracksByUserId.get(card.userId)}
                 isPinned={activePinnedTargetId === getPinTargetId('participant', card.userId)}
                 onTogglePin={() => onTogglePin(getPinTargetId('participant', card.userId))}
               />

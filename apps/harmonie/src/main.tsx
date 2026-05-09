@@ -9,6 +9,7 @@ import { ThemeProvider } from './features/user/ThemeContext';
 import { RealtimeProvider } from './features/realtime/RealtimeContext';
 import { AudioInputProvider } from './features/user/audio/AudioInputContext';
 import { AudioOutputProvider } from './features/user/audio/AudioOutputContext';
+import { VideoInputProvider } from './features/user/video/VideoInputContext';
 
 document.addEventListener('contextmenu', (e) => e.preventDefault());
 
@@ -18,9 +19,11 @@ createRoot(document.getElementById('root')!).render(
       <UserProvider>
         <AudioInputProvider>
           <AudioOutputProvider>
-            <RealtimeProvider>
-              <RouterProvider router={router} />
-            </RealtimeProvider>
+            <VideoInputProvider>
+              <RealtimeProvider>
+                <RouterProvider router={router} />
+              </RealtimeProvider>
+            </VideoInputProvider>
           </AudioOutputProvider>
         </AudioInputProvider>
       </UserProvider>
