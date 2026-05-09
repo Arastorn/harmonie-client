@@ -1,5 +1,8 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useMatch, useParams } from 'react-router-dom';
+import { useChannels } from '@/features/channel/ChannelContext';
+import { useConversations } from '@/features/conversation/ConversationContext';
+import { useGuilds } from '@/features/guild/GuildContext';
 import { useRealtime } from '@/features/realtime/RealtimeContext';
 import { useUser } from '@/features/user/UserContext';
 import type { MessageCreatedEvent } from '@/types/channel';
@@ -48,9 +51,39 @@ const toTitlePart = (value: string | null | undefined, fallback: string) => {
 const isDirectConversation = (conversationType: string) =>
   conversationType.trim().toLowerCase() === 'direct';
 
+const addEntity = (prev: Record<string, number>, entityId: string) => ({
+  ...prev,
+  [entityId]: (prev[entityId] ?? 0) + 1,
+});
+
+const removeRecordEntry = <T,>(prev: Record<string, T>, entityId: string) => {
+  if (!(entityId in prev)) return prev;
+  const next = { ...prev };
+  delete next[entityId];
+  return next;
+};
+
+const markCleared = (prev: Record<string, boolean>, entityId: string) =>
+  prev[entityId] ? prev : { ...prev, [entityId]: true };
+
+const hasInitialUnread =
+  (initialUnreadIds: Set<string>, clearedIds: Record<string, boolean>) => (entityId: string) =>
+    initialUnreadIds.has(entityId) && !clearedIds[entityId];
+
+const countInitialUnread = (initialUnreadIds: Set<string>, clearedIds: Record<string, boolean>) => {
+  let count = 0;
+  initialUnreadIds.forEach((entityId) => {
+    if (!clearedIds[entityId]) count += 1;
+  });
+  return count;
+};
+
 export const MessageActivityProvider = ({ children }: { children: ReactNode }) => {
   const { connection } = useRealtime();
   const { user } = useUser();
+  const { guilds } = useGuilds();
+  const { channels } = useChannels();
+  const { conversations } = useConversations();
   const { guildId: currentRouteGuildId } = useParams<{ guildId: string }>();
   const textChannelMatch = useMatch('/guilds/:guildId/channels/:channelId');
   const activeTextChannelId = textChannelMatch?.params.channelId;
@@ -59,7 +92,46 @@ export const MessageActivityProvider = ({ children }: { children: ReactNode }) =
   const [unreadChannels, setUnreadChannels] = useState<Record<string, number>>({});
   const [unreadGuilds, setUnreadGuilds] = useState<Record<string, number>>({});
   const [unreadConversations, setUnreadConversations] = useState<Record<string, number>>({});
+  const [clearedInitialChannels, setClearedInitialChannels] = useState<Record<string, boolean>>({});
+  const [clearedInitialGuilds, setClearedInitialGuilds] = useState<Record<string, boolean>>({});
+  const [clearedInitialConversations, setClearedInitialConversations] = useState<
+    Record<string, boolean>
+  >({});
+  const [channelGuildIds, setChannelGuildIds] = useState<Record<string, string>>({});
   const [unreadCurrentRoute, setUnreadCurrentRoute] = useState(0);
+
+  const initialUnreadChannels = useMemo(
+    () =>
+      new Set(
+        (channels ?? [])
+          .filter((channel) => channel.type === 'Text' && channel.hasUnread)
+          .map((channel) => channel.channelId)
+      ),
+    [channels]
+  );
+
+  const initialUnreadGuilds = useMemo(
+    () => new Set(guilds.filter((guild) => guild.hasUnread).map((guild) => guild.guildId)),
+    [guilds]
+  );
+
+  const initialUnreadConversations = useMemo(
+    () =>
+      new Set(
+        (conversations ?? [])
+          .filter((conversation) => conversation.hasUnread)
+          .map((conversation) => conversation.conversationId)
+      ),
+    [conversations]
+  );
+
+  useEffect(() => {
+    if (!currentRouteGuildId || !channels) return;
+    setChannelGuildIds((prev) => ({
+      ...prev,
+      ...Object.fromEntries(channels.map((channel) => [channel.channelId, currentRouteGuildId])),
+    }));
+  }, [channels, currentRouteGuildId]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -109,20 +181,19 @@ export const MessageActivityProvider = ({ children }: { children: ReactNode }) =
         });
 
       if (event.guildId !== currentRouteGuildId) {
-        setUnreadGuilds((prev) => ({ ...prev, [event.guildId]: (prev[event.guildId] ?? 0) + 1 }));
-        setUnreadChannels((prev) => ({
-          ...prev,
-          [event.channelId]: (prev[event.channelId] ?? 0) + 1,
-        }));
+        setChannelGuildIds((prev) => ({ ...prev, [event.channelId]: event.guildId }));
+        setClearedInitialGuilds((prev) => removeRecordEntry(prev, event.guildId));
+        setClearedInitialChannels((prev) => removeRecordEntry(prev, event.channelId));
+        setUnreadGuilds((prev) => addEntity(prev, event.guildId));
+        setUnreadChannels((prev) => addEntity(prev, event.channelId));
         notify();
         return;
       }
 
       if (event.channelId !== activeTextChannelId) {
-        setUnreadChannels((prev) => ({
-          ...prev,
-          [event.channelId]: (prev[event.channelId] ?? 0) + 1,
-        }));
+        setChannelGuildIds((prev) => ({ ...prev, [event.channelId]: event.guildId }));
+        setClearedInitialChannels((prev) => removeRecordEntry(prev, event.channelId));
+        setUnreadChannels((prev) => addEntity(prev, event.channelId));
         notify();
         return;
       }
@@ -163,10 +234,8 @@ export const MessageActivityProvider = ({ children }: { children: ReactNode }) =
         });
 
       if (event.conversationId !== activeConversationId) {
-        setUnreadConversations((prev) => ({
-          ...prev,
-          [event.conversationId]: (prev[event.conversationId] ?? 0) + 1,
-        }));
+        setClearedInitialConversations((prev) => removeRecordEntry(prev, event.conversationId));
+        setUnreadConversations((prev) => addEntity(prev, event.conversationId));
         notify();
         return;
       }
@@ -189,49 +258,92 @@ export const MessageActivityProvider = ({ children }: { children: ReactNode }) =
 
   useEffect(() => {
     if (!activeTextChannelId) return;
-    setUnreadChannels((prev) => {
-      if (!(activeTextChannelId in prev)) return prev;
-      const next = { ...prev };
-      delete next[activeTextChannelId];
-      return next;
-    });
+    setUnreadChannels((prev) => removeRecordEntry(prev, activeTextChannelId));
+    setClearedInitialChannels((prev) => markCleared(prev, activeTextChannelId));
   }, [activeTextChannelId]);
 
   useEffect(() => {
-    if (!currentRouteGuildId) return;
-    setUnreadGuilds((prev) => {
-      if (!(currentRouteGuildId in prev)) return prev;
-      const next = { ...prev };
-      delete next[currentRouteGuildId];
-      return next;
-    });
-  }, [currentRouteGuildId]);
+    if (!activeTextChannelId || !currentRouteGuildId) return;
+
+    const hasOtherRealtimeUnreadChannel = Object.keys(unreadChannels).some(
+      (channelId) =>
+        channelId !== activeTextChannelId && channelGuildIds[channelId] === currentRouteGuildId
+    );
+    const hasOtherInitialUnreadChannel = (channels ?? []).some(
+      (channel) =>
+        channel.type === 'Text' &&
+        channel.channelId !== activeTextChannelId &&
+        channel.hasUnread &&
+        !clearedInitialChannels[channel.channelId]
+    );
+
+    if (hasOtherRealtimeUnreadChannel || hasOtherInitialUnreadChannel) return;
+
+    setUnreadGuilds((prev) => removeRecordEntry(prev, currentRouteGuildId));
+    setClearedInitialGuilds((prev) => markCleared(prev, currentRouteGuildId));
+  }, [
+    activeTextChannelId,
+    channels,
+    channelGuildIds,
+    clearedInitialChannels,
+    currentRouteGuildId,
+    unreadChannels,
+  ]);
 
   useEffect(() => {
     if (!activeConversationId) return;
-    setUnreadConversations((prev) => {
-      if (!(activeConversationId in prev)) return prev;
-      const next = { ...prev };
-      delete next[activeConversationId];
-      return next;
-    });
+    setUnreadConversations((prev) => removeRecordEntry(prev, activeConversationId));
+    setClearedInitialConversations((prev) => markCleared(prev, activeConversationId));
   }, [activeConversationId]);
 
-  const value = useMemo<MessageActivityContextValue>(
-    () => ({
+  const value = useMemo<MessageActivityContextValue>(() => {
+    const hasInitialUnreadChannel = hasInitialUnread(initialUnreadChannels, clearedInitialChannels);
+    const hasInitialUnreadGuild = hasInitialUnread(initialUnreadGuilds, clearedInitialGuilds);
+    const hasInitialUnreadConversation = hasInitialUnread(
+      initialUnreadConversations,
+      clearedInitialConversations
+    );
+    const hasUnreadCurrentGuildChannel = (guildId: string) =>
+      currentRouteGuildId === guildId &&
+      (Object.keys(unreadChannels).some((channelId) => channelGuildIds[channelId] === guildId) ||
+        countInitialUnread(initialUnreadChannels, clearedInitialChannels) > 0);
+
+    return {
       totalUnreadCount:
         Object.values(unreadChannels).reduce((sum, count) => sum + count, 0) +
         Object.values(unreadGuilds).reduce((sum, count) => sum + count, 0) +
         Object.values(unreadConversations).reduce((sum, count) => sum + count, 0) +
+        countInitialUnread(initialUnreadChannels, clearedInitialChannels) +
+        countInitialUnread(initialUnreadGuilds, clearedInitialGuilds) +
+        countInitialUnread(initialUnreadConversations, clearedInitialConversations) +
         unreadCurrentRoute,
-      hasUnreadChannel: (channelId: string) => (unreadChannels[channelId] ?? 0) > 0,
-      hasUnreadGuild: (guildId: string) => (unreadGuilds[guildId] ?? 0) > 0,
+      hasUnreadChannel: (channelId: string) =>
+        (unreadChannels[channelId] ?? 0) > 0 || hasInitialUnreadChannel(channelId),
+      hasUnreadGuild: (guildId: string) =>
+        (unreadGuilds[guildId] ?? 0) > 0 ||
+        hasInitialUnreadGuild(guildId) ||
+        hasUnreadCurrentGuildChannel(guildId),
       hasUnreadConversation: (conversationId: string) =>
-        (unreadConversations[conversationId] ?? 0) > 0,
-      hasAnyUnreadConversation: () => Object.values(unreadConversations).some((c) => c > 0),
-    }),
-    [unreadChannels, unreadGuilds, unreadConversations, unreadCurrentRoute]
-  );
+        (unreadConversations[conversationId] ?? 0) > 0 ||
+        hasInitialUnreadConversation(conversationId),
+      hasAnyUnreadConversation: () =>
+        Object.values(unreadConversations).some((c) => c > 0) ||
+        countInitialUnread(initialUnreadConversations, clearedInitialConversations) > 0,
+    };
+  }, [
+    unreadChannels,
+    unreadGuilds,
+    unreadConversations,
+    initialUnreadChannels,
+    initialUnreadGuilds,
+    initialUnreadConversations,
+    clearedInitialChannels,
+    clearedInitialGuilds,
+    clearedInitialConversations,
+    channelGuildIds,
+    currentRouteGuildId,
+    unreadCurrentRoute,
+  ]);
 
   return (
     <MessageActivityContext.Provider value={value}>{children}</MessageActivityContext.Provider>

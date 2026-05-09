@@ -9,6 +9,7 @@ export interface Guild {
   joinedAtUtc: string;
   iconFileId: string | null;
   icon: GuildIcon | null;
+  hasUnread?: boolean;
 }
 
 export interface GuildIcon {
@@ -30,6 +31,7 @@ export interface Channel {
   isDefault: boolean;
   position: number;
   currentParticipants?: VoiceParticipantInit[] | null;
+  hasUnread?: boolean;
 }
 
 export interface ChannelList {

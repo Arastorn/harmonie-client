@@ -49,13 +49,26 @@ export const ChannelItem = ({
           .filter(Boolean)
           .join(' ')}
       >
-        <Icon
-          size={16}
-          className={['shrink-0', voiceActive ? 'text-primary' : 'text-text-3'].join(' ')}
-          fill={voiceActive ? 'currentColor' : 'none'}
-        />
+        <span
+          className={[
+            'shrink-0 flex h-5 w-5 items-center justify-center rounded-full',
+            unread && !active
+              ? 'bg-primary/15 shadow-[0_0_14px_var(--color-primary),0_0_4px_var(--color-primary)]'
+              : '',
+          ].join(' ')}
+        >
+          <Icon
+            size={16}
+            className={[
+              'shrink-0',
+              voiceActive || (unread && !active)
+                ? 'text-primary drop-shadow-[0_0_8px_var(--color-primary)]'
+                : 'text-text-3',
+            ].join(' ')}
+            fill={voiceActive ? 'currentColor' : 'none'}
+          />
+        </span>
         <span className="truncate">{label}</span>
-        {unread && <span className="ml-auto h-2 w-2 rounded-full bg-primary shrink-0" />}
       </button>
 
       {onMenuClick && (

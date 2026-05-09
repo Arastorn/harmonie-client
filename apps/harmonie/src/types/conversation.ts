@@ -22,6 +22,7 @@ export interface Conversation {
   name: string | null;
   participants: ConversationParticipant[];
   createdAtUtc: string;
+  hasUnread?: boolean;
 }
 
 export interface ConversationList {

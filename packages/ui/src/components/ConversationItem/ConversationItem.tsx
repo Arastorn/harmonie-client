@@ -41,9 +41,17 @@ export const ConversationItem = ({
         onClick={onClick}
         className="flex min-w-0 flex-1 items-center gap-2 text-sm font-body text-left cursor-pointer h-9"
       >
-        <span className="shrink-0">{avatar}</span>
+        <span
+          className={[
+            'shrink-0 rounded-full',
+            unread && !active
+              ? 'ring-2 ring-primary shadow-[0_0_0_2px_rgba(138,173,144,0.18)] drop-shadow-[0_0_12px_var(--color-primary)]'
+              : '',
+          ].join(' ')}
+        >
+          {avatar}
+        </span>
         <span className="truncate flex-1">{label}</span>
-        {unread && !active && <span className="ml-auto h-2 w-2 rounded-full bg-primary shrink-0" />}
       </button>
 
       {onDeleteClick && (
