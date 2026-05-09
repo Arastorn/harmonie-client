@@ -22,13 +22,14 @@ const MiniParticipantAvatar = ({ participant }: { participant: ConversationParti
 interface GroupAvatarProps {
   participants: ConversationParticipant[];
   currentUserId?: string;
+  label: string;
 }
 
-export const GroupAvatar = ({ participants, currentUserId }: GroupAvatarProps) => {
+export const GroupAvatar = ({ participants, currentUserId, label }: GroupAvatarProps) => {
   const others = participants.filter((p) => p.userId !== currentUserId).slice(0, 2);
 
   if (others.length === 0) {
-    return <div className="w-6 h-6 rounded-full bg-surface-3" />;
+    return <Avatar icon="Users" alt={label} size={24} />;
   }
 
   return (
