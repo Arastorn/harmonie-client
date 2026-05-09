@@ -14,7 +14,11 @@ export const ConversationAvatar = ({
   currentUserId,
 }: ConversationAvatarProps) =>
   conversation.type === 'Group' ? (
-    <GroupAvatar participants={conversation.participants} currentUserId={currentUserId} />
+    <GroupAvatar
+      participants={conversation.participants}
+      currentUserId={currentUserId}
+      label={label}
+    />
   ) : (
     <DirectAvatar
       participant={conversation.participants.find((p) => p.userId !== currentUserId)}

@@ -1,4 +1,12 @@
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getConversations } from '@/api/conversations';
 import { useRealtime } from '@/features/realtime/RealtimeContext';
@@ -6,6 +14,7 @@ import { REALTIME_SERVER_EVENTS } from '@/features/realtime/constants';
 import { useUser } from '@/features/user/UserContext';
 import type {
   Conversation,
+  ConversationMessageCreatedEvent,
   ConversationParticipantLeftEvent,
   ConversationUpdatedEvent,
 } from '@/types/conversation';
@@ -38,9 +47,14 @@ export const ConversationProvider = ({ children }: { children: ReactNode }) => {
   const { connection } = useRealtime();
   const { user } = useUser();
   const [conversations, setConversations] = useState<Conversation[] | null>(null);
+  const conversationsRef = useRef<Conversation[] | null>(null);
   const [membersPanelOpenByConversationId, setMembersPanelOpenByConversationId] = useState<
     Record<string, boolean>
   >({});
+
+  useEffect(() => {
+    conversationsRef.current = conversations;
+  }, [conversations]);
 
   const fetchConversations = useCallback(() => {
     getConversations()
@@ -64,6 +78,18 @@ export const ConversationProvider = ({ children }: { children: ReactNode }) => {
     if (!connection) return;
 
     const handleConversationCreated = () => {
+      fetchConversations();
+    };
+
+    const handleConversationMessageCreated = (event: ConversationMessageCreatedEvent) => {
+      if (
+        conversationsRef.current?.some(
+          (conversation) => conversation.conversationId === event.conversationId
+        )
+      ) {
+        return;
+      }
+
       fetchConversations();
     };
 
@@ -129,6 +155,10 @@ export const ConversationProvider = ({ children }: { children: ReactNode }) => {
     };
 
     connection.on(REALTIME_SERVER_EVENTS.conversationCreated, handleConversationCreated);
+    connection.on(
+      REALTIME_SERVER_EVENTS.conversationMessageCreated,
+      handleConversationMessageCreated
+    );
     connection.on(REALTIME_SERVER_EVENTS.conversationUpdated, handleConversationUpdated);
     connection.on(
       REALTIME_SERVER_EVENTS.conversationParticipantLeft,
@@ -138,6 +168,10 @@ export const ConversationProvider = ({ children }: { children: ReactNode }) => {
 
     return () => {
       connection.off(REALTIME_SERVER_EVENTS.conversationCreated, handleConversationCreated);
+      connection.off(
+        REALTIME_SERVER_EVENTS.conversationMessageCreated,
+        handleConversationMessageCreated
+      );
       connection.off(REALTIME_SERVER_EVENTS.conversationUpdated, handleConversationUpdated);
       connection.off(
         REALTIME_SERVER_EVENTS.conversationParticipantLeft,
