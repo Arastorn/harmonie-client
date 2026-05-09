@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { Pencil, Pin, PinOff, SmilePlus, Trash2 } from 'lucide-react';
+import { Pencil, Pin, PinOff, Reply, SmilePlus, Trash2 } from 'lucide-react';
 import { IconButton } from '@harmonie/ui';
 
 interface MessageActionsProps {
@@ -8,15 +8,18 @@ interface MessageActionsProps {
   canPin: boolean;
   isPinned: boolean;
   canReact: boolean;
+  canReply: boolean;
   editLabel: string;
   deleteLabel: string;
   pinLabel: string;
   unpinLabel: string;
   reactLabel: string;
+  replyLabel: string;
   onEdit: () => void;
   onDelete: () => void;
   onPinToggle: () => void;
   onPickerOpen: (rect: DOMRect) => void;
+  onReply: () => void;
 }
 
 export const MessageActions = ({
@@ -25,21 +28,26 @@ export const MessageActions = ({
   canPin,
   isPinned,
   canReact,
+  canReply,
   editLabel,
   deleteLabel,
   pinLabel,
   unpinLabel,
   reactLabel,
+  replyLabel,
   onEdit,
   onDelete,
   onPinToggle,
   onPickerOpen,
+  onReply,
 }: MessageActionsProps) => {
   const reactButtonRef = useRef<HTMLDivElement>(null);
 
-  if (!canEdit && !canDelete && !canPin && !canReact) return null;
+  if (!canEdit && !canDelete && !canPin && !canReact && !canReply) return null;
 
-  const visibleActionCount = [canReact, canPin, canEdit, canDelete].filter(Boolean).length;
+  const visibleActionCount = [canReply, canReact, canPin, canEdit, canDelete].filter(
+    Boolean
+  ).length;
   const singleActionTooltipSide = visibleActionCount === 1 ? 'left' : undefined;
 
   const handleReactClick = () => {
@@ -49,6 +57,16 @@ export const MessageActions = ({
 
   return (
     <div className="absolute right-2 -top-3 flex gap-0.5 p-0.5 opacity-0 group-hover:opacity-100 transition-opacity z-10 bg-surface-1 border border-border-2 rounded-full shadow-sm">
+      {canReply && (
+        <IconButton
+          size="medium"
+          title={replyLabel}
+          tooltipSide={singleActionTooltipSide}
+          onClick={onReply}
+        >
+          <Reply size={16} />
+        </IconButton>
+      )}
       {canReact && (
         <div ref={reactButtonRef}>
           <IconButton

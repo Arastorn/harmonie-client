@@ -27,6 +27,17 @@ export interface LinkPreview {
   siteName: string | null;
 }
 
+export interface ReplyPreview {
+  messageId: string;
+  authorUserId: string;
+  authorDisplayName?: string | null;
+  authorUsername: string;
+  content: string | null;
+  hasAttachments: boolean;
+  isDeleted: boolean;
+  deletedAtUtc: string | null;
+}
+
 export interface Message {
   messageId: string;
   authorUserId: string;
@@ -35,6 +46,7 @@ export interface Message {
   reactions: MessageReaction[];
   linkPreviews?: LinkPreview[] | null;
   isPinned: boolean;
+  replyTo: ReplyPreview | null;
   createdAtUtc: string;
   updatedAtUtc: string | null;
 }
@@ -89,6 +101,7 @@ export interface MessageCreatedEvent {
   authorDisplayName?: string | null;
   content: string;
   attachments: MessageAttachment[];
+  replyTo?: ReplyPreview | null;
   isPinned?: boolean;
   createdAtUtc: string;
 }

@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { X } from 'lucide-react';
-import { RichTextMessageInput } from '@harmonie/ui';
+import { IconButton, RichTextMessageInput } from '@harmonie/ui';
 import { deleteFile, uploadFile } from '@/api/files';
-import type { Message } from '@/types/channel';
+import type { Message, ReplyPreview } from '@/types/channel';
 import { useMessageDraft } from './hooks/useMessageDraft';
 import { useMessageFormattingPreference } from './hooks/useMessageFormattingPreference';
 import { getMessagePayloadContent, stripHtmlToText } from './utils/messageHtml';
@@ -31,10 +31,16 @@ interface PendingAttachment {
 
 interface MessageComposerProps {
   draftKey?: string;
-  sendFn: (content: string, attachmentFileIds: string[]) => Promise<unknown>;
+  sendFn: (
+    content: string,
+    attachmentFileIds: string[],
+    replyToMessageId?: string | null
+  ) => Promise<unknown>;
   onTypingStart?: () => void;
   latestEditableMessage?: Message | null;
   onEditingRequested?: (messageId: string) => void;
+  replyTo?: ReplyPreview | null;
+  onCancelReply?: () => void;
 }
 
 export const MessageComposer = ({
@@ -43,6 +49,8 @@ export const MessageComposer = ({
   onTypingStart,
   latestEditableMessage = null,
   onEditingRequested,
+  replyTo = null,
+  onCancelReply,
 }: MessageComposerProps) => {
   const { t } = useTranslation();
   const { clearDraft, content, setContent } = useMessageDraft(draftKey);
@@ -161,8 +169,9 @@ export const MessageComposer = ({
     const attachmentFileIds = doneAttachments.map((a) => a.fileId!);
 
     try {
-      await sendFn(payloadContent, attachmentFileIds);
+      await sendFn(payloadContent, attachmentFileIds, replyTo?.messageId ?? null);
       clearDraft();
+      onCancelReply?.();
       setPendingAttachments((prev) => {
         prev.forEach((a) => {
           if (a.previewUrl) URL.revokeObjectURL(a.previewUrl);
@@ -235,6 +244,38 @@ export const MessageComposer = ({
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
       >
+        {replyTo && (
+          <div className="mb-2 flex items-start gap-2 rounded-md border border-border-2 bg-surface-2 px-3 py-2">
+            <div className="mt-0.5 h-8 w-0.5 shrink-0 rounded-full bg-primary" />
+            <div className="min-w-0 flex-1">
+              <div className="text-xs font-semibold text-text-1 truncate">
+                {replyTo.isDeleted
+                  ? t('channel.messages.replyDeleted')
+                  : t('channel.messages.replyingTo', {
+                      name: replyTo.authorDisplayName ?? replyTo.authorUsername,
+                    })}
+              </div>
+              {!replyTo.isDeleted && (
+                <div className="text-xs text-text-3 truncate">
+                  {replyTo.content
+                    ? stripHtmlToText(replyTo.content)
+                    : replyTo.hasAttachments
+                      ? t('channel.messages.attachmentOnly')
+                      : t('channel.messages.replyEmpty')}
+                </div>
+              )}
+            </div>
+            <IconButton
+              type="button"
+              size="small"
+              onClick={onCancelReply}
+              title={t('channel.messages.cancelReply')}
+              className="shrink-0"
+            >
+              <X size={14} />
+            </IconButton>
+          </div>
+        )}
         {attachmentsPreview && <div className="mb-2">{attachmentsPreview}</div>}
         <RichTextMessageInput
           value={content}

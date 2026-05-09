@@ -14,12 +14,13 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL;
 export const sendMessage = (
   channelId: string,
   content: string,
-  attachmentFileIds: string[] = []
+  attachmentFileIds: string[] = [],
+  replyToMessageId?: string | null
 ): Promise<Message> =>
   apiFetch(`${API_BASE}/channels/${channelId}/messages`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ content: content || null, attachmentFileIds }),
+    body: JSON.stringify({ content: content || null, attachmentFileIds, replyToMessageId }),
   }).then((r) => parseOrThrow<Message>(r));
 
 export const getChannelMessages = (channelId: string, before?: string): Promise<MessageList> => {

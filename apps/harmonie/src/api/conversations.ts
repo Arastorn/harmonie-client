@@ -70,12 +70,13 @@ export const getConversationPinnedMessages = (
 export const sendConversationMessage = (
   conversationId: string,
   content: string,
-  attachmentFileIds: string[] = []
+  attachmentFileIds: string[] = [],
+  replyToMessageId?: string | null
 ): Promise<Message> =>
   apiFetch(`${API_BASE}/conversations/${conversationId}/messages`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ content: content || null, attachmentFileIds }),
+    body: JSON.stringify({ content: content || null, attachmentFileIds, replyToMessageId }),
   }).then((r) => parseOrThrow<Message>(r));
 
 export const updateConversationMessage = (
