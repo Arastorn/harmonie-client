@@ -14,7 +14,7 @@ export const ScrollToBottomButton = ({ label, onClick }: ScrollToBottomButtonPro
     aria-label={label}
     title={label}
     onClick={onClick}
-    className="absolute bottom-4 left-1/2 z-10 -translate-x-1/2 shadow-lg border border-border-2 bg-surface-3 text-text-1"
+    className="absolute right-4 bottom-4 z-10 border border-border-2 bg-surface-3 text-text-1 shadow-lg md:left-1/2 md:right-auto md:-translate-x-1/2"
   >
     <ArrowDown size={16} />
   </IconButton>

@@ -25,7 +25,10 @@ export type { EmojiInputProps } from './components/EmojiInput/EmojiInput';
 export { PlainEmojiTextarea } from './components/EmojiTextarea/EmojiTextarea';
 export type { PlainEmojiTextareaProps } from './components/EmojiTextarea/EmojiTextarea';
 export { RichTextMessageInput } from './components/RichTextMessageInput/RichTextMessageInput';
-export type { RichTextMessageInputProps } from './components/RichTextMessageInput/RichTextMessageInput';
+export type {
+  RichTextMessageInputHandle,
+  RichTextMessageInputProps,
+} from './components/RichTextMessageInput/RichTextMessageInput';
 export type { RichTextMessageInputLabels } from './components/RichTextMessageInput/types';
 
 export { Separator } from './components/Separator/Separator';

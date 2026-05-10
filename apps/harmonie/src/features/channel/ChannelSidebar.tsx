@@ -65,6 +65,10 @@ export const ChannelSidebar = () => {
     setContextMenu({ channel, position: { x: e.clientX, y: e.clientY } });
   };
 
+  const handleLongPress = (position: { x: number; y: number }, channel: Channel) => {
+    setContextMenu({ channel, position });
+  };
+
   const handleMenuButtonClick = (_e: React.MouseEvent<HTMLButtonElement>, channel: Channel) => {
     openEdit(channel, 'rename');
   };
@@ -110,7 +114,7 @@ export const ChannelSidebar = () => {
   return (
     <>
       <aside className="flex min-h-0 w-0 flex-1 flex-col overflow-hidden bg-surface-1 md:w-60 md:flex-none md:shrink-0 md:rounded-md">
-        <header className="pl-4 pr-2 h-14 bg-surface-2 rounded-t-md flex items-center justify-between gap-2">
+        <header className="pl-4 pr-2 h-14 bg-surface-2 md:rounded-t-md flex items-center justify-between gap-2">
           <h2 className="font-semibold text-text-1 truncate">{guild?.name ?? guildId}</h2>
           {canManageGuild && guild && (
             <IconButton
@@ -166,6 +170,7 @@ export const ChannelSidebar = () => {
                   canReorder={canReorder}
                   hasUnread={hasUnreadChannel}
                   onContextMenu={canManageChannels ? handleContextMenu : undefined}
+                  onLongPress={canManageChannels ? handleLongPress : undefined}
                   onMenuClick={canManageChannels ? handleMenuButtonClick : undefined}
                   menuLabel={t('guild.channels.edit.title')}
                 />
@@ -192,6 +197,7 @@ export const ChannelSidebar = () => {
                   type="Voice"
                   canReorder={canReorder}
                   onContextMenu={canManageChannels ? handleContextMenu : undefined}
+                  onLongPress={canManageChannels ? handleLongPress : undefined}
                   onMenuClick={canManageChannels ? handleMenuButtonClick : undefined}
                   menuLabel={t('guild.channels.edit.title')}
                 />

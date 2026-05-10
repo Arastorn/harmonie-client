@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { X } from 'lucide-react';
-import { IconButton, UserListItem, UserPopover } from '@harmonie/ui';
+import { MessageCircle, X } from 'lucide-react';
+import { IconButton, UserListItem, UserPopover, type UserPopoverAction } from '@harmonie/ui';
 import { useFileBlobUrl } from '@/shared/hooks/useFileBlobUrl';
 import type { ConversationParticipant } from '@/types/conversation';
 import { useTheme } from '@/features/user/ThemeContext';
 import { getUserGradient } from '@/shared/utils/user';
+import { useUser } from '@/features/user/UserContext';
+import { useOpenDirectConversation } from '../useOpenDirectConversation';
 
 interface SelectedParticipant {
   participant: ConversationParticipant;
@@ -49,8 +51,24 @@ export const ConversationParticipantPopover = ({
 }) => {
   const { t } = useTranslation();
   const { theme } = useTheme();
+  const { user } = useUser();
+  const openDirectConversation = useOpenDirectConversation();
   const avatarUrl = useFileBlobUrl(participant.avatarFileId ?? null);
   const label = participant.displayName ?? participant.username;
+  const actions: UserPopoverAction[] =
+    user?.userId === participant.userId
+      ? []
+      : [
+          {
+            label: t('conversation.sendDirectMessage'),
+            icon: <MessageCircle size={13} />,
+            onClick: () => {
+              void openDirectConversation(participant)
+                .then(onClose)
+                .catch(() => {});
+            },
+          },
+        ];
 
   return (
     <UserPopover
@@ -66,6 +84,7 @@ export const ConversationParticipantPopover = ({
       side={side}
       bioLabel={t('guild.members.popover.bioLabel')}
       bio={participant.bio}
+      actions={actions}
     />
   );
 };
@@ -90,8 +109,8 @@ export const ConversationParticipantsPanel = ({
 
   return (
     <>
-      <div className="w-52 flex flex-col shrink-0 bg-surface-1 rounded-md overflow-hidden">
-        <div className="flex items-center justify-between px-4 h-14 shrink-0 bg-surface-2 rounded-t-md">
+      <div className="fixed inset-0 z-40 flex flex-col overflow-hidden bg-surface-1 lg:static lg:z-auto lg:w-52 lg:shrink-0 lg:rounded-md">
+        <div className="flex h-14 shrink-0 items-center justify-between bg-surface-2 px-4 pt-[env(safe-area-inset-top)] lg:rounded-t-md lg:pt-0">
           <span className="text-sm font-semibold text-text-1">
             {t('conversation.participantsTitle')}
           </span>

@@ -5,6 +5,15 @@ export const en = {
   common: {
     close: 'Close',
   },
+  pwa: {
+    install: {
+      title: 'Install Harmonie',
+      description: 'Add the app to your home screen to open it like a native app.',
+      iosDescription: 'On iOS, use the share button and choose Add to Home Screen.',
+      action: 'Install',
+      dismiss: 'Hide',
+    },
+  },
   dateTime: {
     dateAt: '{{date}} at {{time}}',
   },
@@ -359,6 +368,7 @@ export const en = {
     cameraError: 'Unable to use your camera. Check browser permissions.',
     startScreenShare: 'Share screen',
     stopScreenShare: 'Stop screen share',
+    screenShareUnavailable: 'Screen sharing is not available in this browser.',
     screenShareError: 'Unable to share your screen. Check browser permissions.',
     screenSharingLabel: '{{name}} is sharing their screen',
     enterFullscreen: 'Fullscreen',
@@ -425,6 +435,7 @@ export const en = {
     create: 'Create',
     cancel: 'Cancel',
     createDm: 'Create DM',
+    sendDirectMessage: 'Send direct message',
     createGroup: 'Create group',
     createError: 'Failed to create conversation. Please try again.',
     delete: 'Leave conversation',

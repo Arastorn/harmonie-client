@@ -29,7 +29,7 @@ export const IconAppearanceEditor = ({
   iconLabel,
   colorLabel,
   bgLabel,
-  iconGridClassName = 'grid-cols-12',
+  iconGridClassName = 'grid-cols-6 sm:grid-cols-12',
   disabled = false,
 }: IconAppearanceEditorProps) => {
   const { t } = useTranslation();

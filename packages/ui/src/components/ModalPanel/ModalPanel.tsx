@@ -27,7 +27,7 @@ export const ModalPanel = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 flex items-end justify-center p-0 sm:items-center sm:p-4"
       role="dialog"
       aria-modal="true"
       aria-label={title}
@@ -39,24 +39,33 @@ export const ModalPanel = ({
       />
 
       {/* Dialog */}
-      <div className="relative flex w-full max-w-3xl h-[80vh] max-h-[620px] rounded-md overflow-hidden shadow-xl border border-border-2">
+      <div className="relative flex h-dvh min-h-0 w-full max-w-3xl flex-col overflow-hidden border border-border-2 shadow-xl sm:h-[80vh] sm:max-h-[620px] sm:flex-row sm:rounded-md">
         {/* Left sidebar */}
-        <div className="w-52 bg-surface-2 border-r border-border-2 flex flex-col shrink-0 p-3 gap-1">
+        <div className="hidden shrink-0 bg-surface-2 sm:flex sm:w-52 sm:flex-col sm:gap-1 sm:overflow-x-visible sm:border-r sm:p-3">
           {sidebar}
         </div>
 
         {/* Right content */}
-        <div className="flex-1 bg-surface-1 flex flex-col overflow-hidden">
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-surface-1">
           {/* Right header */}
-          <div className="flex items-center justify-between px-8 pt-6 pb-4 border-b border-border-2 shrink-0">
+          <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-border-2 shrink-0 sm:px-8 sm:pt-6">
             <h2 className="font-display text-lg font-semibold text-text-1">{title}</h2>
             <IconButton size="small" aria-label={closeLabel} onClick={onClose}>
               <X size={16} />
             </IconButton>
           </div>
 
+          {/* Mobile navigation */}
+          <div className="shrink-0 overflow-x-auto border-b border-border-2 bg-surface-2 px-3 py-2 sm:hidden">
+            <div className="flex items-center gap-2 [&_p]:hidden [&_ul]:mt-0 [&_ul]:flex-row [&_ul]:gap-1 [&_li]:shrink-0 [&_button]:w-auto [&_button]:whitespace-nowrap [&_.h-px]:hidden [&_.mt-auto]:mt-0 [&_.mt-auto]:shrink-0 [&>div]:flex [&>div]:items-center [&>div]:gap-2">
+              {sidebar}
+            </div>
+          </div>
+
           {/* Right body */}
-          <div className="flex-1 overflow-y-auto px-8 py-6">{children}</div>
+          <div className="flex-1 overflow-y-auto px-5 py-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] sm:px-8 sm:py-6">
+            {children}
+          </div>
         </div>
       </div>
     </div>

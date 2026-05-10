@@ -14,11 +14,22 @@ const ThemeContext = createContext<ThemeContextValue>({
   setTheme: () => {},
 });
 
+const updatePwaThemeChrome = () => {
+  const rootStyles = getComputedStyle(document.documentElement);
+  const backgroundColor = rootStyles.getPropertyValue('--color-background').trim();
+  const resolvedBackgroundColor = backgroundColor || '#f5f0eb';
+
+  document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]').forEach((meta) => {
+    meta.content = resolvedBackgroundColor;
+  });
+};
+
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [theme, setThemeState] = useState<Theme>('default');
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
+    updatePwaThemeChrome();
   }, [theme]);
 
   return (

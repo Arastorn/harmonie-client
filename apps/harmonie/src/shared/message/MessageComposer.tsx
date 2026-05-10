@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { X } from 'lucide-react';
-import { IconButton, RichTextMessageInput } from '@harmonie/ui';
+import { IconButton, RichTextMessageInput, type RichTextMessageInputHandle } from '@harmonie/ui';
 import { deleteFile, uploadFile } from '@/api/files';
 import type { Message, ReplyPreview } from '@/types/channel';
 import { useMessageDraft } from './hooks/useMessageDraft';
 import { useMessageFormattingPreference } from './hooks/useMessageFormattingPreference';
 import { getMessagePayloadContent, stripHtmlToText } from './utils/messageHtml';
 import { getRichTextMessageInputLabels } from './utils/richTextMessageInputLabels';
+import { isCoarsePointerDevice, useCoarsePointer } from '@/shared/hooks/useCoarsePointer';
 
 const MAX_LENGTH = 4000;
 const TYPING_THROTTLE_MS = 4000;
@@ -60,8 +61,10 @@ export const MessageComposer = ({
   const [isDragOver, setIsDragOver] = useState(false);
   const { formattingOpen, toggleFormattingOpen } = useMessageFormattingPreference();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<RichTextMessageInputHandle>(null);
   const lastTypingSentRef = useRef<number>(0);
   const inputLabels = getRichTextMessageInputLabels(t);
+  const isCoarsePointer = useCoarsePointer();
 
   const textContent = stripHtmlToText(content);
   const payloadContent = getMessagePayloadContent(content);
@@ -80,6 +83,11 @@ export const MessageComposer = ({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (!replyTo || isCoarsePointer || isCoarsePointerDevice()) return;
+    window.setTimeout(() => inputRef.current?.focus('end'), 0);
+  }, [isCoarsePointer, replyTo]);
 
   const handleChange = (value: string) => {
     setContent(value);
@@ -228,7 +236,7 @@ export const MessageComposer = ({
     ) : undefined;
 
   return (
-    <div className="flex w-full pt-2 self-end">
+    <div className="flex min-w-0 w-full pt-2 self-end">
       <input
         ref={fileInputRef}
         type="file"
@@ -239,13 +247,13 @@ export const MessageComposer = ({
       />
 
       <div
-        className={`flex-1 rounded-md transition-colors ${isDragOver ? 'ring-2 ring-primary' : ''}`}
+        className={`min-w-0 flex-1 rounded-md transition-colors ${isDragOver ? 'ring-2 ring-primary' : ''}`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
       >
         {replyTo && (
-          <div className="mb-2 flex items-start gap-2 rounded-md border border-border-2 bg-surface-2 px-3 py-2">
+          <div className="mb-2 flex max-w-full items-start gap-2 overflow-hidden rounded-md border border-border-2 bg-surface-2 px-3 py-2">
             <div className="mt-0.5 h-8 w-0.5 shrink-0 rounded-full bg-primary" />
             <div className="min-w-0 flex-1">
               <div className="text-xs font-semibold text-text-1 truncate">
@@ -278,6 +286,7 @@ export const MessageComposer = ({
         )}
         {attachmentsPreview && <div className="mb-2">{attachmentsPreview}</div>}
         <RichTextMessageInput
+          ref={inputRef}
           value={content}
           onChange={handleChange}
           placeholder={t('channel.input.placeholder')}
@@ -297,7 +306,7 @@ export const MessageComposer = ({
           onAttachClick={() => fileInputRef.current?.click()}
           showFormattingTools={formattingOpen}
           onToggleFormattingTools={toggleFormattingOpen}
-          autoFocus
+          autoFocus={!isCoarsePointer && !isCoarsePointerDevice()}
           autoFocusPlacement="end"
           submitDisabled={!canSend}
           labels={inputLabels}

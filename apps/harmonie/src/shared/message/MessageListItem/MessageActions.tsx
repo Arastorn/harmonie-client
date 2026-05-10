@@ -56,7 +56,7 @@ export const MessageActions = ({
   };
 
   return (
-    <div className="absolute right-2 -top-3 flex gap-0.5 p-0.5 opacity-0 group-hover:opacity-100 transition-opacity z-10 bg-surface-1 border border-border-2 rounded-full shadow-sm">
+    <div className="absolute right-2 -top-3 hidden gap-0.5 rounded-full border border-border-2 bg-surface-1 p-0.5 opacity-0 shadow-sm transition-opacity z-10 group-hover:opacity-100 md:flex">
       {canReply && (
         <IconButton
           size="medium"

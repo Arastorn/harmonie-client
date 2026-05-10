@@ -103,7 +103,7 @@ export const Lightbox = ({
   const zoom = zoomed ? ZOOM_LEVEL : 1;
   const imageStyle = baseSize
     ? { width: baseSize.w * zoom, height: baseSize.h * zoom }
-    : { maxWidth: '90vw', maxHeight: 'calc(100vh - 96px)' };
+    : { maxWidth: '90vw', maxHeight: 'calc(100dvh - 96px)' };
 
   const actionButtonClass =
     'p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed';

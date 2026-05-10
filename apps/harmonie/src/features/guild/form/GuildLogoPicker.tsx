@@ -127,7 +127,7 @@ export const GuildLogoPicker = ({
           iconLabel={t('guild.noGuild.logoIconLabel')}
           colorLabel={t('guild.noGuild.logoIconColorLabel')}
           bgLabel={t('guild.noGuild.logoBgColorLabel')}
-          iconGridClassName="grid-cols-10"
+          iconGridClassName="grid-cols-5 sm:grid-cols-10"
           disabled={isLoading || hasAnyImage}
         />
       </div>

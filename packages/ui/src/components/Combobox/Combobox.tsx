@@ -19,6 +19,7 @@ export interface ComboboxProps {
   className?: string;
   autoFocusSearch?: boolean;
   align?: 'left' | 'right';
+  placement?: 'bottom' | 'top';
 }
 
 export const Combobox = ({
@@ -32,9 +33,11 @@ export const Combobox = ({
   className = '',
   autoFocusSearch = false,
   align = 'left',
+  placement = 'bottom',
 }: ComboboxProps) => {
   const panelClasses = [
-    'absolute top-full mt-1 z-50 overflow-hidden rounded-sm border border-border-2 bg-surface-1 shadow-lg',
+    'absolute z-50 overflow-hidden rounded-sm border border-border-2 bg-surface-1 shadow-lg',
+    placement === 'top' ? 'bottom-full mb-1' : 'top-full mt-1',
     align === 'right' ? 'right-0' : 'left-0',
     className,
   ]

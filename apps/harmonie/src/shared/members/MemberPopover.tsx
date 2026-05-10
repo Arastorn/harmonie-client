@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ShieldBan, UserMinus } from 'lucide-react';
+import { MessageCircle, ShieldBan, UserMinus } from 'lucide-react';
 import { UserPopover, type UserPopoverAction, type UserPopoverBadge } from '@harmonie/ui';
 import { useFileBlobUrl } from '@/shared/hooks/useFileBlobUrl';
 import { useTheme } from '@/features/user/ThemeContext';
 import { getUserGradient } from '@/shared/utils/user';
 import { useCurrentGuild, useGuilds } from '@/features/guild/GuildContext';
 import { useGuildPermissions } from '@/features/guild/hooks/useGuildPermissions';
+import { useOpenDirectConversation } from '@/features/conversation/useOpenDirectConversation';
+import { useUser } from '@/features/user/UserContext';
 import { BanMemberModal } from '@/features/guild/members/modals/BanMemberModal';
 import { RemoveMemberModal } from '@/features/guild/members/modals/RemoveMemberModal';
 import type { GuildMember } from '@/types/guild';
@@ -35,6 +37,8 @@ export const MemberPopover = ({
   const avatarUrl = useFileBlobUrl(member.avatarFileId);
   const headerGradient = getUserGradient(member.userId, theme.endsWith('obsidian'));
   const label = member.displayName ?? member.username;
+  const openDirectConversation = useOpenDirectConversation();
+  const { user } = useUser();
 
   const [showBanModal, setShowBanModal] = useState(false);
   const [showRemoveModal, setShowRemoveModal] = useState(false);
@@ -43,30 +47,41 @@ export const MemberPopover = ({
   const { guild } = useCurrentGuild();
   const { canBanMember, canRemoveMember } = useGuildPermissions(guild);
   const isOwner = guild?.ownerUserId === member.userId;
+  const isCurrentUser = user?.userId === member.userId;
 
-  const actions: UserPopoverAction[] =
-    guildId && (canRemoveMember(member) || canBanMember(member))
+  const actions: UserPopoverAction[] = [
+    ...(!isCurrentUser
       ? [
-          ...(canRemoveMember(member)
-            ? [
-                {
-                  label: t('guild.members.kickAction'),
-                  icon: <UserMinus size={13} />,
-                  onClick: () => setShowRemoveModal(true),
-                },
-              ]
-            : []),
-          ...(canBanMember(member)
-            ? [
-                {
-                  label: t('guild.bans.banAction'),
-                  icon: <ShieldBan size={13} />,
-                  onClick: () => setShowBanModal(true),
-                },
-              ]
-            : []),
+          {
+            label: t('conversation.sendDirectMessage'),
+            icon: <MessageCircle size={13} />,
+            onClick: () => {
+              void openDirectConversation(member)
+                .then(onClose)
+                .catch(() => {});
+            },
+          },
         ]
-      : [];
+      : []),
+    ...(guildId && canRemoveMember(member)
+      ? [
+          {
+            label: t('guild.members.kickAction'),
+            icon: <UserMinus size={13} />,
+            onClick: () => setShowRemoveModal(true),
+          },
+        ]
+      : []),
+    ...(guildId && canBanMember(member)
+      ? [
+          {
+            label: t('guild.bans.banAction'),
+            icon: <ShieldBan size={13} />,
+            onClick: () => setShowBanModal(true),
+          },
+        ]
+      : []),
+  ];
   const badges: UserPopoverBadge[] = [
     { label: member.role },
     ...(isOwner && guildId

@@ -12,7 +12,7 @@ export const AuthCard = ({ title, children }: AuthCardProps) => {
   const { t, i18n } = useTranslation();
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div className="min-h-dvh bg-background flex items-center justify-center p-4">
       <div className="relative bg-surface-1 rounded-lg shadow-[0_4px_32px_rgba(61,53,48,0.10)] p-8 w-full max-w-107.5">
         {/* Language switcher */}
         <div className="absolute top-5 right-5">

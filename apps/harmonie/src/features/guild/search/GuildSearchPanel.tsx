@@ -84,8 +84,8 @@ export const GuildSearchPanel = ({
   };
 
   return (
-    <div className="w-72 flex flex-col shrink-0 bg-surface-1 rounded-md overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-3 shrink-0 bg-surface-2 rounded-t-md">
+    <div className="fixed inset-0 z-40 flex flex-col overflow-hidden bg-surface-1 lg:static lg:z-auto lg:w-72 lg:shrink-0 lg:rounded-md">
+      <div className="flex shrink-0 items-center justify-between bg-surface-2 px-4 py-3 pt-[calc(0.75rem+env(safe-area-inset-top))] lg:rounded-t-md lg:pt-3">
         <span className="text-sm font-semibold text-text-1">{t('guild.search.title')}</span>
         <IconButton size="small" onClick={onClose}>
           <X size={14} />

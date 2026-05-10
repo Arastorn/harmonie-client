@@ -24,18 +24,18 @@ export const MainLayoutShell = ({ sidebar, showSidepanels = true }: MainLayoutSh
   return (
     <>
       <LayoutSync />
-      <div className="flex h-screen gap-0 overflow-hidden bg-background p-0 md:gap-2 md:p-3">
+      <div className="flex h-dvh gap-0 overflow-hidden bg-background p-0 md:gap-2 md:p-3">
         <div
           className={[
-            'h-full shrink-0 flex-col gap-2',
+            'h-full shrink-0 flex-col gap-0 md:gap-2',
             hasMobileDetail ? 'hidden md:flex' : 'flex w-full md:w-auto',
           ].join(' ')}
         >
-          <div className="flex min-h-0 flex-1 gap-2">
+          <div className="flex min-h-0 flex-1 gap-0 md:gap-2">
             <GuildSidebar />
             {sidebar}
           </div>
-          <div className="rounded-md bg-surface-2">
+          <div className="rounded-t-md bg-surface-2 pb-[calc(env(safe-area-inset-bottom)+0.5rem)] md:rounded-md md:pb-0">
             <VoiceConnectionBar />
             <UserPanel />
           </div>
@@ -51,11 +51,7 @@ export const MainLayoutShell = ({ sidebar, showSidepanels = true }: MainLayoutSh
               <Outlet />
             </main>
           </div>
-          {showSidepanels && (
-            <div className="hidden lg:contents">
-              <GuildWorkspaceSidepanels hasGuilds={hasGuilds} />
-            </div>
-          )}
+          {showSidepanels && <GuildWorkspaceSidepanels hasGuilds={hasGuilds} />}
         </div>
       </div>
     </>

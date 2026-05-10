@@ -69,6 +69,10 @@ export const ConversationSidebar = () => {
     setContextMenu({ conversation, position: { x: e.clientX, y: e.clientY } });
   };
 
+  const handleLongPress = (position: { x: number; y: number }, conversation: Conversation) => {
+    setContextMenu({ conversation, position });
+  };
+
   const openRename = (conversation: Conversation) => {
     setContextMenu(null);
     setRenamingConversation(conversation);
@@ -118,7 +122,7 @@ export const ConversationSidebar = () => {
   return (
     <>
       <aside className="flex min-h-0 w-0 flex-1 flex-col overflow-hidden bg-surface-1 md:w-60 md:flex-none md:shrink-0 md:rounded-md">
-        <header className="pl-4 pr-2 h-14 bg-surface-2 rounded-t-md flex items-center justify-between gap-2">
+        <header className="pl-4 pr-2 h-14 bg-surface-2 md:rounded-t-md flex items-center justify-between gap-2">
           <h2 className="font-semibold text-text-1 truncate">{t('conversation.home')}</h2>
           <IconButton
             size="small"
@@ -159,6 +163,7 @@ export const ConversationSidebar = () => {
                   unread={hasUnreadConversation(conv.conversationId)}
                   onClick={() => navigate(`/conversations/${conv.conversationId}`)}
                   onContextMenu={(e) => handleContextMenu(e, conv)}
+                  onLongPress={(position) => handleLongPress(position, conv)}
                   onDeleteClick={() => handleLeaveRequest(conv)}
                   deleteLabel={t('conversation.delete')}
                 />

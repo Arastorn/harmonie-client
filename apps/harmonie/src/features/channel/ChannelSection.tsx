@@ -95,6 +95,7 @@ interface SortableChannelItemProps {
   voiceActive?: boolean;
   onNavigate: () => void;
   onContextMenu?: (e: React.MouseEvent) => void;
+  onLongPress?: (position: { x: number; y: number }) => void;
   onMenuClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
   menuLabel?: string;
   voiceParticipants?: VoiceParticipant[];
@@ -110,6 +111,7 @@ const SortableChannelItem = ({
   voiceActive,
   onNavigate,
   onContextMenu,
+  onLongPress,
   onMenuClick,
   menuLabel,
   voiceParticipants,
@@ -142,6 +144,7 @@ const SortableChannelItem = ({
         voiceActive={voiceActive}
         onClick={onNavigate}
         onContextMenu={onContextMenu}
+        onLongPress={onLongPress}
         onMenuClick={onMenuClick}
         menuLabel={menuLabel}
       />
@@ -167,6 +170,7 @@ interface ChannelSectionProps {
   canReorder: boolean;
   hasUnread?: (channelId: string) => boolean;
   onContextMenu?: (e: React.MouseEvent, channel: Channel) => void;
+  onLongPress?: (position: { x: number; y: number }, channel: Channel) => void;
   onMenuClick?: (e: React.MouseEvent<HTMLButtonElement>, channel: Channel) => void;
   menuLabel?: string;
 }
@@ -177,6 +181,7 @@ export const ChannelSection = ({
   canReorder,
   hasUnread,
   onContextMenu,
+  onLongPress,
   onMenuClick,
   menuLabel,
 }: ChannelSectionProps) => {
@@ -265,6 +270,7 @@ export const ChannelSection = ({
                   )
                 }
                 onContextMenu={onContextMenu ? (e) => onContextMenu(e, channel) : undefined}
+                onLongPress={onLongPress ? (position) => onLongPress(position, channel) : undefined}
                 onMenuClick={onMenuClick ? (e) => onMenuClick(e, channel) : undefined}
                 menuLabel={menuLabel}
                 voiceParticipants={
