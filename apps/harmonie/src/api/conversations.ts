@@ -6,6 +6,7 @@ import type {
   PinnedMessageList,
 } from '@/types/channel';
 import type {
+  ConversationParticipant,
   ConversationCreateResponse,
   ConversationList,
   SearchUsersResult,
@@ -59,6 +60,15 @@ export const getConversationMessages = (
   return apiFetch(url.toString()).then((r) => parseOrThrow<MessageList>(r));
 };
 
+export const getConversationParticipants = (
+  conversationId: string
+): Promise<ConversationParticipant[]> =>
+  apiFetch(`${API_BASE}/conversations/${conversationId}/participants`)
+    .then((r) =>
+      parseOrThrow<ConversationParticipant[] | { participants: ConversationParticipant[] }>(r)
+    )
+    .then((result) => (Array.isArray(result) ? result : result.participants));
+
 export const getConversationPinnedMessages = (
   conversationId: string,
   before?: string | null
@@ -72,23 +82,30 @@ export const sendConversationMessage = (
   conversationId: string,
   content: string,
   attachmentFileIds: string[] = [],
-  replyToMessageId?: string | null
+  replyToMessageId?: string | null,
+  mentionedUserIds: string[] = []
 ): Promise<Message> =>
   apiFetch(`${API_BASE}/conversations/${conversationId}/messages`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ content: content || null, attachmentFileIds, replyToMessageId }),
+    body: JSON.stringify({
+      content: content || null,
+      attachmentFileIds,
+      replyToMessageId,
+      mentionedUserIds,
+    }),
   }).then((r) => parseOrThrow<Message>(r));
 
 export const updateConversationMessage = (
   conversationId: string,
   messageId: string,
-  content: string
+  content: string,
+  mentionedUserIds: string[] = []
 ): Promise<Message> =>
   apiFetch(`${API_BASE}/conversations/${conversationId}/messages/${messageId}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ content }),
+    body: JSON.stringify({ content, mentionedUserIds }),
   }).then((r) => parseOrThrow<Message>(r));
 
 export const deleteConversationMessage = (

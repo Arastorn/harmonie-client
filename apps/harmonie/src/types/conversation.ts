@@ -14,6 +14,7 @@ export interface ConversationParticipant {
   bio?: string | null;
   avatarFileId?: string | null;
   avatar?: AvatarAppearance | null;
+  joinedAtUtc?: string;
 }
 
 export interface Conversation {

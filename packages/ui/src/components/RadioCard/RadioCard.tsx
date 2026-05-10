@@ -19,7 +19,7 @@ export const RadioCard = ({
 }: RadioCardProps) => (
   <label
     className={[
-      'flex items-center gap-3 px-4 py-3 rounded-sm border transition-colors select-none',
+      'relative flex items-center gap-3 px-4 py-3 rounded-sm border transition-colors select-none',
       disabled ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer',
     ].join(' ')}
     style={{
@@ -36,8 +36,22 @@ export const RadioCard = ({
       checked={checked}
       onChange={() => onChange?.(value)}
       disabled={disabled}
-      className="accent-primary"
+      className="peer absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 opacity-0"
     />
+    <span
+      aria-hidden="true"
+      className={[
+        'flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition-colors peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary',
+        checked ? 'border-primary' : 'border-border-2',
+      ].join(' ')}
+      style={{
+        backgroundColor: checked
+          ? 'color-mix(in srgb, var(--color-primary) 16%, transparent)'
+          : 'transparent',
+      }}
+    >
+      {checked && <span className="h-2 w-2 rounded-full bg-primary" />}
+    </span>
     <span className="text-sm font-body text-text-1">{children}</span>
   </label>
 );

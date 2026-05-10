@@ -1,17 +1,25 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { X } from 'lucide-react';
-import { IconButton, RichTextMessageInput, type RichTextMessageInputHandle } from '@harmonie/ui';
+import {
+  IconButton,
+  RichTextMessageInput,
+  type RichTextMentionOption,
+  type RichTextMessageInputHandle,
+} from '@harmonie/ui';
 import { deleteFile, uploadFile } from '@/api/files';
 import type { Message, ReplyPreview } from '@/types/channel';
+import type { ApiError } from '@/types/error';
 import { useMessageDraft } from './hooks/useMessageDraft';
 import { useMessageFormattingPreference } from './hooks/useMessageFormattingPreference';
 import { getMessagePayloadContent, stripHtmlToText } from './utils/messageHtml';
+import { filterMentionedUserIdsFromContent } from './utils/mentions';
 import { getRichTextMessageInputLabels } from './utils/richTextMessageInputLabels';
 import { isCoarsePointerDevice, useCoarsePointer } from '@/shared/hooks/useCoarsePointer';
 
 const MAX_LENGTH = 4000;
 const TYPING_THROTTLE_MS = 4000;
+const EMPTY_MENTION_OPTIONS: RichTextMentionOption[] = [];
 const ACCEPTED_TYPES = [
   'image/png',
   'image/jpeg',
@@ -35,13 +43,15 @@ interface MessageComposerProps {
   sendFn: (
     content: string,
     attachmentFileIds: string[],
-    replyToMessageId?: string | null
+    replyToMessageId?: string | null,
+    mentionedUserIds?: string[]
   ) => Promise<unknown>;
   onTypingStart?: () => void;
   latestEditableMessage?: Message | null;
   onEditingRequested?: (messageId: string) => void;
   replyTo?: ReplyPreview | null;
   onCancelReply?: () => void;
+  mentionOptions?: RichTextMentionOption[];
 }
 
 export const MessageComposer = ({
@@ -52,12 +62,14 @@ export const MessageComposer = ({
   onEditingRequested,
   replyTo = null,
   onCancelReply,
+  mentionOptions = EMPTY_MENTION_OPTIONS,
 }: MessageComposerProps) => {
   const { t } = useTranslation();
   const { clearDraft, content, setContent } = useMessageDraft(draftKey);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
   const [pendingAttachments, setPendingAttachments] = useState<PendingAttachment[]>([]);
+  const [selectedMentionIds, setSelectedMentionIds] = useState<Set<string>>(() => new Set());
   const [isDragOver, setIsDragOver] = useState(false);
   const { formattingOpen, toggleFormattingOpen } = useMessageFormattingPreference();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -65,6 +77,7 @@ export const MessageComposer = ({
   const lastTypingSentRef = useRef<number>(0);
   const inputLabels = getRichTextMessageInputLabels(t);
   const isCoarsePointer = useCoarsePointer();
+  const mentionMap = new Map(mentionOptions.map((mention) => [mention.userId, mention]));
 
   const textContent = stripHtmlToText(content);
   const payloadContent = getMessagePayloadContent(content);
@@ -98,6 +111,10 @@ export const MessageComposer = ({
         onTypingStart();
       }
     }
+  };
+
+  const handleMentionSelected = (mention: RichTextMentionOption) => {
+    setSelectedMentionIds((current) => new Set(current).add(mention.userId));
   };
 
   const addFiles = useCallback(
@@ -175,10 +192,16 @@ export const MessageComposer = ({
     setError(undefined);
 
     const attachmentFileIds = doneAttachments.map((a) => a.fileId!);
+    const mentionedUserIds = filterMentionedUserIdsFromContent(
+      content,
+      selectedMentionIds,
+      mentionMap
+    );
 
     try {
-      await sendFn(payloadContent, attachmentFileIds, replyTo?.messageId ?? null);
+      await sendFn(payloadContent, attachmentFileIds, replyTo?.messageId ?? null, mentionedUserIds);
       clearDraft();
+      setSelectedMentionIds(new Set());
       onCancelReply?.();
       setPendingAttachments((prev) => {
         prev.forEach((a) => {
@@ -186,8 +209,15 @@ export const MessageComposer = ({
         });
         return [];
       });
-    } catch {
-      setError(t('channel.input.error'));
+    } catch (err) {
+      const apiError = err as ApiError;
+      if (apiError.code === 'MESSAGE_MENTIONED_USER_NOT_FOUND') {
+        setError(t('channel.input.mentionUserNotFound'));
+      } else if (apiError.code === 'MESSAGE_MENTIONED_USER_NOT_MEMBER') {
+        setError(t('channel.input.mentionUserNotMember'));
+      } else {
+        setError(t('channel.input.error'));
+      }
     } finally {
       setSending(false);
     }
@@ -304,6 +334,8 @@ export const MessageComposer = ({
           }
           onPasteFiles={addFiles}
           onAttachClick={() => fileInputRef.current?.click()}
+          mentionOptions={mentionOptions}
+          onMentionSelected={handleMentionSelected}
           showFormattingTools={formattingOpen}
           onToggleFormattingTools={toggleFormattingOpen}
           autoFocus={!isCoarsePointer && !isCoarsePointerDevice()}

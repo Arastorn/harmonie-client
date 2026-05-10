@@ -3,7 +3,11 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button, IconButton } from '@harmonie/ui';
 import { ArrowLeft, Phone, PhoneOff, Users } from 'lucide-react';
-import { getConversationPinnedMessages, sendConversationMessage } from '@/api/conversations';
+import {
+  getConversationParticipants,
+  getConversationPinnedMessages,
+  sendConversationMessage,
+} from '@/api/conversations';
 import { useRealtime } from '@/features/realtime/RealtimeContext';
 import { REALTIME_CLIENT_METHODS } from '@/features/realtime/constants';
 import { useUser } from '@/features/user/UserContext';
@@ -39,6 +43,9 @@ export const ConversationView = () => {
     useConversationMembersPanel(conversationId);
 
   const [selectedParticipant, setSelectedParticipant] = useState<SelectedParticipant | null>(null);
+  const [autocompleteParticipants, setAutocompleteParticipants] = useState<
+    ConversationParticipant[]
+  >([]);
   const [callPanelConversationId, setCallPanelConversationId] = useState<string | null>(null);
   const threadRefs = useMessageThreadRefs();
 
@@ -74,8 +81,21 @@ export const ConversationView = () => {
         map.set(p.userId, p);
       }
     }
+    for (const participant of autocompleteParticipants) {
+      map.set(participant.userId, participant);
+    }
     return map;
-  }, [conversation]);
+  }, [autocompleteParticipants, conversation]);
+
+  const mentionOptions = useMemo(
+    () =>
+      autocompleteParticipants.map((participant) => ({
+        userId: participant.userId,
+        username: participant.username,
+        displayName: participant.displayName ?? null,
+      })),
+    [autocompleteParticipants]
+  );
 
   const conversationTitle = useMemo(() => {
     if (!conversation) return conversationId ?? '';
@@ -108,7 +128,25 @@ export const ConversationView = () => {
   useEffect(() => {
     setSelectedParticipant(null);
     setCallPanelConversationId(null);
+    setAutocompleteParticipants([]);
   }, [conversationId]);
+
+  useEffect(() => {
+    if (!conversationId) return;
+    let cancelled = false;
+
+    getConversationParticipants(conversationId)
+      .then((participants) => {
+        if (!cancelled) setAutocompleteParticipants(participants);
+      })
+      .catch(() => {
+        if (!cancelled) setAutocompleteParticipants(conversation?.participants ?? []);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [conversation?.participants, conversationId]);
 
   useEffect(() => {
     if (!conversationId || conversationVoiceParticipants.length === 0) return;
@@ -271,12 +309,19 @@ export const ConversationView = () => {
               reactionSource={{ type: 'conversation', entityId: conversationId }}
               composer={{
                 draftKey: `conversation:${conversationId}`,
-                sendFn: (content, fileIds, replyToMessageId) =>
-                  sendConversationMessage(conversationId, content, fileIds, replyToMessageId),
+                sendFn: (content, fileIds, replyToMessageId, mentionedUserIds) =>
+                  sendConversationMessage(
+                    conversationId,
+                    content,
+                    fileIds,
+                    replyToMessageId,
+                    mentionedUserIds
+                  ),
                 onTypingStart: () =>
                   connection
                     ?.send(REALTIME_CLIENT_METHODS.startTypingConversation, conversationId)
                     .catch(() => {}),
+                mentionOptions,
               }}
               pinned={{
                 entityId: conversationId,

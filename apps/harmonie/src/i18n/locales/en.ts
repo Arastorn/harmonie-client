@@ -288,6 +288,8 @@ export const en = {
       },
       error: 'Failed to send message. Please try again.',
       updateError: 'Failed to update message. Please try again.',
+      mentionUserNotFound: 'Unable to mention this user: the account does not exist.',
+      mentionUserNotMember: 'Unable to mention this user: they are not a member of this thread.',
       tooLong: 'Message too long ({{count}}/{{max}} characters).',
       attachFile: 'Attach a file',
       openEmoji: 'Open emoji picker',

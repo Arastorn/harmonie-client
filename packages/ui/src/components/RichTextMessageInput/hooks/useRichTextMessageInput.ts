@@ -11,17 +11,20 @@ import {
   getEditorHtml,
   getPlainText,
   normalizeHtml,
+  registerMentionBlot,
   registerQuillKeyboardBindings,
   toEditorHtml,
 } from '../utils/editor.utils';
 import { PICKER_HEIGHT, PICKER_OFFSET, PICKER_WIDTH } from '../utils/constants';
 import { isDirectUrl } from '../utils/links.utils';
-import type { ActiveFormats, QuillRange } from '../types';
+import type { ActiveFormats, QuillRange, RichTextMentionOption } from '../types';
 import { resolveReplacement, type AutocompleteResult } from '../../EmojiTextarea/emojiReplacer';
 import { useRichTextAutocomplete } from './useRichTextAutocomplete';
 import { useRichTextLinks } from './useRichTextLinks';
+import { useRichTextMentions } from './useRichTextMentions';
 
 const INLINE_FORMATS_TO_CARRY = ['bold', 'italic', 'underline', 'strike', 'code'] as const;
+const EMPTY_MENTION_OPTIONS: RichTextMentionOption[] = [];
 
 const isMobileInteractionDevice = () =>
   typeof window !== 'undefined' &&
@@ -39,6 +42,8 @@ interface UseRichTextMessageInputParams {
   onEscape?: () => void;
   onArrowUpWhenEmpty?: () => void;
   onPasteFiles?: (files: File[]) => void;
+  mentionOptions?: RichTextMentionOption[];
+  onMentionSelected?: (mention: RichTextMentionOption) => void;
 }
 
 export const useRichTextMessageInput = ({
@@ -53,6 +58,8 @@ export const useRichTextMessageInput = ({
   onEscape,
   onArrowUpWhenEmpty,
   onPasteFiles,
+  mentionOptions = EMPTY_MENTION_OPTIONS,
+  onMentionSelected,
 }: UseRichTextMessageInputParams) => {
   const [emojiAnchorRect, setEmojiAnchorRect] = useState<DOMRect | null>(null);
   const [activeFormats, setActiveFormats] = useState<ActiveFormats>({});
@@ -82,6 +89,17 @@ export const useRichTextMessageInput = ({
     setAutocompleteSelectedIndex,
     updateAutocomplete,
   } = useRichTextAutocomplete(editorHostRef);
+
+  const {
+    clearMentions,
+    handleSelectMention,
+    mentionPos,
+    mentionRef,
+    mentionResults,
+    mentionSelectedIndex,
+    setMentionSelectedIndex,
+    updateMentions,
+  } = useRichTextMentions(editorHostRef, mentionOptions, onMentionSelected);
 
   const {
     clearLinkBubble,
@@ -116,6 +134,8 @@ export const useRichTextMessageInput = ({
   useEffect(() => {
     if (!editorHostRef.current || quillRef.current) return;
 
+    registerMentionBlot();
+
     const quill = new Quill(editorHostRef.current, {
       placeholder: initialPlaceholderRef.current,
       readOnly: initialDisabledRef.current,
@@ -136,6 +156,7 @@ export const useRichTextMessageInput = ({
         'code-block',
         'list',
         'link',
+        'mention',
       ],
     });
 
@@ -176,6 +197,7 @@ export const useRichTextMessageInput = ({
       setSelectedRange(nextRange);
       setActiveFormats(nextRange ? quill.getFormat(nextRange) : {});
       updateAutocomplete(quill, nextRange);
+      updateMentions(quill, nextRange);
       clearLinkBubble();
       syncFromEditor(quill);
     };
@@ -185,6 +207,7 @@ export const useRichTextMessageInput = ({
       setSelectedRange(range);
       setActiveFormats(range ? quill.getFormat(range) : {});
       updateAutocomplete(quill, range);
+      updateMentions(quill, range);
       clearLinkBubble();
     };
 
@@ -196,7 +219,7 @@ export const useRichTextMessageInput = ({
       quill.off('selection-change', handleSelectionChange);
       quillRef.current = null;
     };
-  }, [clearLinkBubble, updateAutocomplete]);
+  }, [clearLinkBubble, updateAutocomplete, updateMentions]);
 
   useEffect(() => {
     const quill = quillRef.current;
@@ -237,21 +260,23 @@ export const useRichTextMessageInput = ({
   }, [value, clearLinkBubble]);
 
   useEffect(() => {
-    if (!emojiAnchorRect && autocompleteResults.length === 0) return;
+    if (!emojiAnchorRect && autocompleteResults.length === 0 && mentionResults.length === 0) return;
 
     const handleMouseDown = (event: MouseEvent) => {
       const target = event.target as Node;
       if (emojiButtonRef.current?.contains(target)) return;
       const isInsideEmojiPicker = emojiPickerRef.current?.contains(target);
       const isInsideAutocomplete = autocompleteRef.current?.contains(target);
+      const isInsideMentionAutocomplete = mentionRef.current?.contains(target);
       const isInsideWrapper = wrapperRef.current?.contains(target);
 
       if (emojiAnchorRect && !isInsideEmojiPicker) {
         setEmojiAnchorRect(null);
       }
 
-      if (!isInsideAutocomplete && !isInsideWrapper) {
+      if (!isInsideAutocomplete && !isInsideMentionAutocomplete && !isInsideWrapper) {
         clearAutocomplete();
+        clearMentions();
       }
     };
 
@@ -259,6 +284,7 @@ export const useRichTextMessageInput = ({
       if (event.key === 'Escape') {
         setEmojiAnchorRect(null);
         clearAutocomplete();
+        clearMentions();
         clearLinkBubble();
       }
     };
@@ -277,8 +303,11 @@ export const useRichTextMessageInput = ({
     autocompleteRef,
     autocompleteResults.length,
     clearAutocomplete,
+    clearMentions,
     clearLinkBubble,
     emojiAnchorRect,
+    mentionRef,
+    mentionResults.length,
   ]);
 
   const handleInsertEmoji = (emoji: string) => {
@@ -305,6 +334,36 @@ export const useRichTextMessageInput = ({
       event.preventDefault();
       onSubmit();
       return;
+    }
+
+    if (mentionResults.length > 0) {
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        setMentionSelectedIndex((current) => (current + 1) % mentionResults.length);
+        return;
+      }
+
+      if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        setMentionSelectedIndex(
+          (current) => (current - 1 + mentionResults.length) % mentionResults.length
+        );
+        return;
+      }
+
+      if (event.key === 'Enter' || event.key === 'Tab') {
+        event.preventDefault();
+        const result = mentionResults[mentionSelectedIndex];
+        if (result) handleSelectMention(quill, result);
+        syncFromEditor(quill);
+        return;
+      }
+
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        clearMentions();
+        return;
+      }
     }
 
     if (autocompleteResults.length > 0) {
@@ -425,6 +484,7 @@ export const useRichTextMessageInput = ({
     setSelectedRange(nextRange);
     setActiveFormats(nextRange ? quill.getFormat(nextRange) : {});
     clearAutocomplete();
+    clearMentions();
   };
 
   const pickerStyle = (() => {
@@ -461,10 +521,20 @@ export const useRichTextMessageInput = ({
       if (!quill) return;
       handleSelectAutocomplete(quill, result);
     },
+    handleSelectMention: (result: RichTextMentionOption) => {
+      const quill = quillRef.current;
+      if (!quill) return;
+      handleSelectMention(quill, result);
+      syncFromEditor(quill);
+    },
     linkBubble,
     linkDialogOpen,
     linkText,
     linkUrl,
+    mentionPos,
+    mentionRef,
+    mentionResults,
+    mentionSelectedIndex,
     openLinkDialog,
     pickerStyle,
     quillRef,

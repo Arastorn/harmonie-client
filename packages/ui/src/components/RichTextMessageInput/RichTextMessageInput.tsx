@@ -8,10 +8,11 @@ import type { EmojiClickData, PickerProps } from 'emoji-picker-react';
 import { useRichTextMessageInput } from './hooks/useRichTextMessageInput';
 import { PICKER_HEIGHT, PICKER_WIDTH } from './utils/constants';
 import { DEFAULT_LABELS } from './utils/toolbar.utils';
-import type { RichTextMessageInputLabels } from './types';
+import type { RichTextMentionOption, RichTextMessageInputLabels } from './types';
 import { RichTextToolbar } from './components/RichTextToolbar';
 import { RichTextLinkBubble } from './components/RichTextLinkBubble';
 import { RichTextLinkDialog } from './components/RichTextLinkDialog';
+import { RichTextMentionAutocomplete } from './components/RichTextMentionAutocomplete';
 
 export interface RichTextMessageInputProps {
   value: string;
@@ -31,6 +32,8 @@ export interface RichTextMessageInputProps {
   onArrowUpWhenEmpty?: () => void;
   onPasteFiles?: (files: File[]) => void;
   onAttachClick?: () => void;
+  mentionOptions?: RichTextMentionOption[];
+  onMentionSelected?: (mention: RichTextMentionOption) => void;
   labels?: Partial<RichTextMessageInputLabels>;
 }
 
@@ -60,6 +63,8 @@ export const RichTextMessageInput = forwardRef<
     onArrowUpWhenEmpty,
     onPasteFiles,
     onAttachClick,
+    mentionOptions,
+    onMentionSelected,
     labels,
   },
   ref
@@ -81,10 +86,15 @@ export const RichTextMessageInput = forwardRef<
     handleEditorPasteCapture,
     handleInsertEmoji,
     handleSelectAutocomplete,
+    handleSelectMention,
     linkBubble,
     linkDialogOpen,
     linkText,
     linkUrl,
+    mentionPos,
+    mentionRef,
+    mentionResults,
+    mentionSelectedIndex,
     openLinkDialog,
     pickerStyle,
     quillRef,
@@ -110,6 +120,8 @@ export const RichTextMessageInput = forwardRef<
     onEscape,
     onArrowUpWhenEmpty,
     onPasteFiles,
+    mentionOptions,
+    onMentionSelected,
   });
 
   useImperativeHandle(
@@ -128,9 +140,9 @@ export const RichTextMessageInput = forwardRef<
 
   return (
     <div className="flex flex-col gap-1.5">
-      <div className="group/rich-input relative rounded-sm border border-border-2 bg-[var(--color-rich-text-input-background)] transition-[border-color,box-shadow] duration-150 focus-within:border-primary focus-within:shadow-[0_0_0_2px_color-mix(in_srgb,var(--color-primary)_16%,transparent)]">
+      <div className="relative rounded-sm border border-border-2 bg-[var(--color-rich-text-input-background)] transition-[border-color,box-shadow] duration-150 focus-within:border-primary focus-within:shadow-[0_0_0_2px_color-mix(in_srgb,var(--color-primary)_16%,transparent)]">
         {showFormattingTools && (
-          <div className="px-2 pt-2 md:hidden">
+          <div className="px-3 pt-2">
             <div className="pb-1">
               <RichTextToolbar
                 activeFormats={activeFormats}
@@ -145,133 +157,70 @@ export const RichTextMessageInput = forwardRef<
           </div>
         )}
 
-        {showFormattingTools && (
-          <div className="hidden px-3 pt-2 md:block">
-            <div className="pb-1">
-              <RichTextToolbar
-                activeFormats={activeFormats}
-                labels={mergedLabels}
-                onOpenLinkDialog={openLinkDialog}
-                quill={quillRef.current}
-                setActiveFormats={setActiveFormats}
-                setSelectedRange={setSelectedRange}
-                updateLinkBubble={updateLinkBubble}
-              />
-            </div>
-          </div>
-        )}
-
-        <div className="flex items-center gap-1.5 px-1.5 py-1.5 md:block md:p-0">
-          {onAttachClick && (
-            <IconButton
-              type="button"
-              onClick={onAttachClick}
-              disabled={disabled}
-              size="small"
-              variant="ghost"
-              className="shrink-0 md:hidden"
-              aria-label={mergedLabels.attachFile}
-              title={mergedLabels.attachFile}
-            >
-              <Paperclip size={17} />
-            </IconButton>
-          )}
-          {onToggleFormattingTools && (
-            <IconButton
-              type="button"
-              size="small"
-              variant="ghost"
-              selected={showFormattingTools}
-              className="h-8 min-w-8 shrink-0 rounded-md px-2 text-[12px] font-semibold md:hidden"
-              onClick={onToggleFormattingTools}
-              aria-label={mergedLabels.toggleFormatting}
-              title={mergedLabels.toggleFormatting}
-            >
-              <span>Aa</span>
-            </IconButton>
-          )}
-
-          <div
-            ref={wrapperRef}
-            onKeyDownCapture={handleEditorKeyDown}
-            onMouseUpCapture={handleEditorMouseUp}
-            onPasteCapture={handleEditorPasteCapture}
-            className={[
-              'relative min-w-0 flex-1 md:block',
-              'max-md:[&_.ql-container]:h-auto [&_.ql-container]:border-0 [&_.ql-container]:font-body',
-              'max-md:[&_.ql-editor]:h-auto [&_.ql-editor]:min-h-[44px] [&_.ql-editor]:w-full [&_.ql-editor]:max-h-[50vh] [&_.ql-editor]:overflow-y-auto [&_.ql-editor]:px-2 [&_.ql-editor]:pb-2.5 [&_.ql-editor]:text-sm [&_.ql-editor]:text-text-2 [&_.ql-editor]:caret-primary [&_.ql-editor]:outline-none md:[&_.ql-editor]:px-4 md:[&_.ql-editor]:pb-3',
-              showFormattingTools
-                ? '[&_.ql-editor]:pt-1'
-                : '[&_.ql-editor]:pt-2.5 md:[&_.ql-editor]:pt-3',
-              '[&_.ql-editor]:whitespace-pre-wrap [&_.ql-editor]:break-words',
-              '[&_.ql-editor.ql-blank::before]:!text-text-3',
-              '[&_.ql-editor_h1]:text-lg [&_.ql-editor_h1]:font-semibold [&_.ql-editor_h1]:leading-snug',
-              '[&_.ql-editor_h2]:text-base [&_.ql-editor_h2]:font-semibold [&_.ql-editor_h2]:leading-snug',
-              '[&_.ql-editor_h3]:text-sm [&_.ql-editor_h3]:font-semibold [&_.ql-editor_h3]:leading-snug',
-              '[&_.ql-editor_a]:text-primary [&_.ql-editor_a]:underline [&_.ql-editor_a]:underline-offset-2 [&_.ql-editor_a]:break-all',
-              '[&_.ql-editor_blockquote]:border-l-2 [&_.ql-editor_blockquote]:border-border-2 [&_.ql-editor_blockquote]:pl-3 [&_.ql-editor_blockquote]:italic',
-              '[&_.ql-editor_ol]:pl-5 [&_.ql-editor_li]:pl-4 [&_.ql-editor_li]:leading-normal [&_.ql-editor_li>.ql-ui]:w-0',
-              '[&_.ql-editor_li>.ql-ui::before]:-ml-4 [&_.ql-editor_li>.ql-ui::before]:mr-2 [&_.ql-editor_li>.ql-ui::before]:w-2.5 [&_.ql-editor_li>.ql-ui::before]:text-center',
-              "[&_.ql-editor_li[data-list='bullet']>.ql-ui::before]:text-[1.35em] [&_.ql-editor_li[data-list='bullet']>.ql-ui::before]:leading-[0]",
-              '[&_.ql-editor_pre]:overflow-x-auto [&_.ql-editor_pre]:rounded-md [&_.ql-editor_pre]:bg-surface-3 [&_.ql-editor_pre]:px-3 [&_.ql-editor_pre]:py-2 [&_.ql-editor_pre]:font-mono [&_.ql-editor_pre]:text-xs',
-              '[&_.ql-editor_.ql-code-block-container]:overflow-x-auto [&_.ql-editor_.ql-code-block-container]:rounded-md [&_.ql-editor_.ql-code-block-container]:bg-surface-3 [&_.ql-editor_.ql-code-block-container]:px-3 [&_.ql-editor_.ql-code-block-container]:py-2 [&_.ql-editor_.ql-code-block-container]:font-mono [&_.ql-editor_.ql-code-block-container]:text-xs',
-              '[&_.ql-editor_.ql-code-block]:whitespace-pre-wrap',
-              '[&_.ql-editor_code]:rounded-sm [&_.ql-editor_code]:bg-surface-3 [&_.ql-editor_code]:px-1.5 [&_.ql-editor_code]:py-0.5 [&_.ql-editor_code]:font-mono',
-              disabled
-                ? 'opacity-50 [&_.ql-editor]:cursor-not-allowed'
-                : '[&_.ql-editor]:cursor-text',
-            ].join(' ')}
-          >
-            {showFloatingToolbar && (
-              <div className="absolute -top-12 left-3 z-20 hidden opacity-100 translate-y-0 md:block">
-                <div className="rounded-full border border-border-2 bg-surface-1 p-0.5 shadow-lg">
-                  <RichTextToolbar
-                    activeFormats={activeFormats}
-                    labels={mergedLabels}
-                    onOpenLinkDialog={openLinkDialog}
-                    quill={quillRef.current}
-                    setActiveFormats={setActiveFormats}
-                    setSelectedRange={setSelectedRange}
-                    updateLinkBubble={updateLinkBubble}
-                  />
-                </div>
+        <div
+          ref={wrapperRef}
+          onKeyDownCapture={handleEditorKeyDown}
+          onMouseUpCapture={handleEditorMouseUp}
+          onPasteCapture={handleEditorPasteCapture}
+          className={[
+            'relative',
+            '[&_.ql-container]:border-0 [&_.ql-container]:font-body',
+            '[&_.ql-editor]:min-h-[44px] [&_.ql-editor]:w-full [&_.ql-editor]:max-h-[50vh] [&_.ql-editor]:overflow-y-auto [&_.ql-editor]:px-4 [&_.ql-editor]:pb-3 [&_.ql-editor]:text-sm [&_.ql-editor]:text-text-2 [&_.ql-editor]:caret-primary [&_.ql-editor]:outline-none',
+            showFormattingTools ? '[&_.ql-editor]:pt-1' : '[&_.ql-editor]:pt-3',
+            '[&_.ql-editor]:whitespace-pre-wrap [&_.ql-editor]:break-words',
+            '[&_.ql-editor.ql-blank::before]:!text-text-3',
+            '[&_.ql-editor_*::selection]:bg-primary/20 [&_.ql-editor_*::selection]:text-text-1 [&_.ql-editor::selection]:bg-primary/20 [&_.ql-editor::selection]:text-text-1',
+            '[&_.ql-mention]:inline-flex [&_.ql-mention]:max-w-full [&_.ql-mention]:items-center [&_.ql-mention]:rounded-sm [&_.ql-mention]:bg-primary/12 [&_.ql-mention]:px-1.5 [&_.ql-mention]:py-0.5 [&_.ql-mention]:text-xs [&_.ql-mention]:font-medium [&_.ql-mention]:text-primary',
+            '[&_.ql-editor_h1]:text-lg [&_.ql-editor_h1]:font-semibold [&_.ql-editor_h1]:leading-snug',
+            '[&_.ql-editor_h2]:text-base [&_.ql-editor_h2]:font-semibold [&_.ql-editor_h2]:leading-snug',
+            '[&_.ql-editor_h3]:text-sm [&_.ql-editor_h3]:font-semibold [&_.ql-editor_h3]:leading-snug',
+            '[&_.ql-editor_a]:text-primary [&_.ql-editor_a]:underline [&_.ql-editor_a]:underline-offset-2 [&_.ql-editor_a]:break-all',
+            '[&_.ql-editor_blockquote]:border-l-2 [&_.ql-editor_blockquote]:border-border-2 [&_.ql-editor_blockquote]:pl-3 [&_.ql-editor_blockquote]:italic',
+            '[&_.ql-editor_ol]:pl-5 [&_.ql-editor_li]:pl-4 [&_.ql-editor_li]:leading-normal [&_.ql-editor_li>.ql-ui]:w-0',
+            '[&_.ql-editor_li>.ql-ui::before]:-ml-4 [&_.ql-editor_li>.ql-ui::before]:mr-2 [&_.ql-editor_li>.ql-ui::before]:w-2.5 [&_.ql-editor_li>.ql-ui::before]:text-center',
+            "[&_.ql-editor_li[data-list='bullet']>.ql-ui::before]:text-[1.35em] [&_.ql-editor_li[data-list='bullet']>.ql-ui::before]:leading-[0]",
+            '[&_.ql-editor_pre]:overflow-x-auto [&_.ql-editor_pre]:rounded-md [&_.ql-editor_pre]:bg-surface-3 [&_.ql-editor_pre]:px-3 [&_.ql-editor_pre]:py-2 [&_.ql-editor_pre]:font-mono [&_.ql-editor_pre]:text-xs',
+            '[&_.ql-editor_.ql-code-block-container]:overflow-x-auto [&_.ql-editor_.ql-code-block-container]:rounded-md [&_.ql-editor_.ql-code-block-container]:bg-surface-3 [&_.ql-editor_.ql-code-block-container]:px-3 [&_.ql-editor_.ql-code-block-container]:py-2 [&_.ql-editor_.ql-code-block-container]:font-mono [&_.ql-editor_.ql-code-block-container]:text-xs',
+            '[&_.ql-editor_.ql-code-block]:whitespace-pre-wrap',
+            '[&_.ql-editor_code]:rounded-sm [&_.ql-editor_code]:bg-surface-3 [&_.ql-editor_code]:px-1.5 [&_.ql-editor_code]:py-0.5 [&_.ql-editor_code]:font-mono',
+            disabled
+              ? 'opacity-50 [&_.ql-editor]:cursor-not-allowed'
+              : '[&_.ql-editor]:cursor-text',
+          ].join(' ')}
+        >
+          {showFloatingToolbar && (
+            <div className="absolute -top-12 left-3 z-20 opacity-100 translate-y-0">
+              <div className="rounded-full border border-border-2 bg-surface-1 p-0.5 shadow-lg">
+                <RichTextToolbar
+                  activeFormats={activeFormats}
+                  labels={mergedLabels}
+                  onOpenLinkDialog={openLinkDialog}
+                  quill={quillRef.current}
+                  setActiveFormats={setActiveFormats}
+                  setSelectedRange={setSelectedRange}
+                  updateLinkBubble={updateLinkBubble}
+                />
               </div>
-            )}
-            {!showFloatingToolbar && linkBubble && (
-              <RichTextLinkBubble
-                editLabel={mergedLabels.editLink}
-                removeLabel={mergedLabels.removeLink}
-                url={linkBubble.url}
-                top={linkBubble.top}
-                left={linkBubble.left}
-                onEdit={() => {
-                  const quill = quillRef.current;
-                  if (!quill) return;
-                  openLinkDialog(quill);
-                }}
-                onRemove={removeCurrentLink}
-              />
-            )}
-            <div ref={editorHostRef} />
-          </div>
-
-          {showSubmitButton && onSubmit && (
-            <IconButton
-              type="button"
-              variant="primary"
-              size="small"
-              className="shrink-0 md:hidden"
-              onClick={onSubmit}
-              disabled={disabled || submitDisabled}
-              aria-label={mergedLabels.send}
-              title={mergedLabels.send}
-            >
-              <SendHorizonal size={17} />
-            </IconButton>
+            </div>
           )}
+          {!showFloatingToolbar && linkBubble && (
+            <RichTextLinkBubble
+              editLabel={mergedLabels.editLink}
+              removeLabel={mergedLabels.removeLink}
+              url={linkBubble.url}
+              top={linkBubble.top}
+              left={linkBubble.left}
+              onEdit={() => {
+                const quill = quillRef.current;
+                if (!quill) return;
+                openLinkDialog(quill);
+              }}
+              onRemove={removeCurrentLink}
+            />
+          )}
+          <div ref={editorHostRef} />
         </div>
-
-        <div className="hidden items-center justify-between gap-3 border-t border-border-2 px-3 py-1.5 text-text-3 md:flex">
+        <div className="flex items-center justify-between gap-3 border-t border-border-2 px-3 py-1.5 text-text-3">
           <div className="flex items-center gap-1">
             <IconButton
               type="button"
@@ -373,6 +322,16 @@ export const RichTextMessageInput = forwardRef<
           pos={autocompletePos}
           onSelect={handleSelectAutocomplete}
           containerRef={autocompleteRef}
+        />
+      )}
+
+      {mentionResults.length > 0 && mentionPos && (
+        <RichTextMentionAutocomplete
+          results={mentionResults}
+          selectedIndex={mentionSelectedIndex}
+          pos={mentionPos}
+          onSelect={handleSelectMention}
+          containerRef={mentionRef}
         />
       )}
     </div>

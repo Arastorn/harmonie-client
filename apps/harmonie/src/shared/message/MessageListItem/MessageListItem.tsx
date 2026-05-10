@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Avatar } from '@harmonie/ui';
+import { Avatar, type RichTextMentionOption } from '@harmonie/ui';
 import { useTranslation } from 'react-i18next';
 import { Pin } from 'lucide-react';
 import type { Message } from '@/types/channel';
@@ -23,11 +23,13 @@ interface MessageListItemProps<TAuthor extends MessageAuthor = MessageAuthor> {
   isOwn?: boolean;
   isEditing?: boolean;
   isMenuOpen?: boolean;
+  isMentioned?: boolean;
   isSelected?: boolean;
   onAvatarClick?: (member: TAuthor, rect: DOMRect) => void;
   onEdit?: (messageId: string) => void;
   onCancelEdit?: () => void;
-  onSaveEdit?: (messageId: string, content: string) => Promise<void>;
+  onSaveEdit?: (messageId: string, content: string, mentionedUserIds: string[]) => Promise<void>;
+  mentionOptions?: RichTextMentionOption[];
   onDelete?: (messageId: string) => void;
   onReply?: (messageId: string) => void;
   onReplyClick?: (messageId: string) => void;
@@ -59,11 +61,13 @@ export const MessageListItem = <TAuthor extends MessageAuthor = MessageAuthor>({
   isOwn = false,
   isEditing = false,
   isMenuOpen = false,
+  isMentioned = false,
   isSelected = false,
   onAvatarClick,
   onEdit,
   onCancelEdit,
   onSaveEdit,
+  mentionOptions,
   onDelete,
   onReply,
   onReplyClick,
@@ -172,8 +176,9 @@ export const MessageListItem = <TAuthor extends MessageAuthor = MessageAuthor>({
       onTouchCancel={handleTouchCancel}
       style={swipeOffset < 0 ? { transform: `translateX(${swipeOffset}px)` } : undefined}
       className={[
-        'group flex items-start gap-2 sm:gap-3 relative px-1 sm:px-2 -mx-1 sm:-mx-2 rounded-sm min-w-0',
+        'group flex items-start gap-2 sm:gap-3 relative px-1 sm:px-2 -mx-1 sm:-mx-2 rounded-sm min-w-0 border-l-2',
         'hover:bg-surface-2 transition-[background-color,box-shadow,transform] duration-200',
+        isMentioned ? 'border-primary bg-primary/8' : 'border-transparent',
         isEditing || isMenuOpen || pickerAnchorRect ? 'bg-surface-3' : '',
         isSelected
           ? 'z-10 ring-1 ring-primary/70 shadow-[0_0_8px_color-mix(in_srgb,var(--color-primary)_70%,transparent)]'
@@ -227,12 +232,23 @@ export const MessageListItem = <TAuthor extends MessageAuthor = MessageAuthor>({
         {isEditing ? (
           <MessageInlineEditor
             initialValue={message.content}
+            initialMentionedUserIds={message.mentionedUserIds ?? []}
             onCancel={() => onCancelEdit?.()}
-            onSave={(content) => onSaveEdit?.(message.messageId, content) ?? Promise.resolve()}
+            onSave={(content, mentionedUserIds) =>
+              onSaveEdit?.(message.messageId, content, mentionedUserIds) ?? Promise.resolve()
+            }
+            mentionOptions={mentionOptions}
           />
         ) : (
           <>
-            {message.content && <MessageContent content={message.content} />}
+            {message.content && (
+              <MessageContent
+                content={message.content}
+                mentionedUserIds={message.mentionedUserIds ?? []}
+                mentionMap={reactionUserMap}
+                onMentionClick={(mention, rect) => onAvatarClick?.(mention as TAuthor, rect)}
+              />
+            )}
             {message.updatedAtUtc && (
               <span className="text-xs text-text-3">{t('channel.messages.edited')}</span>
             )}
