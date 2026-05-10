@@ -9,7 +9,12 @@ import {
   Users,
   UtensilsCrossed,
 } from 'lucide-react';
-import EmojiPicker, { Categories, SuggestionMode, type PickerProps } from 'emoji-picker-react';
+import EmojiPicker, {
+  Categories,
+  EmojiStyle,
+  SuggestionMode,
+  type PickerProps,
+} from 'emoji-picker-react';
 import emojisFr from 'emoji-picker-react/dist/data/emojis-fr';
 import emojisEn from 'emoji-picker-react/dist/data/emojis-en';
 
@@ -50,6 +55,7 @@ export const EmojiPickerBase = ({
       key={resolvedSearchPlaceholder}
       className="channel-emoji-picker"
       emojiData={emojiData ?? getLocaleEmojiData()}
+      emojiStyle={EmojiStyle.NATIVE}
       autoFocusSearch={false}
       searchPlaceholder={resolvedSearchPlaceholder}
       lazyLoadEmojis

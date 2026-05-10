@@ -66,6 +66,16 @@ export const Tooltip = ({
   const tooltipRef = useRef<HTMLSpanElement>(null);
   const timeoutRef = useRef<number | null>(null);
   const [position, setPosition] = useState<CSSProperties | null>(null);
+  const [tooltipsEnabled, setTooltipsEnabled] = useState(false);
+
+  useEffect(() => {
+    const media = window.matchMedia('(hover: hover) and (pointer: fine)');
+    const handleChange = () => setTooltipsEnabled(media.matches);
+
+    handleChange();
+    media.addEventListener('change', handleChange);
+    return () => media.removeEventListener('change', handleChange);
+  }, []);
 
   const close = () => {
     if (timeoutRef.current !== null) window.clearTimeout(timeoutRef.current);
@@ -74,6 +84,7 @@ export const Tooltip = ({
   };
 
   const open = () => {
+    if (!tooltipsEnabled) return;
     close();
     timeoutRef.current = window.setTimeout(() => {
       const rect = wrapperRef.current?.getBoundingClientRect();
@@ -99,7 +110,7 @@ export const Tooltip = ({
     }
   }, [position, side]);
 
-  if (!content) return children;
+  if (!content || !tooltipsEnabled) return children;
 
   return (
     <span

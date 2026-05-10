@@ -158,7 +158,7 @@ export const ConversationView = () => {
       <div className="flex h-full gap-2">
         <div className="flex min-w-0 flex-1 flex-col gap-2">
           {isCallPanelOpen ? (
-            <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-md bg-surface-1">
+            <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-surface-1 md:rounded-md">
               <header className="flex h-14 shrink-0 items-center justify-between bg-surface-2 px-4">
                 <div className="flex min-w-0 items-center gap-2">
                   <IconButton

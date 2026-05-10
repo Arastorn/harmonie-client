@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { X } from 'lucide-react';
 import { IconButton } from '../IconButton/IconButton';
+import { useLongPress, type LongPressPoint } from '../../hooks/useLongPress';
 
 export interface ConversationItemProps {
   avatar: ReactNode;
@@ -9,6 +10,7 @@ export interface ConversationItemProps {
   unread?: boolean;
   onClick: () => void;
   onContextMenu?: (e: React.MouseEvent<HTMLDivElement>) => void;
+  onLongPress?: (position: LongPressPoint) => void;
   onDeleteClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
   deleteLabel?: string;
 }
@@ -20,9 +22,11 @@ export const ConversationItem = ({
   unread = false,
   onClick,
   onContextMenu,
+  onLongPress,
   onDeleteClick,
   deleteLabel,
 }: ConversationItemProps) => {
+  const longPress = useLongPress(onLongPress);
   const baseStateClasses = active
     ? 'bg-secondary text-secondary-fg font-medium'
     : unread
@@ -35,10 +39,14 @@ export const ConversationItem = ({
         ' '
       )}
       onContextMenu={onContextMenu}
+      {...longPress.eventHandlers}
     >
       <button
         type="button"
-        onClick={onClick}
+        onClick={(e) => {
+          if (longPress.consumeTriggeredPress(e)) return;
+          onClick();
+        }}
         className="flex min-w-0 flex-1 items-center gap-2 text-sm font-body text-left cursor-pointer h-9"
       >
         <span

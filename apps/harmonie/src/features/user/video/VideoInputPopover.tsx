@@ -1,8 +1,9 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Check, Video } from 'lucide-react';
+import { Check, Video, X } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { useVideoInput } from './VideoInputContext';
+import { useCoarsePointer } from '@/shared/hooks/useCoarsePointer';
 
 interface VideoInputPopoverProps {
   anchorRef: React.RefObject<HTMLButtonElement | null>;
@@ -14,6 +15,7 @@ export const VideoInputPopover = ({ anchorRef, onClose }: VideoInputPopoverProps
   const { devices, selectedDeviceId, selectDevice, needsPermission, requestPermission } =
     useVideoInput();
   const popoverRef = useRef<HTMLDivElement>(null);
+  const isCoarsePointer = useCoarsePointer();
   const [style, setStyle] = useState<React.CSSProperties>({
     position: 'fixed',
     left: -9999,
@@ -27,6 +29,18 @@ export const VideoInputPopover = ({ anchorRef, onClose }: VideoInputPopoverProps
     const viewportPadding = 12;
 
     const updatePosition = () => {
+      if (isCoarsePointer) {
+        setStyle({
+          position: 'fixed',
+          inset: 0,
+          maxHeight: '100dvh',
+          overflowY: 'auto',
+          visibility: 'visible',
+          zIndex: 100,
+        });
+        return;
+      }
+
       const anchor = anchorRef.current;
       const popover = popoverRef.current;
       if (!anchor || !popover) return;
@@ -55,7 +69,7 @@ export const VideoInputPopover = ({ anchorRef, onClose }: VideoInputPopoverProps
         top,
         minWidth: 220,
         maxWidth: `calc(100vw - ${viewportPadding * 2}px)`,
-        maxHeight: `calc(100vh - ${viewportPadding * 2}px)`,
+        maxHeight: `calc(100dvh - ${viewportPadding * 2}px)`,
         overflowY: 'auto',
         visibility: 'visible',
         zIndex: 100,
@@ -69,7 +83,7 @@ export const VideoInputPopover = ({ anchorRef, onClose }: VideoInputPopoverProps
       window.removeEventListener('resize', updatePosition);
       window.removeEventListener('scroll', updatePosition, true);
     };
-  }, [anchorRef, devices, needsPermission]);
+  }, [anchorRef, devices, isCoarsePointer, needsPermission]);
 
   useEffect(() => {
     const handleMouseDown = (e: MouseEvent) => {
@@ -100,11 +114,26 @@ export const VideoInputPopover = ({ anchorRef, onClose }: VideoInputPopoverProps
     <div
       ref={popoverRef}
       style={style}
-      className="bg-surface-1 border border-border-2 rounded-md shadow-lg py-1.5 px-1.5 flex flex-col gap-0.5"
+      className={[
+        'bg-surface-1 border border-border-2 shadow-lg py-1.5 px-1.5 flex flex-col gap-0.5',
+        isCoarsePointer ? 'rounded-none pt-[env(safe-area-inset-top)]' : 'rounded-md',
+      ].join(' ')}
     >
-      <p className="text-xs font-semibold text-text-3 uppercase tracking-wider px-2 pt-0.5 pb-1.5">
-        {t('video.input.title')}
-      </p>
+      <div className="flex items-center justify-between px-2 pt-0.5 pb-1.5">
+        <p className="text-xs font-semibold text-text-3 uppercase tracking-wider">
+          {t('video.input.title')}
+        </p>
+        {isCoarsePointer && (
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label={t('common.close')}
+            className="inline-flex h-8 w-8 items-center justify-center rounded-full text-text-2"
+          >
+            <X size={16} />
+          </button>
+        )}
+      </div>
 
       {devices.length === 0 && (
         <p className="text-xs text-text-3 px-2 py-1">{t('video.input.noDevices')}</p>

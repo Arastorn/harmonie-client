@@ -23,6 +23,10 @@ import { useRichTextLinks } from './useRichTextLinks';
 
 const INLINE_FORMATS_TO_CARRY = ['bold', 'italic', 'underline', 'strike', 'code'] as const;
 
+const isMobileInteractionDevice = () =>
+  typeof window !== 'undefined' &&
+  window.matchMedia('(hover: none), (pointer: coarse), (max-width: 767px)').matches;
+
 interface UseRichTextMessageInputParams {
   value: string;
   onChange: (value: string) => void;
@@ -138,12 +142,20 @@ export const useRichTextMessageInput = ({
     registerQuillKeyboardBindings(quill);
     quillRef.current = quill;
     quill.clipboard.dangerouslyPasteHTML(toEditorHtml(initialValueRef.current), 'silent');
-    if (initialAutoFocusRef.current) {
+    const shouldAutoFocus = initialAutoFocusRef.current && !isMobileInteractionDevice();
+    if (shouldAutoFocus) {
       const index =
         initialAutoFocusPlacementRef.current === 'end' ? Math.max(quill.getLength() - 1, 0) : 0;
       window.setTimeout(() => {
         quill.focus();
         quill.setSelection(index, 0, 'silent');
+      }, 0);
+    } else {
+      window.setTimeout(() => {
+        quill.blur();
+        if (document.activeElement === quill.root) {
+          quill.root.blur();
+        }
       }, 0);
     }
 

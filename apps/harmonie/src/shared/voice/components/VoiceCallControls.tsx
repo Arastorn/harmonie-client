@@ -40,6 +40,7 @@ export const VoiceCallControls = ({
   const controlError = cameraError ?? screenShareError;
   const [videoInputPopoverOpen, setVideoInputPopoverOpen] = useState(false);
   const videoInputChevronRef = useRef<HTMLButtonElement>(null);
+  const canShareScreen = Boolean(navigator.mediaDevices?.getDisplayMedia);
 
   const handleToggleCamera = () => {
     setVideoInputPopoverOpen(false);
@@ -86,8 +87,21 @@ export const VoiceCallControls = ({
           size="medium"
           variant={isScreenSharing ? 'primary' : 'filled'}
           onClick={onToggleScreenShare}
-          aria-label={isScreenSharing ? t('voice.stopScreenShare') : t('voice.startScreenShare')}
-          title={isScreenSharing ? t('voice.stopScreenShare') : t('voice.startScreenShare')}
+          disabled={!canShareScreen}
+          aria-label={
+            !canShareScreen
+              ? t('voice.screenShareUnavailable')
+              : isScreenSharing
+                ? t('voice.stopScreenShare')
+                : t('voice.startScreenShare')
+          }
+          title={
+            !canShareScreen
+              ? t('voice.screenShareUnavailable')
+              : isScreenSharing
+                ? t('voice.stopScreenShare')
+                : t('voice.startScreenShare')
+          }
         >
           {isScreenSharing ? <ScreenShareOff size={20} /> : <ScreenShare size={20} />}
         </IconButton>

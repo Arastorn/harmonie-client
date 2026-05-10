@@ -5,6 +5,16 @@ export const fr = {
   common: {
     close: 'Fermer',
   },
+  pwa: {
+    install: {
+      title: 'Installer Harmonie',
+      description: "Ajoute l'app à ton écran d'accueil pour l'ouvrir comme une application.",
+      iosDescription:
+        "Sur iOS, utilise le bouton de partage puis choisis Ajouter à l'écran d'accueil.",
+      action: 'Installer',
+      dismiss: 'Masquer',
+    },
+  },
   dateTime: {
     dateAt: '{{date}} à {{time}}',
   },
@@ -360,6 +370,7 @@ export const fr = {
     cameraError: "Impossible d'activer la caméra. Vérifie les autorisations du navigateur.",
     startScreenShare: "Partager l'écran",
     stopScreenShare: "Arrêter le partage d'écran",
+    screenShareUnavailable: "Le partage d'écran n'est pas disponible sur ce navigateur.",
     screenShareError: "Impossible de partager l'écran. Vérifie les autorisations du navigateur.",
     screenSharingLabel: '{{name}} partage son écran',
     enterFullscreen: 'Plein écran',
@@ -427,6 +438,7 @@ export const fr = {
     create: 'Créer',
     cancel: 'Annuler',
     createDm: 'Créer un MP',
+    sendDirectMessage: 'Envoyer un message privé',
     createGroup: 'Créer un groupe privé',
     createError: 'Impossible de créer la conversation. Réessaie.',
     delete: 'Quitter la conversation',

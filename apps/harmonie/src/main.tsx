@@ -10,8 +10,15 @@ import { RealtimeProvider } from './features/realtime/RealtimeContext';
 import { AudioInputProvider } from './features/user/audio/AudioInputContext';
 import { AudioOutputProvider } from './features/user/audio/AudioOutputContext';
 import { VideoInputProvider } from './features/user/video/VideoInputContext';
+import { PwaInstallPrompt } from './shared/pwa/PwaInstallPrompt';
+import { registerServiceWorker } from './shared/pwa/registerServiceWorker';
+import { syncKeyboardInset } from './shared/viewport/keyboardInset';
+import { preventAppZoom } from './shared/viewport/preventAppZoom';
 
 document.addEventListener('contextmenu', (e) => e.preventDefault());
+registerServiceWorker();
+syncKeyboardInset();
+preventAppZoom();
 
 createRoot(document.getElementById('root')!).render(
   <ThemeProvider>
@@ -22,6 +29,7 @@ createRoot(document.getElementById('root')!).render(
             <VideoInputProvider>
               <RealtimeProvider>
                 <RouterProvider router={router} />
+                <PwaInstallPrompt />
               </RealtimeProvider>
             </VideoInputProvider>
           </AudioOutputProvider>

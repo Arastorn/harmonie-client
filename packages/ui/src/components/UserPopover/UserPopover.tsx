@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { Avatar } from '../Avatar/Avatar';
 import { Badge, type BadgeVariant } from '../Badge/Badge';
@@ -52,6 +52,7 @@ export const UserPopover = ({
   actions = [],
 }: UserPopoverProps) => {
   const cardRef = useRef<HTMLDivElement>(null);
+  const [isTouchPopover, setIsTouchPopover] = useState(false);
   const top = Math.min(
     anchorRect.top,
     window.innerHeight - (cardRef.current?.offsetHeight ?? 200) - POPOVER_OFFSET
@@ -72,13 +73,27 @@ export const UserPopover = ({
     return () => document.removeEventListener('keydown', onKeyDown);
   }, [onClose]);
 
+  useEffect(() => {
+    const media = window.matchMedia('(hover: none), (pointer: coarse)');
+    const handleChange = () => setIsTouchPopover(media.matches);
+
+    handleChange();
+    media.addEventListener('change', handleChange);
+    return () => media.removeEventListener('change', handleChange);
+  }, []);
+
   return createPortal(
     <>
       <div className="fixed inset-0 z-40 cursor-default" onClick={onClose} />
       <div
         ref={cardRef}
-        className="fixed z-50 w-56 rounded-md bg-surface-1 border border-border-2 shadow-lg overflow-hidden"
-        style={{ top, left }}
+        className={[
+          'fixed z-50 border border-border-2 bg-surface-1 shadow-lg overflow-hidden',
+          isTouchPopover
+            ? 'inset-x-0 bottom-0 w-full rounded-t-md pb-[env(safe-area-inset-bottom)]'
+            : 'w-56 rounded-md',
+        ].join(' ')}
+        style={isTouchPopover ? undefined : { top, left }}
       >
         <div className="relative h-9" style={{ background: headerBackground }}>
           {actions.length > 0 && (

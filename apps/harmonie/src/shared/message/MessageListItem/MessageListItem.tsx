@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Avatar } from '@harmonie/ui';
 import { useTranslation } from 'react-i18next';
 import { Pin } from 'lucide-react';
@@ -45,6 +45,11 @@ interface MessageListItemProps<TAuthor extends MessageAuthor = MessageAuthor> {
     messageId: string,
     horizontalAnchor?: 'left' | 'right'
   ) => void;
+  onOpenMenuAt?: (
+    messageId: string,
+    position: { x: number; y: number },
+    horizontalAnchor?: 'left' | 'right'
+  ) => void;
 }
 
 export const MessageListItem = <TAuthor extends MessageAuthor = MessageAuthor>({
@@ -69,9 +74,14 @@ export const MessageListItem = <TAuthor extends MessageAuthor = MessageAuthor>({
   reactionUserMap,
   currentUser,
   onOpenMenu,
+  onOpenMenuAt,
 }: MessageListItemProps<TAuthor>) => {
   const { t, i18n } = useTranslation();
   const [pickerAnchorRect, setPickerAnchorRect] = useState<DOMRect | null>(null);
+  const [swipeOffset, setSwipeOffset] = useState(0);
+  const longPressTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+  const ignoreContextMenuUntilRef = useRef(0);
   const avatarUrl = useFileBlobUrl(member?.avatarFileId);
   const label = member
     ? (member.displayName ?? member.username)
@@ -89,7 +99,51 @@ export const MessageListItem = <TAuthor extends MessageAuthor = MessageAuthor>({
   const handleContextMenu = (event: React.MouseEvent<HTMLElement>) => {
     if (!(onReply || onPinToggle || (isOwn && (onEdit || onDelete)))) return;
     event.preventDefault();
+    if (Date.now() < ignoreContextMenuUntilRef.current) return;
     onOpenMenu?.(event, message.messageId, 'right');
+  };
+
+  const clearLongPress = () => {
+    if (!longPressTimeoutRef.current) return;
+    clearTimeout(longPressTimeoutRef.current);
+    longPressTimeoutRef.current = null;
+  };
+
+  const handleTouchStart = (event: React.TouchEvent<HTMLElement>) => {
+    if (!(onReply || onPinToggle || (isOwn && (onEdit || onDelete)))) return;
+    const touch = event.touches[0];
+    touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+    ignoreContextMenuUntilRef.current = Date.now() + 1200;
+    longPressTimeoutRef.current = setTimeout(() => {
+      onOpenMenuAt?.(message.messageId, { x: touch.clientX, y: touch.clientY }, 'left');
+    }, 520);
+  };
+
+  const handleTouchMove = (event: React.TouchEvent<HTMLElement>) => {
+    const start = touchStartRef.current;
+    if (!start) return;
+
+    const touch = event.touches[0];
+    const deltaX = touch.clientX - start.x;
+    const deltaY = touch.clientY - start.y;
+
+    if (Math.abs(deltaX) > 8 || Math.abs(deltaY) > 8) clearLongPress();
+    if (!onReply || deltaX >= 0 || Math.abs(deltaY) > 42) return;
+
+    setSwipeOffset(Math.max(deltaX, -84));
+  };
+
+  const handleTouchEnd = () => {
+    clearLongPress();
+    if (swipeOffset <= -64) onReply?.(message.messageId);
+    setSwipeOffset(0);
+    touchStartRef.current = null;
+  };
+
+  const handleTouchCancel = () => {
+    clearLongPress();
+    setSwipeOffset(0);
+    touchStartRef.current = null;
   };
 
   const handlePickerOpen = (rect: DOMRect) => {
@@ -112,9 +166,14 @@ export const MessageListItem = <TAuthor extends MessageAuthor = MessageAuthor>({
     <div
       data-message-id={message.messageId}
       onContextMenu={handleContextMenu}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      onTouchMove={handleTouchMove}
+      onTouchCancel={handleTouchCancel}
+      style={swipeOffset < 0 ? { transform: `translateX(${swipeOffset}px)` } : undefined}
       className={[
         'group flex items-start gap-2 sm:gap-3 relative px-1 sm:px-2 -mx-1 sm:-mx-2 rounded-sm min-w-0',
-        'hover:bg-surface-2 transition-[background-color,box-shadow] duration-200',
+        'hover:bg-surface-2 transition-[background-color,box-shadow,transform] duration-200',
         isEditing || isMenuOpen || pickerAnchorRect ? 'bg-surface-3' : '',
         isSelected
           ? 'z-10 ring-1 ring-primary/70 shadow-[0_0_8px_color-mix(in_srgb,var(--color-primary)_70%,transparent)]'

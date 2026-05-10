@@ -1,5 +1,6 @@
 import { Hash, Settings, Volume2 } from 'lucide-react';
 import { IconButton } from '../IconButton/IconButton';
+import { useLongPress, type LongPressPoint } from '../../hooks/useLongPress';
 
 export type ChannelType = 'text' | 'voice';
 
@@ -11,6 +12,7 @@ export interface ChannelItemProps {
   voiceActive?: boolean;
   onClick: () => void;
   onContextMenu?: (e: React.MouseEvent) => void;
+  onLongPress?: (position: LongPressPoint) => void;
   onMenuClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
   menuLabel?: string;
 }
@@ -23,10 +25,12 @@ export const ChannelItem = ({
   voiceActive = false,
   onClick,
   onContextMenu,
+  onLongPress,
   onMenuClick,
   menuLabel,
 }: ChannelItemProps) => {
   const Icon = type === 'text' ? Hash : Volume2;
+  const longPress = useLongPress(onLongPress);
   const baseStateClasses = active
     ? 'bg-secondary text-secondary-fg font-medium'
     : 'text-text-2 hover:bg-surface-3 hover:text-text-1';
@@ -40,8 +44,12 @@ export const ChannelItem = ({
       ].join(' ')}
     >
       <button
-        onClick={onClick}
+        onClick={(e) => {
+          if (longPress.consumeTriggeredPress(e)) return;
+          onClick();
+        }}
         onContextMenu={onContextMenu}
+        {...longPress.eventHandlers}
         className={[
           'flex min-w-0 flex-1 items-center gap-2 text-sm font-body transition-colors text-left cursor-pointer h-9',
           voiceActive && 'font-medium',

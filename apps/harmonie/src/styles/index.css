@@ -4,6 +4,28 @@
 html,
 body,
 #root {
+  --keyboard-inset: 0px;
+  background-color: var(--color-background);
   height: 100%;
   overflow: hidden;
+}
+
+@media (max-width: 767px) {
+  html,
+  body,
+  #root {
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  input,
+  textarea,
+  select,
+  [contenteditable='true'],
+  .ql-editor {
+    font-size: 16px !important;
+    user-select: text;
+    -webkit-user-select: text;
+  }
 }

@@ -5,6 +5,7 @@ import { IconButton, RichTextMessageInput } from '@harmonie/ui';
 import { useMessageFormattingPreference } from '../hooks/useMessageFormattingPreference';
 import { getMessagePayloadContent, stripHtmlToText } from '../utils/messageHtml';
 import { getRichTextMessageInputLabels } from '../utils/richTextMessageInputLabels';
+import { useCoarsePointer } from '@/shared/hooks/useCoarsePointer';
 
 const MAX_LENGTH = 4000;
 
@@ -24,6 +25,7 @@ export const MessageInlineEditor = ({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
   const { formattingOpen, toggleFormattingOpen } = useMessageFormattingPreference();
+  const isCoarsePointer = useCoarsePointer();
   const inputLabels = getRichTextMessageInputLabels(t);
   const textContent = stripHtmlToText(content);
   const payloadContent = getMessagePayloadContent(content);
@@ -69,7 +71,7 @@ export const MessageInlineEditor = ({
           }
           onSubmit={() => void handleSave()}
           onEscape={handleCancel}
-          autoFocus
+          autoFocus={!isCoarsePointer}
           autoFocusPlacement="end"
           showSubmitButton={false}
           showFormattingTools={formattingOpen}

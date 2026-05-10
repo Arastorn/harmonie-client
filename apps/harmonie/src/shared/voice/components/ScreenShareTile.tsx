@@ -4,6 +4,11 @@ import { Maximize2, Minimize2, Pin, PinOff, ScreenShare } from 'lucide-react';
 import { IconButton } from '@harmonie/ui';
 import type { VoiceScreenShare } from '@/types/voice';
 
+interface WebkitFullscreenVideo extends HTMLVideoElement {
+  webkitEnterFullscreen?: () => void;
+  webkitDisplayingFullscreen?: boolean;
+}
+
 interface ScreenShareTileProps {
   screenShare: VoiceScreenShare;
   label: string;
@@ -48,6 +53,7 @@ export const ScreenShareTile = ({
 
   const handleToggleFullscreen = async () => {
     const tileEl = tileRef.current;
+    const videoEl = videoRef.current as WebkitFullscreenVideo | null;
     if (!tileEl) return;
 
     if (document.fullscreenElement === tileEl) {
@@ -55,7 +61,12 @@ export const ScreenShareTile = ({
       return;
     }
 
-    await tileEl.requestFullscreen();
+    if (tileEl.requestFullscreen) {
+      await tileEl.requestFullscreen();
+      return;
+    }
+
+    videoEl?.webkitEnterFullscreen?.();
   };
 
   return (

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Hash, Search, User } from 'lucide-react';
-import { Badge, Combobox, FilterInput } from '@harmonie/ui';
+import { Badge, Combobox, FilterInput, IconButton } from '@harmonie/ui';
 import { useChannels } from '@/features/channel/ChannelContext';
 import { useGuildMembers } from '@/features/guild/GuildContext';
 import type { Channel, GuildMember } from '@/types/guild';
@@ -35,6 +35,7 @@ export const GuildSearchBar = ({
 
   const [dropdown, setDropdown] = useState<DropdownState>(null);
   const [pickerQuery, setPickerQuery] = useState('');
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -44,11 +45,18 @@ export const GuildSearchBar = ({
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setDropdown(null);
         setPickerQuery('');
+        setMobileOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
+
+  useEffect(() => {
+    if (!mobileOpen) return;
+
+    requestAnimationFrame(() => inputRef.current?.focus());
+  }, [mobileOpen]);
 
   const selectedAuthor = authorId ? members.find((m) => m.userId === authorId) : null;
   const selectedChannel = channelId ? textChannels.find((c) => c.channelId === channelId) : null;
@@ -115,8 +123,10 @@ export const GuildSearchBar = ({
     label: channel.name,
   }));
 
-  return (
-    <div ref={containerRef} className="relative w-52">
+  const hasActiveSearch = query.trim() !== '' || Boolean(selectedAuthor || selectedChannel);
+
+  const renderSearchControl = (placement: 'bottom' | 'top' = 'bottom') => (
+    <>
       <FilterInput onClick={() => inputRef.current?.focus()} rightElement={<Search size={13} />}>
         {selectedAuthor && (
           <Badge variant="filter" icon={<User size={10} />} onRemove={() => onAuthorChange(null)}>
@@ -146,8 +156,9 @@ export const GuildSearchBar = ({
           items={filterItems.map((item) => ({ ...item }))}
           header={t('guild.search.filters')}
           onSelect={(value) => handleFilterSelect(value as 'members' | 'channels')}
-          className="min-w-64"
+          className="w-full sm:min-w-64"
           align="right"
+          placement={placement}
         />
       )}
 
@@ -162,8 +173,9 @@ export const GuildSearchBar = ({
           onSearchChange={setPickerQuery}
           searchPlaceholder={t('guild.search.memberPickerPlaceholder')}
           emptyMessage={t('guild.search.noResults')}
-          className="min-w-64 max-h-56 flex flex-col"
+          className="w-full max-h-56 flex flex-col sm:min-w-64"
           align="right"
+          placement={placement}
           autoFocusSearch
         />
       )}
@@ -179,11 +191,43 @@ export const GuildSearchBar = ({
           onSearchChange={setPickerQuery}
           searchPlaceholder={t('guild.search.channelPickerPlaceholder')}
           emptyMessage={t('guild.search.noResults')}
-          className="min-w-64 max-h-56 flex flex-col"
+          className="w-full max-h-56 flex flex-col sm:min-w-64"
           align="right"
+          placement={placement}
           autoFocusSearch
         />
       )}
+    </>
+  );
+
+  return (
+    <div ref={containerRef} className="relative">
+      <div className="hidden w-52 sm:block">{renderSearchControl()}</div>
+
+      <div className="sm:hidden">
+        <IconButton
+          size="small"
+          selected={mobileOpen || hasActiveSearch}
+          aria-label={t('guild.search.title')}
+          title={t('guild.search.title')}
+          tooltipSide="bottom"
+          onClick={() => {
+            setMobileOpen((open) => {
+              const nextOpen = !open;
+              setDropdown(nextOpen ? 'filters' : null);
+              return nextOpen;
+            });
+          }}
+        >
+          <Search size={16} />
+        </IconButton>
+
+        {mobileOpen && (
+          <div className="fixed inset-x-3 bottom-[calc(1rem+env(safe-area-inset-bottom))] z-50 rounded-sm border border-border-2 bg-surface-1 p-2 shadow-lg">
+            <div className="relative">{renderSearchControl('top')}</div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

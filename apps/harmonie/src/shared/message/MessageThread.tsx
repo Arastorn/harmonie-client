@@ -16,6 +16,7 @@ import type { MessageAuthor } from '@/shared/message/types';
 import { MessageComposer } from './MessageComposer';
 import { MessageListItem } from './MessageListItem/MessageListItem';
 import { MessageContextMenu, type MessageMenuState } from './MessageListItem/MessageContextMenu';
+import { MessageEmojiPicker } from './MessageListItem/MessageEmojiPicker';
 import { PinnedMessagesModal } from './PinnedMessagesModal';
 import { ScrollToBottomButton } from './ScrollToBottomButton';
 import { areMessagesGrouped, getDaySeparatorLabel } from './utils/messagePresentation';
@@ -142,6 +143,10 @@ export const MessageThread = <TAuthor extends MessageAuthor = MessageAuthor>({
 }: MessageThreadProps<TAuthor>) => {
   const { t } = useTranslation();
   const [messageMenu, setMessageMenu] = useState<MessageMenuState | null>(null);
+  const [reactionPicker, setReactionPicker] = useState<{
+    messageId: string;
+    anchorRect: DOMRect;
+  } | null>(null);
   const [pendingDeleteMessageId, setPendingDeleteMessageId] = useState<string | null>(null);
   const [replyTo, setReplyTo] = useState<ReplyPreview | null>(null);
   const [pinnedMessagesOpen, setPinnedMessagesOpen] = useState(false);
@@ -323,23 +328,32 @@ export const MessageThread = <TAuthor extends MessageAuthor = MessageAuthor>({
     shouldStickToBottomRef,
   ]);
 
+  const openMessageMenuAt = (
+    messageId: string,
+    position: { x: number; y: number },
+    horizontalAnchor: 'left' | 'right' = 'left'
+  ) => {
+    const message = messages.find((item) => item.messageId === messageId);
+    const isOwnMessage = message?.authorUserId === currentUser?.userId;
+    setMessageMenu({
+      messageId,
+      position,
+      horizontalAnchor,
+      isPinned: message?.isPinned ?? false,
+      canReply: Boolean(message),
+      canReact: Boolean(message),
+      canEdit: isOwnMessage,
+      canDelete: isOwnMessage,
+    });
+  };
+
   const handleOpenMessageMenu = (
     event: React.MouseEvent<HTMLElement>,
     messageId: string,
     horizontalAnchor: 'left' | 'right' = 'left'
   ) => {
     event.preventDefault();
-    const message = messages.find((item) => item.messageId === messageId);
-    const isOwnMessage = message?.authorUserId === currentUser?.userId;
-    setMessageMenu({
-      messageId,
-      position: { x: event.clientX, y: event.clientY },
-      horizontalAnchor,
-      isPinned: message?.isPinned ?? false,
-      canReply: Boolean(message),
-      canEdit: isOwnMessage,
-      canDelete: isOwnMessage,
-    });
+    openMessageMenuAt(messageId, { x: event.clientX, y: event.clientY }, horizontalAnchor);
   };
 
   const handleStartEditing = (messageId: string) => {
@@ -364,6 +378,38 @@ export const MessageThread = <TAuthor extends MessageAuthor = MessageAuthor>({
       isDeleted: false,
       deletedAtUtc: null,
     });
+  };
+
+  const handleOpenReactionPicker = (
+    messageId: string,
+    value: string | { x: number; y: number }
+  ) => {
+    setMessageMenu(null);
+    if (typeof value === 'string') {
+      toggleReaction(messageId, value);
+      return;
+    }
+
+    setReactionPicker({
+      messageId,
+      anchorRect: {
+        x: value.x,
+        y: value.y,
+        width: 1,
+        height: 1,
+        top: value.y,
+        right: value.x + 1,
+        bottom: value.y + 1,
+        left: value.x,
+        toJSON: () => ({}),
+      },
+    });
+  };
+
+  const handleMenuReactionSelected = (emoji: string) => {
+    if (!reactionPicker) return;
+    toggleReaction(reactionPicker.messageId, emoji);
+    setReactionPicker(null);
   };
 
   const handleDeleteRequest = (messageId: string) => {
@@ -425,8 +471,8 @@ export const MessageThread = <TAuthor extends MessageAuthor = MessageAuthor>({
 
   return (
     <>
-      <div className="flex flex-col flex-1 min-w-0 h-full bg-surface-1 rounded-md overflow-hidden">
-        <div className="flex items-center justify-between px-4 h-14 shrink-0 bg-surface-2 rounded-t-md">
+      <div className="flex flex-col flex-1 min-w-0 h-full bg-surface-1 md:rounded-md overflow-hidden">
+        <div className="flex items-center justify-between px-4 h-14 shrink-0 bg-surface-2 md:rounded-t-md">
           <div className="flex min-w-0 items-center gap-2">
             {leadingActions}
             <span className="truncate text-sm font-semibold text-text-1">{title}</span>
@@ -521,6 +567,7 @@ export const MessageThread = <TAuthor extends MessageAuthor = MessageAuthor>({
                         reactionUserMap={authorMap}
                         currentUser={currentUser}
                         onOpenMenu={handleOpenMessageMenu}
+                        onOpenMenuAt={openMessageMenuAt}
                       />
                     </div>
                   );
@@ -547,7 +594,7 @@ export const MessageThread = <TAuthor extends MessageAuthor = MessageAuthor>({
           </div>
         )}
 
-        <div className="mt-auto flex items-end px-4 pb-4">
+        <div className="mt-auto flex min-w-0 items-end px-4 pb-[calc(1rem+var(--keyboard-inset))] transition-[padding-bottom] duration-150">
           <MessageComposer
             key={composer.draftKey}
             draftKey={composer.draftKey}
@@ -565,10 +612,19 @@ export const MessageThread = <TAuthor extends MessageAuthor = MessageAuthor>({
         menu={messageMenu}
         onClose={() => setMessageMenu(null)}
         onReply={handleStartReply}
+        onReact={handleOpenReactionPicker}
         onEdit={handleStartEditing}
         onDelete={handleDeleteRequest}
         onPinToggle={handlePinToggle}
       />
+
+      {reactionPicker && (
+        <MessageEmojiPicker
+          anchorRect={reactionPicker.anchorRect}
+          onSelect={handleMenuReactionSelected}
+          onClose={() => setReactionPicker(null)}
+        />
+      )}
 
       {pinnedMessagesOpen && (
         <PinnedMessagesModal
