@@ -1,32 +1,44 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Check, X } from 'lucide-react';
-import { IconButton, RichTextMessageInput } from '@harmonie/ui';
+import { IconButton, RichTextMessageInput, type RichTextMentionOption } from '@harmonie/ui';
+import type { ApiError } from '@/types/error';
 import { useMessageFormattingPreference } from '../hooks/useMessageFormattingPreference';
 import { getMessagePayloadContent, stripHtmlToText } from '../utils/messageHtml';
+import { filterMentionedUserIdsFromContent } from '../utils/mentions';
 import { getRichTextMessageInputLabels } from '../utils/richTextMessageInputLabels';
 import { useCoarsePointer } from '@/shared/hooks/useCoarsePointer';
 
 const MAX_LENGTH = 4000;
+const EMPTY_MENTION_IDS: string[] = [];
+const EMPTY_MENTION_OPTIONS: RichTextMentionOption[] = [];
 
 interface MessageInlineEditorProps {
   initialValue: string | null;
+  initialMentionedUserIds?: string[];
   onCancel: () => void;
-  onSave: (content: string) => Promise<void>;
+  onSave: (content: string, mentionedUserIds: string[]) => Promise<void>;
+  mentionOptions?: RichTextMentionOption[];
 }
 
 export const MessageInlineEditor = ({
   initialValue,
+  initialMentionedUserIds = EMPTY_MENTION_IDS,
   onCancel,
   onSave,
+  mentionOptions = EMPTY_MENTION_OPTIONS,
 }: MessageInlineEditorProps) => {
   const { t } = useTranslation();
   const [content, setContent] = useState(initialValue ?? '');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
+  const [selectedMentionIds, setSelectedMentionIds] = useState<Set<string>>(
+    () => new Set(initialMentionedUserIds)
+  );
   const { formattingOpen, toggleFormattingOpen } = useMessageFormattingPreference();
   const isCoarsePointer = useCoarsePointer();
   const inputLabels = getRichTextMessageInputLabels(t);
+  const mentionMap = new Map(mentionOptions.map((mention) => [mention.userId, mention]));
   const textContent = stripHtmlToText(content);
   const payloadContent = getMessagePayloadContent(content);
   const trimmedContent = textContent.trim();
@@ -34,10 +46,12 @@ export const MessageInlineEditor = ({
 
   useEffect(() => {
     setContent(initialValue ?? '');
+    setSelectedMentionIds(new Set(initialMentionedUserIds));
     setError(undefined);
-  }, [initialValue]);
+  }, [initialMentionedUserIds, initialValue]);
   const handleCancel = () => {
     setContent(initialValue ?? '');
+    setSelectedMentionIds(new Set(initialMentionedUserIds));
     setError(undefined);
     onCancel();
   };
@@ -47,10 +61,22 @@ export const MessageInlineEditor = ({
 
     setSaving(true);
     setError(undefined);
+    const mentionedUserIds = filterMentionedUserIdsFromContent(
+      content,
+      selectedMentionIds,
+      mentionMap
+    );
     try {
-      await onSave(payloadContent);
-    } catch {
-      setError(t('channel.input.updateError'));
+      await onSave(payloadContent, mentionedUserIds);
+    } catch (err) {
+      const apiError = err as ApiError;
+      if (apiError.code === 'MESSAGE_MENTIONED_USER_NOT_FOUND') {
+        setError(t('channel.input.mentionUserNotFound'));
+      } else if (apiError.code === 'MESSAGE_MENTIONED_USER_NOT_MEMBER') {
+        setError(t('channel.input.mentionUserNotMember'));
+      } else {
+        setError(t('channel.input.updateError'));
+      }
     } finally {
       setSaving(false);
     }
@@ -71,6 +97,10 @@ export const MessageInlineEditor = ({
           }
           onSubmit={() => void handleSave()}
           onEscape={handleCancel}
+          mentionOptions={mentionOptions}
+          onMentionSelected={(mention) =>
+            setSelectedMentionIds((current) => new Set(current).add(mention.userId))
+          }
           autoFocus={!isCoarsePointer}
           autoFocusPlacement="end"
           showSubmitButton={false}

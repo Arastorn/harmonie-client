@@ -1,4 +1,5 @@
 import i18n from '@/i18n';
+import { stripHtmlToText } from '@/shared/message/utils/messageHtml';
 
 export const NOTIFICATION_NAVIGATE_EVENT = 'harmonie:notification-navigate';
 
@@ -12,7 +13,7 @@ export interface BrowserNotificationPayload {
 }
 
 const buildNotificationBody = (payload: BrowserNotificationPayload): string => {
-  const content = payload.content?.trim() ?? '';
+  const content = payload.content ? stripHtmlToText(payload.content) : '';
   if (content) return content;
   if (payload.attachments.length > 0) return i18n.t('notifications.browser.attachmentOnly');
   return i18n.t('notifications.browser.fallbackBody');

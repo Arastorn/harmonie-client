@@ -42,6 +42,7 @@ export interface Message {
   messageId: string;
   authorUserId: string;
   content: string | null;
+  mentionedUserIds?: string[];
   attachments: MessageAttachment[];
   reactions: MessageReaction[];
   linkPreviews?: LinkPreview[] | null;
@@ -65,6 +66,7 @@ export interface PinnedMessage {
   authorUsername: string;
   authorDisplayName?: string | null;
   content: string | null;
+  mentionedUserIds?: string[];
   attachments: MessageAttachment[];
   createdAtUtc: string;
   updatedAtUtc: string | null;
@@ -100,6 +102,7 @@ export interface MessageCreatedEvent {
   authorUsername: string;
   authorDisplayName?: string | null;
   content: string;
+  mentionedUserIds?: string[];
   attachments: MessageAttachment[];
   replyTo?: ReplyPreview | null;
   isPinned?: boolean;
@@ -117,6 +120,7 @@ export interface MessageUpdatedEvent {
   channelId: string;
   guildId: string;
   content: string;
+  mentionedUserIds?: string[];
   updatedAtUtc: string;
 }
 

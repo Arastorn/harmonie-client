@@ -2,6 +2,7 @@ import Quill from 'quill';
 import { type ActiveFormats } from '../types';
 
 const HTML_TAG_PATTERN = /<\/?[a-z][\s\S]*>/i;
+let mentionBlotRegistered = false;
 
 export const escapeHtml = (value: string) =>
   value
@@ -31,6 +32,39 @@ export const getEditorHtml = (quill: Quill) => {
 };
 
 export const getPlainText = (quill: Quill) => quill.getText().trim();
+
+export const registerMentionBlot = () => {
+  if (mentionBlotRegistered) return;
+
+  const Inline = Quill.import('blots/inline') as {
+    new (...args: unknown[]): {
+      domNode: HTMLElement;
+    };
+    create: (value?: unknown) => Node;
+  };
+
+  class MentionBlot extends Inline {
+    static blotName = 'mention';
+    static tagName = 'span';
+    static className = 'ql-mention';
+
+    static create(value?: unknown) {
+      const node = super.create(value) as HTMLElement;
+      if (typeof value === 'string') {
+        node.setAttribute('data-user-id', value);
+      }
+      node.setAttribute('spellcheck', 'false');
+      return node;
+    }
+
+    static formats(node: HTMLElement) {
+      return node.getAttribute('data-user-id') ?? true;
+    }
+  }
+
+  Quill.register({ 'formats/mention': MentionBlot });
+  mentionBlotRegistered = true;
+};
 
 export const normalizeHtml = (value: string) => value.replace(/\s+/g, ' ').trim();
 

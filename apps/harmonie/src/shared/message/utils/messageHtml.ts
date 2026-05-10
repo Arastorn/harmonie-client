@@ -1,6 +1,8 @@
 import DOMPurify from 'dompurify';
 
 const HTML_TAG_PATTERN = /<\/?[a-z][\s\S]*>/i;
+const HTML_BLOCK_TAG_PATTERN = /<\/?(?:blockquote|div|h[1-6]|li|ol|p|pre|ul)(?:\s[^>]*)?>/gi;
+const HTML_LINE_BREAK_PATTERN = /<br\s*\/?>/gi;
 
 const MESSAGE_HTML_ALLOWED_TAGS = [
   'a',
@@ -19,6 +21,7 @@ const MESSAGE_HTML_ALLOWED_TAGS = [
   'u',
   'ul',
   's',
+  'span',
 ];
 
 const MESSAGE_HTML_ALLOWED_ATTR = [
@@ -28,6 +31,7 @@ const MESSAGE_HTML_ALLOWED_ATTR = [
   'class',
   'contenteditable',
   'data-list',
+  'data-user-id',
 ];
 
 export const isHtmlMessage = (content: string) => HTML_TAG_PATTERN.test(content);
@@ -40,13 +44,25 @@ const decodeHtmlEntities = (content: string) => {
   return textarea.value;
 };
 
-export const stripHtmlToText = (content: string) =>
-  decodeHtmlEntities(
-    content
-      .replace(/<br\s*\/?>/gi, '\n')
-      .replace(/<\/p>\s*<p>/gi, '\n')
-      .replace(/<[^>]*>/g, '')
-  ).trim();
+const normalizeTextLines = (content: string) =>
+  content
+    .split('\n')
+    .map((line) => line.replace(/\s+/g, ' ').trim())
+    .filter(Boolean)
+    .join('\n');
+
+export const stripHtmlToText = (content: string) => {
+  if (!isHtmlMessage(content)) return decodeHtmlEntities(content).trim();
+
+  return normalizeTextLines(
+    decodeHtmlEntities(
+      content
+        .replace(HTML_LINE_BREAK_PATTERN, '\n')
+        .replace(HTML_BLOCK_TAG_PATTERN, '\n')
+        .replace(/<[^>]*>/g, '')
+    )
+  );
+};
 
 const isUnformattedRichTextHtml = (content: string) => {
   if (!isHtmlMessage(content) || typeof document === 'undefined') return false;

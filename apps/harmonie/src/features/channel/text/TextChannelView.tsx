@@ -43,6 +43,15 @@ export const TextChannelView = () => {
     () => new Map((members ?? []).map((member) => [member.userId, member])),
     [members]
   );
+  const mentionOptions = useMemo(
+    () =>
+      (members ?? []).map((member) => ({
+        userId: member.userId,
+        username: member.username,
+        displayName: member.displayName,
+      })),
+    [members]
+  );
   const { channels } = useChannels();
   const { guildsLoading, guild } = useCurrentGuild();
   const { user } = useUser();
@@ -162,10 +171,11 @@ export const TextChannelView = () => {
         reactionSource={{ type: 'channel', entityId: channelId }}
         composer={{
           draftKey: `channel:${channelId}`,
-          sendFn: (content, fileIds, replyToMessageId) =>
-            sendMessage(channelId, content, fileIds, replyToMessageId),
+          sendFn: (content, fileIds, replyToMessageId, mentionedUserIds) =>
+            sendMessage(channelId, content, fileIds, replyToMessageId, mentionedUserIds),
           onTypingStart: () =>
             connection?.send(REALTIME_CLIENT_METHODS.startTypingChannel, channelId).catch(() => {}),
+          mentionOptions,
         }}
         pinned={{
           entityId: channelId,

@@ -8,7 +8,7 @@ import {
   type RefObject,
 } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, IconButton, Modal, Separator } from '@harmonie/ui';
+import { Button, IconButton, Modal, Separator, type RichTextMentionOption } from '@harmonie/ui';
 import { Pin } from 'lucide-react';
 import type { Message, PinnedMessageList, ReplyPreview } from '@/types/channel';
 import type { UserProfile } from '@/types/user';
@@ -53,9 +53,11 @@ interface MessageThreadComposerConfig {
   sendFn: (
     content: string,
     attachmentFileIds: string[],
-    replyToMessageId?: string | null
+    replyToMessageId?: string | null,
+    mentionedUserIds?: string[]
   ) => Promise<unknown>;
   onTypingStart?: () => void;
+  mentionOptions?: RichTextMentionOption[];
 }
 
 interface MessageThreadPinnedConfig {
@@ -99,7 +101,7 @@ interface MessageThreadProps<TAuthor extends MessageAuthor = MessageAuthor> {
   startEditing: (messageId: string) => void;
   cancelEditing: () => void;
   dismissNewMessagesSeparator: () => void;
-  saveEdit: (messageId: string, content: string) => Promise<void>;
+  saveEdit: (messageId: string, content: string, mentionedUserIds: string[]) => Promise<void>;
   removeMessage: (messageId: string) => void;
   removeAttachment: (messageId: string, attachmentFileId: string) => void;
   setMessagePinned: (messageId: string, isPinned: boolean) => void;
@@ -526,6 +528,9 @@ export const MessageThread = <TAuthor extends MessageAuthor = MessageAuthor>({
                     : areMessagesGrouped(previousMessage, message);
                   const isFirstUnread =
                     lastReadMessageId !== null && previousMessage?.messageId === lastReadMessageId;
+                  const isMentioned =
+                    Boolean(currentUser?.userId) &&
+                    (message.mentionedUserIds ?? []).includes(currentUser?.userId ?? '');
 
                   return (
                     <div key={message.messageId}>
@@ -547,6 +552,7 @@ export const MessageThread = <TAuthor extends MessageAuthor = MessageAuthor>({
                         isOwn={message.authorUserId === currentUser?.userId}
                         isEditing={message.messageId === editingMessageId}
                         isMenuOpen={message.messageId === messageMenu?.messageId}
+                        isMentioned={isMentioned}
                         isSelected={
                           message.messageId === searchState?.selectedMessageId ||
                           message.messageId === pinnedHighlightMessageId
@@ -555,6 +561,7 @@ export const MessageThread = <TAuthor extends MessageAuthor = MessageAuthor>({
                         onEdit={handleStartEditing}
                         onCancelEdit={cancelEditing}
                         onSaveEdit={saveEdit}
+                        mentionOptions={composer.mentionOptions}
                         onDelete={handleDeleteRequest}
                         onReply={handleStartReply}
                         onReplyClick={(messageId) => void revealMessage(messageId)}
@@ -604,6 +611,7 @@ export const MessageThread = <TAuthor extends MessageAuthor = MessageAuthor>({
             onEditingRequested={handleStartEditing}
             replyTo={replyTo}
             onCancelReply={() => setReplyTo(null)}
+            mentionOptions={composer.mentionOptions}
           />
         </div>
       </div>

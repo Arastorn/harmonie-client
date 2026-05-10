@@ -29,7 +29,10 @@ export type {
   RichTextMessageInputHandle,
   RichTextMessageInputProps,
 } from './components/RichTextMessageInput/RichTextMessageInput';
-export type { RichTextMessageInputLabels } from './components/RichTextMessageInput/types';
+export type {
+  RichTextMentionOption,
+  RichTextMessageInputLabels,
+} from './components/RichTextMessageInput/types';
 
 export { Separator } from './components/Separator/Separator';
 export type { SeparatorProps } from './components/Separator/Separator';

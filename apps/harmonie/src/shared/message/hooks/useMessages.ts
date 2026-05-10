@@ -8,6 +8,7 @@ interface WsMessageCreatedEvent {
   messageId: string;
   authorUserId: string;
   content: string;
+  mentionedUserIds?: string[];
   attachments: Message['attachments'];
   replyTo?: Message['replyTo'];
   linkPreviews?: Message['linkPreviews'];
@@ -19,6 +20,7 @@ interface WsMessageCreatedEvent {
 interface WsMessageUpdatedEvent {
   messageId: string;
   content: string;
+  mentionedUserIds?: string[];
   updatedAtUtc: string;
   [key: string]: unknown;
 }
@@ -58,7 +60,12 @@ interface WsMessageUnpinnedEvent {
 export interface UseMessagesApi {
   fetchMessages: (entityId: string, cursor?: string) => Promise<MessageList>;
   ackMessage: (entityId: string, messageId: string) => Promise<void>;
-  updateMessage: (entityId: string, messageId: string, content: string) => Promise<Message>;
+  updateMessage: (
+    entityId: string,
+    messageId: string,
+    content: string,
+    mentionedUserIds: string[]
+  ) => Promise<Message>;
   deleteMessage: (entityId: string, messageId: string) => Promise<void>;
   deleteAttachment: (entityId: string, messageId: string, attachmentId: string) => Promise<void>;
   pinMessage: (entityId: string, messageId: string) => Promise<void>;
@@ -190,6 +197,7 @@ export const useMessages = ({
           messageId: event.messageId,
           authorUserId: event.authorUserId,
           content: event.content,
+          mentionedUserIds: event.mentionedUserIds ?? [],
           attachments: event.attachments ?? [],
           reactions: [],
           replyTo: event.replyTo ?? null,
@@ -207,7 +215,12 @@ export const useMessages = ({
       setMessages((prev) =>
         prev.map((m) =>
           m.messageId === event.messageId
-            ? { ...m, content: event.content, updatedAtUtc: event.updatedAtUtc }
+            ? {
+                ...m,
+                content: event.content,
+                mentionedUserIds: event.mentionedUserIds ?? m.mentionedUserIds ?? [],
+                updatedAtUtc: event.updatedAtUtc,
+              }
             : m
         )
       );
@@ -411,9 +424,14 @@ export const useMessages = ({
   const cancelEditing = useCallback(() => setEditingMessageId(null), []);
 
   const saveEdit = useCallback(
-    async (messageId: string, content: string) => {
+    async (messageId: string, content: string, mentionedUserIds: string[]) => {
       if (!entityId) return;
-      const updated = await apiRef.current.updateMessage(entityId, messageId, content);
+      const updated = await apiRef.current.updateMessage(
+        entityId,
+        messageId,
+        content,
+        mentionedUserIds
+      );
       setMessages((prev) =>
         prev.map((m) => (m.messageId === updated.messageId ? { ...m, ...updated } : m))
       );

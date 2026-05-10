@@ -4,6 +4,12 @@ import Quill from 'quill';
 export type QuillRange = { index: number; length: number } | null;
 export type ActiveFormats = Record<string, unknown>;
 
+export interface RichTextMentionOption {
+  userId: string;
+  username: string;
+  displayName?: string | null;
+}
+
 export interface RichTextMessageInputLabels {
   toggleFormatting: string;
   openEmoji: string;

@@ -41,7 +41,10 @@ export const ModalPanel = ({
       {/* Dialog */}
       <div className="relative flex h-dvh min-h-0 w-full max-w-3xl flex-col overflow-hidden border border-border-2 shadow-xl sm:h-[80vh] sm:max-h-[620px] sm:flex-row sm:rounded-md">
         {/* Left sidebar */}
-        <div className="hidden shrink-0 bg-surface-2 sm:flex sm:w-52 sm:flex-col sm:gap-1 sm:overflow-x-visible sm:border-r sm:p-3">
+        <div
+          className="hidden shrink-0 bg-surface-2 sm:flex sm:w-52 sm:flex-col sm:gap-1 sm:overflow-x-visible sm:border-r sm:p-3"
+          style={{ borderRightColor: 'var(--color-border-2)' }}
+        >
           {sidebar}
         </div>
 
@@ -63,7 +66,10 @@ export const ModalPanel = ({
           </div>
 
           {/* Right body */}
-          <div className="flex-1 overflow-y-auto px-5 py-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] sm:px-8 sm:py-6">
+          <div
+            className="flex-1 overflow-y-auto px-5 py-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] sm:px-8 sm:py-6"
+            style={{ overflowAnchor: 'none' }}
+          >
             {children}
           </div>
         </div>

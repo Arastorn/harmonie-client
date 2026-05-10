@@ -290,6 +290,9 @@ export const fr = {
       },
       error: "Impossible d'envoyer le message. Réessaie.",
       updateError: 'Impossible de modifier le message. Réessaie.',
+      mentionUserNotFound: "Impossible de mentionner cet utilisateur : il n'existe pas.",
+      mentionUserNotMember:
+        "Impossible de mentionner cet utilisateur : il n'est pas membre de cette conversation.",
       tooLong: 'Message trop long ({{count}}/{{max}} caractères).',
       attachFile: 'Joindre un fichier',
       openEmoji: 'Ouvrir le sélecteur d’emoji',

@@ -15,12 +15,18 @@ export const sendMessage = (
   channelId: string,
   content: string,
   attachmentFileIds: string[] = [],
-  replyToMessageId?: string | null
+  replyToMessageId?: string | null,
+  mentionedUserIds: string[] = []
 ): Promise<Message> =>
   apiFetch(`${API_BASE}/channels/${channelId}/messages`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ content: content || null, attachmentFileIds, replyToMessageId }),
+    body: JSON.stringify({
+      content: content || null,
+      attachmentFileIds,
+      replyToMessageId,
+      mentionedUserIds,
+    }),
   }).then((r) => parseOrThrow<Message>(r));
 
 export const getChannelMessages = (channelId: string, before?: string): Promise<MessageList> => {
@@ -85,12 +91,13 @@ export const ackChannel = (channelId: string, messageId: string): Promise<void> 
 export const updateMessage = (
   channelId: string,
   messageId: string,
-  content: string
+  content: string,
+  mentionedUserIds: string[] = []
 ): Promise<Message> =>
   apiFetch(`${API_BASE}/channels/${channelId}/messages/${messageId}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ content }),
+    body: JSON.stringify({ content, mentionedUserIds }),
   }).then((r) => parseOrThrow<Message>(r));
 
 export const addReaction = (channelId: string, messageId: string, emoji: string): Promise<void> =>
