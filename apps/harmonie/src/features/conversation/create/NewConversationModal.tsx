@@ -6,6 +6,7 @@ import { Check } from 'lucide-react';
 import { createGroupConversation, openDirectConversation, searchUsers } from '@/api/conversations';
 import type { Conversation, SearchUser } from '@/types/conversation';
 import { useFileBlobUrl } from '@/shared/hooks/useFileBlobUrl';
+import { useCoarsePointer } from '@/shared/hooks/useCoarsePointer';
 import { useUser } from '@/features/user/UserContext';
 import { useConversations } from '../ConversationContext';
 import { userToConversationParticipant } from '../conversationUtils';
@@ -76,6 +77,7 @@ export const NewConversationModal = ({ onClose }: NewConversationModalProps) => 
   const [searching, setSearching] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(false);
+  const isCoarsePointer = useCoarsePointer();
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -184,7 +186,7 @@ export const NewConversationModal = ({ onClose }: NewConversationModalProps) => 
           onChange={(e) => setQuery(e.target.value)}
           placeholder={selected.length === 0 ? t('conversation.searchUsers') : ''}
           className="flex-1 min-w-28 bg-transparent outline-none text-sm text-text-1 placeholder:text-text-3"
-          autoFocus
+          autoFocus={!isCoarsePointer}
         />
       </div>
 

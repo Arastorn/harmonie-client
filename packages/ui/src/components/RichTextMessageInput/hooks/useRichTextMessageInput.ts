@@ -416,7 +416,7 @@ export const useRichTextMessageInput = ({
 
     if (event.key !== 'Enter') return;
 
-    if (!event.shiftKey && onSubmit && !showFormattingTools) {
+    if (!event.shiftKey && onSubmit && !showFormattingTools && !isMobileInteractionDevice()) {
       event.preventDefault();
       onSubmit();
       return;

@@ -2,6 +2,10 @@ import { forwardRef, InputHTMLAttributes, ReactNode } from 'react';
 
 export type InputSize = 'default' | 'sm';
 
+const isMobileInteractionDevice = () =>
+  typeof window !== 'undefined' &&
+  window.matchMedia('(hover: none), (pointer: coarse), (max-width: 767px)').matches;
+
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
@@ -26,6 +30,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       uiSize = 'default',
       className,
       wrapperClassName,
+      autoFocus,
       ...props
     },
     ref
@@ -61,7 +66,14 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           </label>
         )}
         <div className="relative">
-          <input id={inputId} ref={ref} disabled={disabled} className={inputClasses} {...props} />
+          <input
+            id={inputId}
+            ref={ref}
+            disabled={disabled}
+            className={inputClasses}
+            autoFocus={autoFocus && !isMobileInteractionDevice()}
+            {...props}
+          />
           {rightElement && (
             <div className="absolute inset-y-0 right-0 flex items-center pr-3 text-text-3">
               {rightElement}
