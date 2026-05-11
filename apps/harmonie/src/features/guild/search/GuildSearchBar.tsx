@@ -5,6 +5,7 @@ import { Hash, Search, User } from 'lucide-react';
 import { Badge, Combobox, FilterInput, IconButton } from '@harmonie/ui';
 import { useChannels } from '@/features/channel/ChannelContext';
 import { useGuildMembers } from '@/features/guild/GuildContext';
+import { useCoarsePointer } from '@/shared/hooks/useCoarsePointer';
 import type { Channel, GuildMember } from '@/types/guild';
 
 interface GuildSearchBarProps {
@@ -28,6 +29,7 @@ export const GuildSearchBar = ({
 }: GuildSearchBarProps) => {
   const { t } = useTranslation();
   const { guildId } = useParams<{ guildId: string }>();
+  const isCoarsePointer = useCoarsePointer();
 
   const members = useGuildMembers(guildId) ?? [];
   const { channels } = useChannels();
@@ -53,10 +55,10 @@ export const GuildSearchBar = ({
   }, []);
 
   useEffect(() => {
-    if (!mobileOpen) return;
+    if (!mobileOpen || isCoarsePointer) return;
 
     requestAnimationFrame(() => inputRef.current?.focus());
-  }, [mobileOpen]);
+  }, [isCoarsePointer, mobileOpen]);
 
   const selectedAuthor = authorId ? members.find((m) => m.userId === authorId) : null;
   const selectedChannel = channelId ? textChannels.find((c) => c.channelId === channelId) : null;
@@ -74,14 +76,14 @@ export const GuildSearchBar = ({
     onAuthorChange(member.userId);
     setDropdown(null);
     setPickerQuery('');
-    inputRef.current?.focus();
+    if (!isCoarsePointer) inputRef.current?.focus();
   };
 
   const handleChannelSelect = (channel: Channel) => {
     onChannelChange(channel.channelId);
     setDropdown(null);
     setPickerQuery('');
-    inputRef.current?.focus();
+    if (!isCoarsePointer) inputRef.current?.focus();
   };
 
   const filteredMembers = pickerQuery.trim()
